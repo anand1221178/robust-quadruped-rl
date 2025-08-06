@@ -1,0 +1,10 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  enabled: false
+experiment:
+  description: PPO baseline without DR or SR2L
+  name: ppo_baseline
+sr2l:
+  enabled: false

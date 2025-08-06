@@ -1,0 +1,41 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  curriculum:
+    enabled: true
+    phases:
+    - epochs:
+      - 0
+      - 200
+      fault_prob: 0.0
+      name: warmup
+      sensor_noise: 0.01
+    - epochs:
+      - 200
+      - 600
+      fault_prob: 0.2
+      name: isolated
+      sensor_noise: 0.05
+    - epochs:
+      - 600
+      - -1
+      fault_prob: 0.4
+      name: full
+      sensor_noise: 0.1
+  enabled: true
+  faults:
+    actuator_dropout:
+      enabled: true
+      max_failed_joints: 3
+    sensor_noise:
+      enabled: true
+      position_std: 0.05
+      velocity_std: 0.1
+experiment:
+  description: Full method with DR and SR2L
+  name: ppo_dr_sr2l
+sr2l:
+  enabled: true
+  lambda: 0.01
+  perturbation_std: 0.05

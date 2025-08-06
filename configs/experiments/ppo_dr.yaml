@@ -1,0 +1,31 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  curriculum:
+    enabled: true
+    phases:
+    - epochs:
+      - 0
+      - 200
+      fault_prob: 0.0
+      name: warmup
+      sensor_noise: 0.01
+    - epochs:
+      - 200
+      - 600
+      fault_prob: 0.2
+      name: isolated
+      sensor_noise: 0.05
+    - epochs:
+      - 600
+      - -1
+      fault_prob: 0.4
+      name: full
+      sensor_noise: 0.1
+  enabled: true
+experiment:
+  description: PPO with domain randomization only
+  name: ppo_dr
+sr2l:
+  enabled: false

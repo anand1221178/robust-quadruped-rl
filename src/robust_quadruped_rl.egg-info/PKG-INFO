@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: robust-quadruped-rl
+Version: 0.1.0
+Summary: Robust quadruped locomotion using RL
+Author: Anand Patel
+Requires-Python: >=3.8
+Requires-Dist: stable-baselines3>=2.0.0
+Requires-Dist: gymnasium>=0.28.0
+Requires-Dist: mujoco>=2.3.0
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

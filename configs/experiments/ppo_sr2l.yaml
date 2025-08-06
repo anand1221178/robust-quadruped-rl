@@ -1,0 +1,12 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  enabled: false
+experiment:
+  description: PPO with SR2L only
+  name: ppo_sr2l
+sr2l:
+  enabled: true
+  lambda: 0.01
+  perturbation_std: 0.05
