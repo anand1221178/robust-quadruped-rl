@@ -135,3 +135,107 @@ def train(config:dict):
     print(f"Save path: {save_path}")
     print("="*60 + "\n")
 
+    #setting up the callbalcs
+    callbacks = []
+    if logging_config.get('wandb',False):
+        callbacks.append(WandbCallback(
+            gradient_save_freq=1000,
+            model_save_path=f"{save_path}/models",
+            verbose=2,
+        ))
+
+    #Keeping track of checkpoints
+    callbacks.append(CheckpointCallback(
+        save_freq=train_config.get('save_freq', 50000),
+        save_path=f"{save_path}/checkpoints",
+        name_prefix="model",
+        save_replay_buffer=False,
+        save_vecnormalize=True,
+    ))
+
+    #Eval Callback
+    callbacks.append(EvalCallback(
+        eval_env,
+        best_model_save_path=f"{save_path}/best_model",
+        log_path= f"{save_path}/eval",
+        eval_freq=train_config.get('eval_freq',10000),
+        n_eval_episodes=10,
+        deterministic=True,
+        render=False,
+    ))
+
+    #===== MAIN TRAINING =======#
+    print("Starting training.....")
+    try:
+        model.learn(
+            total_timesteps=train_config.get("total_timesteps",1000000),
+            callback=callbacks,
+            progress_bar=True,
+        )
+        #Savefinal model
+        model.save(f"{save_path}/final_model")
+        env.save(f"{save_path}/vec_normalize.pkl")
+
+        print(f"\n✅ Training complete! Results saved to {save_path}")
+    except KeyboardInterrupt:
+        print("\n⚠️  Training interrupted! Saving current model...")
+        model.save(f"{save_path}/interrupted_model")
+        env.save(f"{save_path}/vec_normalize.pkl")
+    
+    finally:
+        if logging_config.get('wandb', False):
+            wandb.finish()
+        env.close()
+        eval_env.close()
+    
+### ======= main def ======= ###
+    """Main entry with arg passing"""
+    parser = argparse.ArgumentParser(description='Train RL agent with config')
+    parser.add_argument('--config', type=str, required=True, help='Path to experiment config file')
+    parser.add_argument('--override',nargs='*', default=[],help='Override config params (e.g. train_total_timesteps = 10000)')
+
+    args = parser.parse_args()
+
+    """Load base config"""
+    config={}
+
+    """Load experiment configs -> specifies which other configs to use"""
+    exp_config = load_config(args.config)
+
+    """Load additional configs"""
+    if 'defaults' in exp_config:
+        for default_config in exp_config['defaults']:
+            """Convert to path"""
+            config_path = f"configs{default_config}.yaml"
+            if os.path.exists(config_path):
+                sub_config = load_config(config_path)
+                config = merge_configs(config, sub_config)
+
+    """Apply experiment specific config"""
+    config = merge_configs(config, exp_config) #Call helper function defined to merge 2 or more configs
+
+    """Command line overrides"""
+    for override in args.override:
+        key,value = override.split('=')
+        keys = key.split('.')
+
+        current = config
+        for k in keys[:-1]:
+            if k not in current:
+                current[k] = {}
+            current = current[k]
+        try:
+            current[keys[-1]] = float(value) if '.' in value else int(value)
+        except ValueError:
+            current[keys[-1]] = value
+    
+    """TRAIN WITH CONFIG"""
+    train(config)
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        print("Usage examples:")
+        print("  python train.py --config configs/experiments/ppo_baseline.yaml")
+        print("  python train.py --config configs/experiments/ppo_baseline.yaml --override train.total_timesteps=10000")
+    else:
+        main()
