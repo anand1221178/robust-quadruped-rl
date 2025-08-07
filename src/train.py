@@ -178,7 +178,7 @@ def train(config:dict):
 
         print(f"\n✅ Training complete! Results saved to {save_path}")
     except KeyboardInterrupt:
-        print("\n⚠️  Training interrupted! Saving current model...")
+        print("\n!  Training interrupted! Saving current model...")
         model.save(f"{save_path}/interrupted_model")
         env.save(f"{save_path}/vec_normalize.pkl")
     
@@ -189,6 +189,7 @@ def train(config:dict):
         eval_env.close()
     
 ### ======= main def ======= ###
+def main():
     """Main entry with arg passing"""
     parser = argparse.ArgumentParser(description='Train RL agent with config')
     parser.add_argument('--config', type=str, required=True, help='Path to experiment config file')

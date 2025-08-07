@@ -4,8 +4,8 @@ logging:
   tensorboard: true
   verbose: 1
   wandb: true
-  wandb_project : "robust-quadraped-rl"
-  wandb_entity : "anandpatel1221178"
+  wandb_project : "robust-quadruped-rl"
+  wandb_entity : "anandpatel1221178-university-of-the-witswatersrand"
 num_envs: 8
 policy:
   activation: relu
