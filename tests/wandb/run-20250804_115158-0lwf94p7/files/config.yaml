@@ -1,0 +1,42 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            bp3yzik9uqj75iejao12k8v0hez24fkw:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 20
+                    memoryGb: 24
+                    name: Apple M4 Pro
+                    pcpuCores: 10
+                    ramTotalBytes: "25769803776"
+                    swapTotalBytes: "3221225472"
+                codePath: test_wandb_setup.py
+                codePathLocal: test_wandb_setup.py
+                cpu_count: 14
+                cpu_count_logical: 14
+                disk:
+                    /:
+                        total: "494384795648"
+                        used: "132287467520"
+                email: anandpatel1221178@gmail.com
+                executable: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/venv/bin/python
+                host: Anands-MacBook-Pro.local
+                memory:
+                    total: "25769803776"
+                os: macOS-26.0-arm64-arm-64bit
+                program: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests/test_wandb_setup.py
+                python: CPython 3.12.10
+                root: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests
+                startedAt: "2025-08-04T09:51:58.595268Z"
+                writerId: bp3yzik9uqj75iejao12k8v0hez24fkw
+        m: []
+        python_version: 3.12.10
+        t:
+            "3":
+                - 2
+                - 13
+            "4": 3.12.10
+            "5": 0.21.0
+            "12": 0.21.0
+            "13": darwin-arm64

@@ -9,20 +9,32 @@ venv/
 ENV/
 .venv
 
-# Experiments
-experiments/*/
-*.log
-*.pkl
-*.npy
+# Large experiment files (keep these out - they're huge!)
+experiments/*/checkpoints/
+experiments/*/tensorboard/
+experiments/*/models/*.zip
+experiments/*/vec_normalize.pkl
 *.pt
 *.pth
+
+# But DO track experiment configs and results
+!experiments/*/config.yaml
+!experiments/*/eval/
+!experiments/*/action_analysis.png
+!experiments/*/robot_demo.mp4
+
+# Logs (these can be large)
+*.log
+wandb/offline-run-*
+wandb/run-*/files/
+wandb/run-*/logs/
+
+# But keep wandb run info
+!wandb/run-*/run-*.wandb
 
 # Tensorboard
 runs/
 tensorboard/
-
-# Weights & Biases
-wandb/
 
 # IDE
 .vscode/
@@ -38,5 +50,6 @@ Thumbs.db
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Config overrides (local testing)
-configs/local/
+# Temporary files
+*.tmp
+*.bak

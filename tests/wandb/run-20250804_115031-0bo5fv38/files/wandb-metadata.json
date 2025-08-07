@@ -1,0 +1,13 @@
+{
+  "os":  "macOS-26.0-arm64-arm-64bit",
+  "python":  "CPython 3.12.10",
+  "startedAt":  "2025-08-04T09:50:31.251030Z",
+  "program":  "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests/test_wandb_setup.py",
+  "codePath":  "test_wandb_setup.py",
+  "codePathLocal":  "test_wandb_setup.py",
+  "email":  "anandpatel1221178@gmail.com",
+  "root":  "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests",
+  "host":  "Anands-MacBook-Pro.local",
+  "executable":  "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/venv/bin/python",
+  "writerId":  "yg1jro6ttm9z7yzg0yhqk8e5eorzw8ns"
+}

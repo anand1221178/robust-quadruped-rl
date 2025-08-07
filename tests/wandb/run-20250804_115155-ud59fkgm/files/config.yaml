@@ -1,0 +1,34 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            pregds8jm69nqz78p2s0olu6eyd9m93u:
+                codePath: test_wandb_setup.py
+                codePathLocal: test_wandb_setup.py
+                email: anandpatel1221178@gmail.com
+                executable: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/venv/bin/python
+                host: Anands-MacBook-Pro.local
+                os: macOS-26.0-arm64-arm-64bit
+                program: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests/test_wandb_setup.py
+                python: CPython 3.12.10
+                root: /Users/anandpatel/Documents/4th Year/robust-quadruped-rl/tests
+                startedAt: "2025-08-04T09:51:55.100956Z"
+                writerId: pregds8jm69nqz78p2s0olu6eyd9m93u
+        m: []
+        python_version: 3.12.10
+        t:
+            "3":
+                - 2
+                - 13
+                - 15
+                - 16
+            "4": 3.12.10
+            "5": 0.21.0
+            "12": 0.21.0
+            "13": darwin-arm64
+env_name:
+    value: Ant-v4
+max_steps:
+    value: 100
+num_episodes:
+    value: 3

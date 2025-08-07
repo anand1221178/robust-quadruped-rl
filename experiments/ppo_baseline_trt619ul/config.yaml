@@ -1,0 +1,55 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  enabled: false
+env:
+  action:
+    dim: 8
+    type: continuous
+  episode:
+    early_termination: true
+    max_steps: 500
+  name: Ant-v4
+  obs:
+    include_contact: true
+    include_joint_pos: true
+    include_joint_vel: true
+    include_orientation: true
+  render: false
+  reward:
+    alive_bonus: 0.1
+    ctrl_cost_weight: 0.01
+    forward_weight: 1.0
+eval_freq: 10000
+experiment:
+  description: PPO baseline without DR or SR2L
+  name: ppo_baseline
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 50000
+seed: 42
+sr2l:
+  enabled: false
+total_timesteps: 10000
