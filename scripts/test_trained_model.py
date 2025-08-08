@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 
 def find_latest_model():
     """Find the most recent experiment"""
-    experiment_dirs = glob.glob("experiments/ppo_baseline_*/")
+    experiment_dirs = glob.glob("experiments/ppo_*/")
     if not experiment_dirs:
         print("No experiments found!")
         return None
@@ -38,41 +38,50 @@ def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5
     # Load the model
     model = PPO.load(model_path)
     
-    # Create environment
-    env = gym.make('Ant-v4', render_mode='human' if render else 'rgb_array')
-    
-    # If we have normalization stats, create normalized env
+    # Create environment based on whether we have normalization
     if vec_normalize_path and os.path.exists(vec_normalize_path):
-        env = DummyVecEnv([lambda: env])
+        # Create VecEnv for normalized environment
+        def make_env():
+            return gym.make('Ant-v4', render_mode='human' if render else 'rgb_array')
+        
+        env = DummyVecEnv([make_env])
         env = VecNormalize.load(vec_normalize_path, env)
         env.training = False  # Don't update stats during testing
         env.norm_reward = False  # Don't normalize rewards during testing
         print("Loaded normalization stats")
+        use_vecenv = True
+    else:
+        # Regular Gym environment
+        env = gym.make('Ant-v4', render_mode='human' if render else 'rgb_array')
+        use_vecenv = False
     
     # Test metrics
     all_rewards = []
     all_lengths = []
     
     for episode in range(num_episodes):
-        obs = env.reset()
+        # Reset based on environment type
+        if use_vecenv:
+            obs = env.reset()  # VecEnv API: returns only obs
+        else:
+            obs, info = env.reset()  # Gym API: returns (obs, info)
+        
         total_reward = 0
         steps = 0
         
         while True:
             # Get action from model
-            if vec_normalize_path:
-                action, _ = model.predict(obs, deterministic=True)
+            action, _ = model.predict(obs, deterministic=True)
+            
+            # Step environment
+            if use_vecenv:
+                obs, reward, done, info = env.step(action)
+                # Extract scalar values from arrays
+                reward = reward[0] if isinstance(reward, np.ndarray) else reward
+                done = done[0] if isinstance(done, np.ndarray) else done
             else:
-                action, _ = model.predict(obs[0] if isinstance(obs, tuple) else obs, deterministic=True)
-            
-            # Step
-            obs, reward, done, info = env.step(action)
-            
-            # Extract scalar values if they're arrays
-            if isinstance(reward, np.ndarray):
-                reward = reward[0]
-            if isinstance(done, np.ndarray):
-                done = done[0]
+                obs, reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
                 
             total_reward += reward
             steps += 1
@@ -101,31 +110,41 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
     # Load model
     model = PPO.load(model_path)
     
-    # Create environment with rendering
-    env = gym.make('Ant-v4', render_mode='rgb_array')
-    
-    # If we have normalization stats, use them
+    # Create environment based on whether we have normalization
     if vec_normalize_path and os.path.exists(vec_normalize_path):
-        env = DummyVecEnv([lambda: env])
+        # Create VecEnv for video recording
+        def make_env():
+            return gym.make('Ant-v4', render_mode='rgb_array')
+        
+        env = DummyVecEnv([make_env])
         env = VecNormalize.load(vec_normalize_path, env)
         env.training = False
         env.norm_reward = False
+        use_vecenv = True
+    else:
+        env = gym.make('Ant-v4', render_mode='rgb_array')
+        use_vecenv = False
     
     # Video settings
     fps = 30
     frames = []
     
     # Reset
-    obs = env.reset()
+    if use_vecenv:
+        obs = env.reset()
+    else:
+        obs, info = env.reset()
     
     # Record one episode
     for _ in range(1000):  # Max 1000 steps (10 seconds at 100Hz)
         action, _ = model.predict(obs, deterministic=True)
-        obs, reward, done, info = env.step(action)
         
-        # Handle different return formats
-        if isinstance(done, np.ndarray):
-            done = done[0]
+        if use_vecenv:
+            obs, reward, done, info = env.step(action)
+            done = done[0] if isinstance(done, np.ndarray) else done
+        else:
+            obs, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
         
         # Render and save frame  
         frame = env.render()
@@ -150,6 +169,8 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
         out.release()
         print(f"Video saved as: {video_name}")
         print(f"Duration: {len(frames)/fps:.1f} seconds")
+    else:
+        print("No frames captured for video!")
 
 def evaluate_with_metrics(model_path, vec_normalize_path=None):
     """Evaluate using your success metrics"""
@@ -161,13 +182,26 @@ def evaluate_with_metrics(model_path, vec_normalize_path=None):
     # Load model
     model = PPO.load(model_path)
     
-    # Create evaluator
+    # For metrics evaluation, we'll use the raw environment
+    # since MetricsEvaluator expects a regular Gym env
     evaluator = MetricsEvaluator()
     
-    # Define policy function
-    def policy_fn(obs):
-        action, _ = model.predict(obs, deterministic=True)
-        return action
+    # Define policy function that handles normalization if needed
+    if vec_normalize_path and os.path.exists(vec_normalize_path):
+        # Load normalization stats for manual normalization
+        dummy_env = DummyVecEnv([lambda: gym.make('Ant-v4')])
+        vec_norm = VecNormalize.load(vec_normalize_path, dummy_env)
+        vec_norm.training = False
+        
+        def policy_fn(obs):
+            # Normalize observation
+            norm_obs = vec_norm.normalize_obs(obs)
+            action, _ = model.predict(norm_obs, deterministic=True)
+            return action
+    else:
+        def policy_fn(obs):
+            action, _ = model.predict(obs, deterministic=True)
+            return action
     
     # Evaluate with reasonable number of episodes
     results = evaluator.evaluate_batch(n_episodes=100, policy=policy_fn)
@@ -218,8 +252,11 @@ def main():
     checkpoint_files = glob.glob(os.path.join(exp_dir, "checkpoints", "*.zip"))
     if checkpoint_files:
         # Get the latest checkpoint by step number
-        checkpoint_files.sort(key=lambda x: int(x.split('_')[-2]))
-        model_candidates.extend(checkpoint_files[-3:])  # Add last 3 checkpoints
+        try:
+            checkpoint_files.sort(key=lambda x: int(x.split('_')[-2]))
+            model_candidates.extend(checkpoint_files[-3:])  # Add last 3 checkpoints
+        except:
+            pass  # If filename format is different
     
     # Find first existing model
     model_to_test = None

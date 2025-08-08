@@ -44,26 +44,29 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Custom reward based on YOUR success metrics
         custom_reward = 0.0
         
-        # 1. Velocity reward - PENALIZE going too fast!
+        # 1. Velocity reward - encourage forward movement
         if self.MIN_VELOCITY <= instant_velocity <= self.MAX_VELOCITY:
             # Perfect range - full reward
-            custom_reward += 1.0
-        elif instant_velocity < self.MIN_VELOCITY:
-            # Too slow - partial reward
-            custom_reward += instant_velocity / self.MIN_VELOCITY
-        else:
-            # TOO FAST - penalty!
+            custom_reward += 2.0  # Increased reward for moving
+        elif 0 < instant_velocity < self.MIN_VELOCITY:
+            # Too slow but moving forward - partial reward
+            custom_reward += 1.0 + (instant_velocity / self.MIN_VELOCITY)
+        elif instant_velocity > self.MAX_VELOCITY:
+            # Too fast - slight penalty
             excess_speed = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 1.0 - (excess_speed * 0.5)  # Penalty for excess speed
+            custom_reward += 2.0 - (excess_speed * 0.1)  # Reduced penalty
+        else:
+            # Backward or stationary - penalty
+            custom_reward += instant_velocity  # Negative if moving backward
         
         # 2. Stability bonus (reduce jumping/flipping)
         # Penalize large vertical movements
         z_position = self.env.unwrapped.data.qpos[2]  # vertical position
-        if abs(z_position - 0.75) > 0.2:  # Ant default height ~0.75
-            custom_reward -= 0.1  # Penalty for jumping
+        if abs(z_position - 0.75) > 0.3:  # Increased tolerance for natural gait
+            custom_reward -= 0.05  # Reduced penalty
         
-        # 3. Survival bonus (small, just to stay alive)
-        custom_reward += 0.1
+        # 3. Survival bonus (smaller to not dominate)
+        custom_reward += 0.05
         
         # 4. Success bonus at milestone
         if self.step_count >= self.TIME_THRESHOLD and distance_traveled >= self.DISTANCE_THRESHOLD:
@@ -74,7 +77,7 @@ class SuccessRewardWrapper(gym.Wrapper):
             custom_reward -= 10.0
         
         # 6. Control cost (penalize wild movements)
-        control_cost = 0.05 * np.square(action).sum()
+        control_cost = 0.01 * np.square(action).sum()  # Much smaller penalty
         custom_reward -= control_cost
         
         self.previous_x_position = current_x_position
