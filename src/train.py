@@ -25,6 +25,9 @@ from stable_baselines3.common.monitor import Monitor
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
+#Custom success wrapper
+from envs.success_reward_wrapper import SuccessRewardWrapper
+
 # Suppress deprecation warning
 warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of date.*")
 
@@ -45,8 +48,9 @@ def merge_configs(*configs):
     return result
 
 
-def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = True):
-    """Create environment based on config"""
+"""Below used base ants reward - it started sprinting"""
+"""def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = True):
+    Create environment based on config
     env_name = env_config['env']['name']
     
     def make_env():
@@ -59,8 +63,33 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     if normalize:
         env = VecNormalize(env, norm_obs=True, norm_reward=norm_reward, clip_obs=10.)
     
-    return env
+    return env"""
 
+
+def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = True):
+    """Create environment based on config"""
+    env_name = env_config['env']['name']
+    
+    # Check if we should use success reward wrapper
+    use_success_reward = env_config.get('use_success_reward', False)
+    
+    def make_env():
+        env = gym.make(env_name)
+        
+        # Apply success reward wrapper if enabled
+        if use_success_reward:
+            print("Using Success Reward Wrapper - Training for calm walking!")
+            env = SuccessRewardWrapper(env)
+            
+        env = Monitor(env)
+        return env
+    
+    env = DummyVecEnv([make_env])
+    
+    if normalize:
+        env = VecNormalize(env, norm_obs=True, norm_reward=norm_reward, clip_obs=10.)
+    
+    return env
 
 def train(config: dict):
     """Main training function using config dict"""
