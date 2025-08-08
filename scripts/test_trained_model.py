@@ -30,7 +30,7 @@ def find_latest_model():
     latest = max(experiment_dirs, key=os.path.getmtime)
     return latest
 
-def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=10500):
+def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5):
     """Test a trained model"""
     
     print(f"\nTesting model: {model_path}")
@@ -104,25 +104,35 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
     # Create environment with rendering
     env = gym.make('Ant-v4', render_mode='rgb_array')
     
+    # If we have normalization stats, use them
+    if vec_normalize_path and os.path.exists(vec_normalize_path):
+        env = DummyVecEnv([lambda: env])
+        env = VecNormalize.load(vec_normalize_path, env)
+        env.training = False
+        env.norm_reward = False
+    
     # Video settings
     fps = 30
     frames = []
     
     # Reset
     obs = env.reset()
-    if isinstance(obs, tuple):
-        obs = obs[0]
     
     # Record one episode
-    for _ in range(500):  # Max 500 steps
+    for _ in range(1000):  # Max 1000 steps (10 seconds at 100Hz)
         action, _ = model.predict(obs, deterministic=True)
-        obs, reward, terminated, truncated, info = env.step(action)
+        obs, reward, done, info = env.step(action)
         
-        # Render and save frame
+        # Handle different return formats
+        if isinstance(done, np.ndarray):
+            done = done[0]
+        
+        # Render and save frame  
         frame = env.render()
-        frames.append(frame)
+        if isinstance(frame, np.ndarray):
+            frames.append(frame)
         
-        if terminated or truncated:
+        if done:
             break
     
     env.close()
@@ -141,7 +151,7 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
         print(f"Video saved as: {video_name}")
         print(f"Duration: {len(frames)/fps:.1f} seconds")
 
-def evaluate_with_metrics(model_path):
+def evaluate_with_metrics(model_path, vec_normalize_path=None):
     """Evaluate using your success metrics"""
     
     print("\n" + "="*60)
@@ -159,8 +169,8 @@ def evaluate_with_metrics(model_path):
         action, _ = model.predict(obs, deterministic=True)
         return action
     
-    # Evaluate
-    results = evaluator.evaluate_batch(n_episodes=10500, policy=policy_fn)
+    # Evaluate with reasonable number of episodes
+    results = evaluator.evaluate_batch(n_episodes=100, policy=policy_fn)
     
     print("\nSuccess Metrics:")
     print(f"  Success rate: {results['success_rate']*100:.1f}%")
@@ -178,38 +188,60 @@ def evaluate_with_metrics(model_path):
     elif results['success_rate'] > 0.5:
         print("\n📈 Good progress! Train longer for better results.")
     else:
-        print("\n🔄 Needs more training. 10k steps is just the beginning!")
+        print("\n🔄 Needs more training. 10M steps is good, but might need more!")
 
 def main():
-    # Find latest experiment
-    exp_dir = find_latest_model()
+    # Allow specifying experiment directory
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exp', type=str, help='Specific experiment directory')
+    args = parser.parse_args()
+    
+    if args.exp:
+        exp_dir = args.exp
+    else:
+        exp_dir = find_latest_model()
+    
     if not exp_dir:
         return
     
     print(f"Found experiment: {exp_dir}")
     
-    # Check what models exist
-    final_model = os.path.join(exp_dir, "final_model.zip")
-    best_model = os.path.join(exp_dir, "best_model", "best_model.zip")
-    vec_normalize = os.path.join(exp_dir, "vec_normalize.pkl")
+    # Check what models exist - be flexible about what's available
+    model_candidates = [
+        os.path.join(exp_dir, "best_model", "best_model.zip"),
+        os.path.join(exp_dir, "final_model.zip"),
+        os.path.join(exp_dir, "checkpoints", "model_10000000_steps.zip"),
+    ]
     
-    # Test the best model (or final if no best)
-    if os.path.exists(best_model):
-        model_to_test = best_model
-        print("Testing best model from evaluation")
-    elif os.path.exists(final_model):
-        model_to_test = final_model
-        print("Testing final model")
-    else:
-        print("No model found!")
+    # Also check for any checkpoint
+    checkpoint_files = glob.glob(os.path.join(exp_dir, "checkpoints", "*.zip"))
+    if checkpoint_files:
+        # Get the latest checkpoint by step number
+        checkpoint_files.sort(key=lambda x: int(x.split('_')[-2]))
+        model_candidates.extend(checkpoint_files[-3:])  # Add last 3 checkpoints
+    
+    # Find first existing model
+    model_to_test = None
+    for candidate in model_candidates:
+        if os.path.exists(candidate):
+            model_to_test = candidate
+            break
+    
+    if not model_to_test:
+        print("No model found! Checked:")
+        for c in model_candidates:
+            print(f"  - {c}")
         return
+    
+    vec_normalize = os.path.join(exp_dir, "vec_normalize.pkl")
     
     # Run tests
     print("\n1. Basic Performance Test")
     test_model(model_to_test, vec_normalize, render=False, num_episodes=5)
     
-    print("\n2. Success Metrics Evaluation")
-    evaluate_with_metrics(model_to_test)
+    print("\n2. Success Metrics Evaluation") 
+    evaluate_with_metrics(model_to_test, vec_normalize)
     
     print("\n3. Creating Video")
     video_path = os.path.join(exp_dir, "robot_demo.mp4")
@@ -221,10 +253,14 @@ def main():
     print(f"✓ Model tested: {model_to_test}")
     print(f"✓ Video saved: {video_path}")
     print(f"✓ Check W&B for training curves")
-    print("\nNote: You only trained for 10k steps. For good performance:")
-    print("  - PPO typically needs 500k-1M steps")
-    print("  - Your success rate will improve with more training")
-    print("  - The full 1M step training takes ~2-3 hours")
+    
+    # Check actual training steps from model
+    try:
+        model = PPO.load(model_to_test)
+        if hasattr(model, 'num_timesteps'):
+            print(f"\nModel trained for: {model.num_timesteps:,} steps")
+    except:
+        pass
 
 if __name__ == "__main__":
     main()
