@@ -52,4 +52,6 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.bak
+*.bakwandb/
+experiments/*/checkpoints/
+*.wandb

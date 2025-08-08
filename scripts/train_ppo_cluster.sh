@@ -1,66 +1,109 @@
 #!/bin/bash
-#SBATCH --job-name=ppo_baseline
+
+#SBATCH --job-name=PPO_Train
 #SBATCH --partition=bigbatch
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:1              # Request 1 GPU
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=16
 #SBATCH --time=24:00:00
-#SBATCH --output=logs/slurm_%j.out
-#SBATCH --error=logs/slurm_%j.err
-#SBATCH --mail-user=your-email@wits.ac.za
-#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --output=ppo_%j.out
+#SBATCH --error=ppo_%j.err
 
-# Print job info
-echo "Starting job on $(hostname)"
+echo "========================================================"
+echo "PPO Training on $(hostname)"
 echo "Job ID: $SLURM_JOB_ID"
-echo "Time: $(date)"
+echo "Started at: $(date)"
+echo "========================================================"
 
-# Load required modules (adjust based on your cluster)
-module load python/3.9
-module load cuda/11.8  # Even for CPU, some packages need CUDA
+# Setup paths
+export PATH="/usr/local/cuda-12.6/bin:$HOME/.local/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/cuda-12.6/lib64:$LD_LIBRARY_PATH"
 
-# Create a virtual environment if it doesn't exist
-if [ ! -d "venv_cluster" ]; then
-    echo "Creating virtual environment..."
-    python -m venv venv_cluster
-fi
+# Change to project directory
+cd "/home-mscluster/panand/Research Proj/robust-quadruped-rl" || exit 1
+echo "Working directory: $(pwd)"
 
-# Activate virtual environment
-source venv_cluster/bin/activate
+# Show GPU info
+echo -e "\nGPU Information:"
+nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap --format=csv
 
-# Install dependencies if needed
-echo "Checking dependencies..."
-pip install --upgrade pip
+# Clean up broken venv
+rm -rf venv_gpu
 
-# Install required packages
-pip install torch --index-url https://download.pytorch.org/whl/cu118  # CUDA 11.8 version
-pip install gymnasium stable-baselines3 wandb pyyaml tqdm matplotlib pandas
-pip install mujoco dm-control
+# Use system Python directly
+PYTHON_CMD="/usr/bin/python3"
+echo -e "\nUsing system Python: $PYTHON_CMD"
+$PYTHON_CMD --version
 
-# Verify GPU is available
-python -c "import torch; print(f'GPU available: {torch.cuda.is_available()}'); print(f'GPU device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else None}')"
+# Install pip for user if needed
+echo -e "\nEnsuring pip is available..."
+$PYTHON_CMD -m ensurepip --user 2>/dev/null || {
+    echo "Installing pip manually..."
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    $PYTHON_CMD get-pip.py --user
+    rm get-pip.py
+}
 
-# Export WANDB API key
+# Upgrade pip
+echo -e "\nUpgrading pip..."
+$PYTHON_CMD -m pip install --user --upgrade pip
+
+# Install all packages to user directory
+echo -e "\nInstalling packages to user directory..."
+$PYTHON_CMD -m pip install --user torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+$PYTHON_CMD -m pip install --user gymnasium mujoco dm-control
+$PYTHON_CMD -m pip install --user stable-baselines3[extra]  # This installs tqdm and rich
+$PYTHON_CMD -m pip install --user wandb pyyaml matplotlib pandas numpy scipy
+$PYTHON_CMD -m pip install --user tensorboard imageio
+# Explicitly install tqdm and rich just to be sure
+$PYTHON_CMD -m pip install --user tqdm rich
+
+# Verify installations
+echo -e "\nVerifying installations..."
+$PYTHON_CMD -c "import torch; print(f'PyTorch: {torch.__version__}')" || echo "PyTorch not found"
+$PYTHON_CMD -c "import gymnasium; print(f'Gymnasium: {gymnasium.__version__}')" || echo "Gymnasium not found"
+$PYTHON_CMD -c "import stable_baselines3; print(f'SB3: {stable_baselines3.__version__}')" || echo "SB3 not found"
+$PYTHON_CMD -c "import tqdm; print(f'tqdm: installed')" || echo "tqdm not found"
+$PYTHON_CMD -c "import rich; print(f'rich: installed')" || echo "rich not found"
+
+# Verify GPU access
+echo -e "\nVerifying GPU access..."
+$PYTHON_CMD -c "
+import torch
+print(f'CUDA available: {torch.cuda.is_available()}')
+if torch.cuda.is_available():
+    print(f'GPU name: {torch.cuda.get_device_name(0)}')
+    print(f'GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB')
+"
+
+# Set environment variables
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export CUDA_VISIBLE_DEVICES=0
 export WANDB_API_KEY="2c6287ca2154b2592ecdd4f992f3a1a7fb7649fc"
+export PYTHONPATH="${PWD}:${PYTHONPATH}"
 
-# Set experiment name
-EXPERIMENT="ppo_baseline"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+# Add user site-packages to Python path
+export PYTHONPATH="$HOME/.local/lib/python3.10/site-packages:${PYTHONPATH}"
+
+# Set MuJoCo to use software rendering (no display on cluster)
+export MUJOCO_GL=egl
 
 # Run training
-echo "Starting training..."
-python src/train.py \
-    --config configs/experiments/${EXPERIMENT}.yaml \
+echo -e "\n========================================================"
+echo "Starting PPO training..."
+echo "========================================================"
+
+# Run training
+$PYTHON_CMD src/train.py \
+    --config configs/experiments/ppo_baseline.yaml \
     --override logging.wandb_entity="anandpatel1221178-university-of-the-witswatersrand" \
-    --override logging.wandb_project="robust-quadruped-rl-cluster"
+    --override logging.wandb_project="robust-quadruped-rl"
 
-# Check if training completed successfully
-if [ $? -eq 0 ]; then
-    echo "Training completed successfully!"
-else
-    echo "Training failed with exit code $?"
-fi
+EXITCODE=$?
 
-echo "Job finished at $(date)"
+echo -e "\n========================================================"
+echo "Job finished at: $(date)"
+echo "Exit code: $EXITCODE"
+echo "========================================================"
+
+exit $EXITCODE

@@ -30,7 +30,7 @@ def find_latest_model():
     latest = max(experiment_dirs, key=os.path.getmtime)
     return latest
 
-def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5):
+def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=10500):
     """Test a trained model"""
     
     print(f"\nTesting model: {model_path}")
@@ -160,7 +160,7 @@ def evaluate_with_metrics(model_path):
         return action
     
     # Evaluate
-    results = evaluator.evaluate_batch(n_episodes=10, policy=policy_fn)
+    results = evaluator.evaluate_batch(n_episodes=10500, policy=policy_fn)
     
     print("\nSuccess Metrics:")
     print(f"  Success rate: {results['success_rate']*100:.1f}%")
