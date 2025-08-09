@@ -3,8 +3,7 @@ import numpy as np
 
 class SuccessRewardWrapper(gym.Wrapper):
     """
-    Wraps Ant-v4 to use our custom success metrics as rewards
-    Encourages steady walking at target velocity, not crazy running!
+    Wraps Ant-v4 to encourage SLOW, STEADY walking
     """
     def __init__(self, env):
         super().__init__(env)
@@ -12,19 +11,18 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.previous_x_position = 0
         
-        # Success thresholds from your metrics
-        self.TARGET_VELOCITY = 0.5    # m/s (middle of 0.5-1.0 range)
-        self.MAX_VELOCITY = 0.75        # m/s (increased tolerance)
-        self.MIN_VELOCITY = 0.3        # m/s (lower threshold to encourage movement)
-        self.DISTANCE_THRESHOLD = 1.5  # meters
-        self.TIME_THRESHOLD = 500      # timesteps (5 seconds)
+        # Much stricter velocity constraints
+        self.TARGET_VELOCITY = 0.5      # m/s target
+        self.MAX_VELOCITY = 0.75        # m/s absolute max
+        self.MIN_VELOCITY = 0.2         # m/s minimum
+        self.DISTANCE_THRESHOLD = 1.5   # meters
+        self.TIME_THRESHOLD = 500       # timesteps (5 seconds)
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
         
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
-        # Get initial x position
         self.initial_x_position = self.env.unwrapped.data.qpos[0]
         self.previous_x_position = self.initial_x_position
         self.step_count = 0
@@ -41,49 +39,50 @@ class SuccessRewardWrapper(gym.Wrapper):
         distance_traveled = current_x_position - self.initial_x_position
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # Use a combination of custom and original reward
-        # This helps maintain what the robot already learned
-        custom_reward = original_reward * 0.3  # Keep 30% of original reward
+        # IGNORE original reward completely - it's making the robot run too fast!
+        custom_reward = 0.0
         
-        # 1. Velocity shaping - smooth reward curve
+        # 1. Velocity reward with HARSH penalties for going too fast
         if 0 < instant_velocity <= self.TARGET_VELOCITY:
-            # Linearly increase reward up to target
-            custom_reward += 2.0 * (instant_velocity / self.TARGET_VELOCITY)
+            # Good speed - full reward
+            custom_reward += 1.0 * (instant_velocity / self.TARGET_VELOCITY)
         elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
-            # Maintain high reward in acceptable range
-            custom_reward += 2.0
+            # Acceptable but not ideal
+            custom_reward += 1.0 - 0.5 * ((instant_velocity - self.TARGET_VELOCITY) / (self.MAX_VELOCITY - self.TARGET_VELOCITY))
         elif instant_velocity > self.MAX_VELOCITY:
-            # Gentle penalty for too fast
+            # TOO FAST - heavy penalty that scales with speed
             excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 2.0 - (0.2 * excess)  # Very gentle penalty
+            custom_reward -= excess * 2.0  # -2 reward per m/s over limit!
         else:
-            # Moving backward - proportional penalty
+            # Moving backward
             custom_reward += instant_velocity * 0.5
         
-        # 2. Progress reward (encourage forward movement)
-        custom_reward += distance_traveled * 0.01  # Small constant encouragement
+        # 2. Stability bonus - reward staying low
+        z_position = self.env.unwrapped.data.qpos[2]
+        if 0.5 < z_position < 0.9:  # Good height range
+            custom_reward += 0.1
         
-        # 3. Survival bonus (very small)
+        # 3. Smoothness bonus - penalize jerky movements
+        action_penalty = np.sum(np.abs(action)) * 0.01
+        custom_reward -= action_penalty
+        
+        # 4. Small survival bonus
         if not terminated:
-            custom_reward += 0.01
+            custom_reward += 0.05
         
-        # 4. Success bonus at milestone
+        # 5. Success bonus ONLY if walking slowly
         if (self.step_count >= self.TIME_THRESHOLD and 
             distance_traveled >= self.DISTANCE_THRESHOLD and 
             instant_velocity <= self.MAX_VELOCITY):
-            custom_reward += 20.0  # Big bonus!
+            custom_reward += 10.0
         
-        # 5. Termination penalty
+        # 6. Termination penalty
         if terminated:
-            custom_reward -= 5.0  # Reduced from 10
-        
-        # 6. Very light control cost
-        control_cost = 0.001 * np.square(action).sum()
-        custom_reward -= control_cost
+            custom_reward -= 10.0
         
         self.previous_x_position = current_x_position
         
-        # Log success metrics
+        # Log everything
         info['distance_traveled'] = distance_traveled
         info['current_velocity'] = instant_velocity
         info['custom_reward'] = custom_reward

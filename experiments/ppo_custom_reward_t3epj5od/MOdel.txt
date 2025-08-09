@@ -1,1 +1,55 @@
 THis one ran waayyy too fast
+Testing model: experiments/ppo_custom_reward_t3epj5od/best_model/best_model.zip
+Loaded normalization stats
+Episode 1: Reward = 5607.08, Steps = 1000
+Episode 2: Reward = 6480.50, Steps = 1000
+Episode 3: Reward = 6066.01, Steps = 1000
+Episode 4: Reward = 6051.08, Steps = 1000
+Episode 5: Reward = 6434.77, Steps = 1000
+
+Average reward: 6127.89 ± 316.06
+Average length: 1000 ± 0
+
+2. Success Metrics Evaluation
+
+============================================================
+Evaluating with Success Metrics
+============================================================
+Evaluating 100 episodes...
+  Completed 10/100 episodes
+  Completed 20/100 episodes
+  Completed 30/100 episodes
+  Completed 40/100 episodes
+  Completed 50/100 episodes
+  Completed 60/100 episodes
+  Completed 70/100 episodes
+  Completed 80/100 episodes
+  Completed 90/100 episodes
+  Completed 100/100 episodes
+
+Success Metrics:
+  Success rate: 95.0%
+  Avg distance: 132.53 m
+  Avg velocity: 27.07 m/s
+  Failure rate: 5.0%
+
+Comparison with random policy:
+  Random success rate: ~0%
+  Your success rate: 95.0%
+
+✅ Great! Your robot learned to walk!
+
+3. Creating Video
+
+Creating video...
+Video saved as: experiments/ppo_custom_reward_t3epj5od/robot_demo.mp4
+Duration: 33.3 seconds
+
+============================================================
+Summary
+============================================================
+✓ Model tested: experiments/ppo_custom_reward_t3epj5od/best_model/best_model.zip
+✓ Video saved: experiments/ppo_custom_reward_t3epj5od/robot_demo.mp4
+✓ Check W&B for training curves
+
+Model trained for: 9,880,000 steps

@@ -46,13 +46,6 @@ class MetricsEvaluator:
     def evaluate_episode(self, policy=None, render: bool = False) -> SuccessMetrics:
         """
         Evaluate one episode with given policy (or random if None)
-        
-        Args:
-            policy: Function that takes observation and returns action
-            render: Whether to render the episode
-            
-        Returns:
-            SuccessMetrics object with all measurements
         """
         metrics = SuccessMetrics()
         
@@ -63,7 +56,8 @@ class MetricsEvaluator:
         positions = []
         velocities = []
         stuck_counter = 0
-        last_x_pos = self._get_x_position()
+        initial_x_pos = self._get_x_position()
+        last_x_pos = initial_x_pos
         
         # Episode loop
         done = False
@@ -85,17 +79,16 @@ class MetricsEvaluator:
             metrics.cumulative_reward += reward
             step += 1
             
-            # Track position and velocity
+            # Track position
             current_x = self._get_x_position()
             positions.append(current_x)
             
-            # Calculate velocity (using finite difference)
-            velocity = (current_x - last_x_pos) / self.dt
-            velocities.append(velocity)
+            # Calculate instantaneous velocity (for stuck detection)
+            instant_velocity = (current_x - last_x_pos) / self.dt
             last_x_pos = current_x
             
             # Check if stuck
-            if abs(velocity) < 0.01:  # Nearly stationary
+            if abs(instant_velocity) < 0.01:  # Nearly stationary
                 stuck_counter += 1
             else:
                 stuck_counter = 0
@@ -113,9 +106,11 @@ class MetricsEvaluator:
         metrics.episode_length = step
         metrics.time_standing = step * self.dt
         
-        if positions:
-            metrics.distance_traveled = positions[-1] - positions[0]
-            metrics.avg_velocity = np.mean(velocities)
+        if positions and step > 0:
+            # Calculate AVERAGE velocity over entire episode
+            metrics.distance_traveled = positions[-1] - initial_x_pos
+            total_time = step * self.dt
+            metrics.avg_velocity = metrics.distance_traveled / total_time if total_time > 0 else 0.0
         
         # Check success criteria
         # Success: Travel > 1.5m in 5 seconds with velocity > 0.5 m/s
@@ -125,7 +120,7 @@ class MetricsEvaluator:
             metrics.success_rate = 1.0
         
         return metrics
-    
+
     def _get_x_position(self) -> float:
         """Get x-position of the robot"""
         # For Ant-v4, we need to access the underlying MuJoCo data
