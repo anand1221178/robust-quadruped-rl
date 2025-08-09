@@ -11,10 +11,10 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.previous_x_position = 0
         
-        # Much stricter velocity constraints
+        # More forgiving velocity constraints
         self.TARGET_VELOCITY = 0.5      # m/s target
-        self.MAX_VELOCITY = 0.75        # m/s absolute max
-        self.MIN_VELOCITY = 0.2         # m/s minimum
+        self.MAX_VELOCITY = 1.0         # m/s absolute max (increased!)
+        self.MIN_VELOCITY = 0.1         # m/s minimum (lowered!)
         self.DISTANCE_THRESHOLD = 1.5   # meters
         self.TIME_THRESHOLD = 500       # timesteps (5 seconds)
         
@@ -39,46 +39,45 @@ class SuccessRewardWrapper(gym.Wrapper):
         distance_traveled = current_x_position - self.initial_x_position
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # IGNORE original reward completely - it's making the robot run too fast!
+        # Start with small base reward to encourage ANY movement
         custom_reward = 0.0
         
-        # 1. Velocity reward with HARSH penalties for going too fast
-        if 0 < instant_velocity <= self.TARGET_VELOCITY:
-            # Good speed - full reward
-            custom_reward += 1.0 * (instant_velocity / self.TARGET_VELOCITY)
-        elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
-            # Acceptable but not ideal
-            custom_reward += 1.0 - 0.5 * ((instant_velocity - self.TARGET_VELOCITY) / (self.MAX_VELOCITY - self.TARGET_VELOCITY))
-        elif instant_velocity > self.MAX_VELOCITY:
-            # TOO FAST - heavy penalty that scales with speed
-            excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward -= excess * 2.0  # -2 reward per m/s over limit!
+        # 1. Progressive velocity reward - ALWAYS reward forward movement
+        if instant_velocity > 0:
+            if instant_velocity <= self.TARGET_VELOCITY:
+                # Linear reward up to target
+                custom_reward += 2.0 * (instant_velocity / self.TARGET_VELOCITY)
+            elif instant_velocity <= self.MAX_VELOCITY:
+                # Constant good reward in acceptable range
+                custom_reward += 2.0
+            else:
+                # Gentle taper off for too fast (not harsh penalty)
+                excess = instant_velocity - self.MAX_VELOCITY
+                custom_reward += 2.0 - (excess * 0.5)  # Much gentler!
         else:
-            # Moving backward
-            custom_reward += instant_velocity * 0.5
+            # Small penalty for backward/stationary
+            custom_reward += instant_velocity * 0.2  # Very small penalty
         
-        # 2. Stability bonus - reward staying low
-        z_position = self.env.unwrapped.data.qpos[2]
-        if 0.5 < z_position < 0.9:  # Good height range
-            custom_reward += 0.1
+        # 2. Forward progress bonus (encourage movement!)
+        custom_reward += min(distance_traveled * 0.1, 1.0)  # Cap at 1.0
         
-        # 3. Smoothness bonus - penalize jerky movements
-        action_penalty = np.sum(np.abs(action)) * 0.01
-        custom_reward -= action_penalty
-        
-        # 4. Small survival bonus
+        # 3. Survival bonus (smaller so it doesn't dominate)
         if not terminated:
-            custom_reward += 0.05
+            custom_reward += 0.01
         
-        # 5. Success bonus ONLY if walking slowly
+        # 4. Milestone bonus
         if (self.step_count >= self.TIME_THRESHOLD and 
             distance_traveled >= self.DISTANCE_THRESHOLD and
             instant_velocity <= self.MAX_VELOCITY):
-            custom_reward += 10.0
+            custom_reward += 5.0  # Reduced from 10
         
-        # 6. Termination penalty
+        # 5. Termination penalty (smaller)
         if terminated:
-            custom_reward -= 10.0
+            custom_reward -= 5.0
+        
+        # 6. REMOVE action penalty - let it move freely!
+        # action_penalty = np.sum(np.abs(action)) * 0.01
+        # custom_reward -= action_penalty
         
         self.previous_x_position = current_x_position
         
