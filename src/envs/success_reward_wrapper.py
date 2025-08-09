@@ -72,7 +72,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         
         # 5. Success bonus ONLY if walking slowly
         if (self.step_count >= self.TIME_THRESHOLD and 
-            distance_traveled >= self.DISTANCE_THRESHOLD and 
+            distance_traveled >= self.DISTANCE_THRESHOLD and
             instant_velocity <= self.MAX_VELOCITY):
             custom_reward += 10.0
         
@@ -82,7 +82,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         
         self.previous_x_position = current_x_position
         
-        # Log everything
+        # Log everything for monitoring
         info['distance_traveled'] = distance_traveled
         info['current_velocity'] = instant_velocity
         info['custom_reward'] = custom_reward
@@ -92,5 +92,11 @@ class SuccessRewardWrapper(gym.Wrapper):
             distance_traveled >= self.DISTANCE_THRESHOLD and
             instant_velocity <= self.MAX_VELOCITY
         )
+        
+        # Add custom metrics for W&B logging
+        info['custom_metrics/instant_velocity'] = instant_velocity
+        info['custom_metrics/distance_traveled'] = distance_traveled
+        info['custom_metrics/is_walking_slowly'] = instant_velocity <= self.MAX_VELOCITY
+        info['custom_metrics/speed_penalty'] = max(0, instant_velocity - self.MAX_VELOCITY)
         
         return obs, custom_reward, terminated, truncated, info

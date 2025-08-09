@@ -27,6 +27,7 @@ from wandb.integration.sb3 import WandbCallback
 
 #Custom success wrapper
 from envs.success_reward_wrapper import SuccessRewardWrapper
+from utils.custom_callbacks import CustomMetricsCallback
 
 # Suppress deprecation warning
 warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of date.*")
@@ -95,7 +96,6 @@ def train(config: dict):
     """Main training function using config dict"""
     
     # The config dict already has all the settings merged
-    # No need to extract sub-configs
     experiment_config = config.get('experiment', {})
     
     # Initialize W&B if enabled
@@ -122,18 +122,20 @@ def train(config: dict):
     
     # Create environments
     env_name = config.get('env', {}).get('name', 'Ant-v4')
+    use_success_reward = config.get('env', {}).get('use_success_reward', False)
     print(f"Creating environment: {env_name}")
+    if use_success_reward:
+        print("With custom success reward wrapper")
     
     # Create env config dict for the create_env function
     env_config_dict = {'env': config.get('env', {'name': env_name})}
     env = create_env(env_config_dict, normalize=True)
-    # IMPORTANT: Eval env must also be normalized for sync to work, but without reward normalization
     eval_env = create_env(env_config_dict, normalize=True, norm_reward=False)
     
     # Define network architecture
     policy_kwargs = dict(
         net_arch=config.get('policy', {}).get('hidden_sizes', [64, 128]),
-        activation_fn=nn.ReLU,  # Use torch.nn.ReLU directly
+        activation_fn=nn.ReLU,
     )
     
     # Create PPO model with config parameters
@@ -178,6 +180,11 @@ def train(config: dict):
             model_save_path=f"{save_path}/models",
             verbose=2,
         ))
+    
+    # Add custom metrics callback if using success reward
+    if use_success_reward:
+        print("Adding CustomMetricsCallback for success reward tracking")
+        callbacks.append(CustomMetricsCallback())
     
     # Checkpoint callback
     callbacks.append(CheckpointCallback(
