@@ -53,3 +53,6 @@ Summary
 ✓ Check W&B for training curves
 
 Model trained for: 9,880,000 steps
+
+
+May have not used custom reward

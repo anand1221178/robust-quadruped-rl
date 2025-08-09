@@ -71,15 +71,15 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     """Create environment based on config"""
     env_name = env_config['env']['name']
     
-    # Check if we should use success reward wrapper
-    use_success_reward = env_config.get('use_success_reward', False)
+    # Check if we should use success reward wrapper - FIX THIS LINE
+    use_success_reward = env_config['env'].get('use_success_reward', False)
     
     def make_env():
         env = gym.make(env_name)
         
         # Apply success reward wrapper if enabled
         if use_success_reward:
-            print("Using Success Reward Wrapper - Training for calm walking!")
+            print("✅ Using Success Reward Wrapper - Training for calm walking!")
             env = SuccessRewardWrapper(env)
             
         env = Monitor(env)
@@ -91,7 +91,6 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         env = VecNormalize(env, norm_obs=True, norm_reward=norm_reward, clip_obs=10.)
     
     return env
-
 def train(config: dict):
     """Main training function using config dict"""
     
