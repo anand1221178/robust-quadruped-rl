@@ -1,4 +1,5 @@
 from stable_baselines3.common.callbacks import BaseCallback
+import numpy as np
 
 class CustomMetricsCallback(BaseCallback):
     """
