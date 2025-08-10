@@ -129,6 +129,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         info['custom_metrics/instant_velocity'] = instant_velocity
         info['custom_metrics/distance_traveled'] = distance_traveled
         info['custom_metrics/is_walking_slowly'] = instant_velocity <= self.MAX_VELOCITY
+        info['custom_metrics/speed_penalty'] = max(0, instant_velocity - self.MAX_VELOCITY)
         info['custom_metrics/height'] = z_position
         info['custom_metrics/gait_quality'] = action_change if 'action_change' in locals() else 0
         
