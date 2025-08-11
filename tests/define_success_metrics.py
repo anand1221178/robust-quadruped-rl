@@ -10,6 +10,9 @@ import time
 import warnings
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
+import sys
+sys.path.append('src')  # Add src to path for RealAnt environments
+import realant_sim  # Import RealAnt environments
 
 # Suppress Ant-v4 deprecation warning
 warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of date.*")
@@ -39,9 +42,9 @@ class SuccessMetrics:
 class MetricsEvaluator:
     """Evaluates robot performance according to success criteria"""
     
-    def __init__(self, env_name: str = 'Ant-v4'):
+    def __init__(self, env_name: str = 'RealAntMujoco-v0'):
         self.env = gym.make(env_name)
-        self.dt = 0.01  # Timestep (10ms for Ant-v4)
+        self.dt = 0.01  # Timestep (10ms for RealAnt, same as Ant-v4)
         
     def evaluate_episode(self, policy=None, render: bool = False) -> SuccessMetrics:
         """

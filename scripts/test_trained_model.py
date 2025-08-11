@@ -15,7 +15,9 @@ import warnings
 # Add path to import your metrics
 import sys
 sys.path.append('tests')
+sys.path.append('src')  # Add src to path for RealAnt environments
 from define_success_metrics import MetricsEvaluator
+import realant_sim  # Import RealAnt environments
 
 warnings.filterwarnings("ignore")
 
@@ -42,7 +44,9 @@ def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5
     if vec_normalize_path and os.path.exists(vec_normalize_path):
         # Create VecEnv for normalized environment
         def make_env():
-            return gym.make('Ant-v4', render_mode='human' if render else 'rgb_array')
+            # Check if model was trained with RealAnt or Ant-v4
+            # You can detect this from config or just use RealAnt by default now
+            return gym.make('RealAntMujoco-v0', render_mode='human' if render else 'rgb_array')
         
         env = DummyVecEnv([make_env])
         env = VecNormalize.load(vec_normalize_path, env)
@@ -52,7 +56,7 @@ def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5
         use_vecenv = True
     else:
         # Regular Gym environment
-        env = gym.make('Ant-v4', render_mode='human' if render else 'rgb_array')
+        env = gym.make('RealAntMujoco-v0', render_mode='human' if render else 'rgb_array')
         use_vecenv = False
     
     # Test metrics
@@ -114,7 +118,7 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
     if vec_normalize_path and os.path.exists(vec_normalize_path):
         # Create VecEnv for video recording
         def make_env():
-            return gym.make('Ant-v4', render_mode='rgb_array')
+            return gym.make('RealAntMujoco-v0', render_mode='rgb_array')
         
         env = DummyVecEnv([make_env])
         env = VecNormalize.load(vec_normalize_path, env)
@@ -122,7 +126,7 @@ def create_video(model_path, vec_normalize_path=None, video_name="robot_walking.
         env.norm_reward = False
         use_vecenv = True
     else:
-        env = gym.make('Ant-v4', render_mode='rgb_array')
+        env = gym.make('RealAntMujoco-v0', render_mode='rgb_array')
         use_vecenv = False
     
     # Video settings
@@ -184,12 +188,13 @@ def evaluate_with_metrics(model_path, vec_normalize_path=None):
     
     # For metrics evaluation, we'll use the raw environment
     # since MetricsEvaluator expects a regular Gym env
+    # Note: MetricsEvaluator needs to be updated if it expects Ant-v4 specifically
     evaluator = MetricsEvaluator()
     
     # Define policy function that handles normalization if needed
     if vec_normalize_path and os.path.exists(vec_normalize_path):
         # Load normalization stats for manual normalization
-        dummy_env = DummyVecEnv([lambda: gym.make('Ant-v4')])
+        dummy_env = DummyVecEnv([lambda: gym.make('RealAntMujoco-v0')])
         vec_norm = VecNormalize.load(vec_normalize_path, dummy_env)
         vec_norm.training = False
         

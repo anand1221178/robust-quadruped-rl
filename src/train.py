@@ -29,6 +29,9 @@ from wandb.integration.sb3 import WandbCallback
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from utils.custom_callbacks import CustomMetricsCallback
 
+# Import RealAnt environments
+import realant_sim
+
 # Suppress deprecation warning
 warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of date.*")
 

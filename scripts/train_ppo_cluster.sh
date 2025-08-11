@@ -85,6 +85,9 @@ export PYTHONPATH="${PWD}:${PYTHONPATH}"
 # Add user site-packages to Python path
 export PYTHONPATH="$HOME/.local/lib/python3.10/site-packages:${PYTHONPATH}"
 
+# Add src directory to PYTHONPATH for RealAnt environments
+export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
+
 # Set MuJoCo to use software rendering (no display on cluster)
 export MUJOCO_GL=egl
 
