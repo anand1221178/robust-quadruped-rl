@@ -79,7 +79,7 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         
         # Apply success reward wrapper if enabled
         if use_success_reward:
-            print("✅ Using Success Reward Wrapper - Training for calm walking!")
+            print("Using Success Reward Wrapper - Training for calm walking!")
             env = SuccessRewardWrapper(env)
             
         env = Monitor(env)
@@ -218,10 +218,10 @@ def train(config: dict):
         model.save(f"{save_path}/final_model")
         env.save(f"{save_path}/vec_normalize.pkl")
         
-        print(f"\n✅ Training complete! Results saved to {save_path}")
+        print(f"\n Training complete! Results saved to {save_path}")
         
     except KeyboardInterrupt:
-        print("\n⚠️  Training interrupted! Saving current model...")
+        print("\n  Training interrupted! Saving current model...")
         model.save(f"{save_path}/interrupted_model")
         env.save(f"{save_path}/vec_normalize.pkl")
     

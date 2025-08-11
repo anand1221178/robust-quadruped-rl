@@ -3,7 +3,7 @@ import numpy as np
 
 class SuccessRewardWrapper(gym.Wrapper):
     """
-    Simplified wrapper to encourage natural walking like DeepMind's
+    Simplified wrapper to encourage natural walking
     """
     def __init__(self, env):
         super().__init__(env)
@@ -11,10 +11,10 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.previous_x_position = 0
         
-        # More realistic targets
-        self.TARGET_VELOCITY = 2.0      # m/s - much more natural walking speed
-        self.MAX_VELOCITY = 3.0         # m/s - allow some flexibility
-        self.MIN_VELOCITY = 0.5         # m/s - need actual movement
+        # targets
+        self.TARGET_VELOCITY = 2.0      # m/s -
+        self.MAX_VELOCITY = 3.0         # m/s -
+        self.MIN_VELOCITY = 0.5         # m/s -
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
@@ -38,10 +38,9 @@ class SuccessRewardWrapper(gym.Wrapper):
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
         # SIMPLE REWARD STRUCTURE - blend original with speed limit
-        # Use 50% of original reward to maintain good walking mechanics
         custom_reward = original_reward * 0.5
         
-        # Add velocity shaping - gentle guidance toward target
+        # Add velocity shaping 
         if 0 < instant_velocity <= self.TARGET_VELOCITY:
             # Reward proportional to velocity up to target
             velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 2.0
@@ -61,7 +60,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         if 0.5 < z_position < 1.0:
             custom_reward += 0.1
         
-        # Small termination penalty
+        # termination penalty
         if terminated:
             custom_reward -= 5.0
         
