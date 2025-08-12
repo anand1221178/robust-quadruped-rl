@@ -49,11 +49,24 @@ def test_model(model_path, vec_normalize_path=None, render=False, num_episodes=5
             return gym.make('RealAntMujoco-v0', render_mode='human' if render else 'rgb_array')
         
         env = DummyVecEnv([make_env])
-        env = VecNormalize.load(vec_normalize_path, env)
-        env.training = False  # Don't update stats during testing
-        env.norm_reward = False  # Don't normalize rewards during testing
-        print("Loaded normalization stats")
-        use_vecenv = True
+        
+        # Try to load VecNormalize, but handle obs space mismatch
+        try:
+            env = VecNormalize.load(vec_normalize_path, env)
+            env.training = False  # Don't update stats during testing
+            env.norm_reward = False  # Don't normalize rewards during testing
+            print("✅ Loaded normalization stats")
+            use_vecenv = True
+        except AssertionError as e:
+            if "spaces must have the same shape" in str(e):
+                print("⚠️  VecNormalize shape mismatch - model trained on different environment")
+                print("   Testing without normalization (results may be inaccurate)")
+                # Use regular env without normalization
+                env.close()
+                env = gym.make('RealAntMujoco-v0', render_mode='human' if render else 'rgb_array')
+                use_vecenv = False
+            else:
+                raise e
     else:
         # Regular Gym environment
         env = gym.make('RealAntMujoco-v0', render_mode='human' if render else 'rgb_array')
