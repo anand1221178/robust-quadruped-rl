@@ -122,8 +122,9 @@ def train(config: dict):
     with open(f"{save_path}/config.yaml", 'w') as f:
         yaml.dump(config, f)
     
-    # Create environments
-    env_name = config.get('env', {}).get('name', 'Ant-v4')
+    # Create environments  
+    print(f"DEBUG: Full config env section: {config.get('env', {})}")
+    env_name = config.get('env', {}).get('name', 'RealAntMujoco-v0')  # Changed default to RealAnt
     use_success_reward = config.get('env', {}).get('use_success_reward', False)
     print(f"Creating environment: {env_name}")
     if use_success_reward:
