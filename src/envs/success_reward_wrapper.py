@@ -56,8 +56,8 @@ class SuccessRewardWrapper(gym.Wrapper):
             # Penalty for backward/stationary
             custom_reward += instant_velocity
         
-        # Height bonus - just maintain reasonable height
-        if 0.5 < z_position < 1.0:
+        # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
+        if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range
             custom_reward += 0.1
         
         # termination penalty

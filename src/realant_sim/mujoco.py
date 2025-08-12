@@ -18,7 +18,7 @@ class AntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         "render_fps": 20,
     }
     
-    def __init__(self, task='walk', latency=0, xyz_noise_std=0.0, rpy_noise_std=0.0, min_obs_stack=1):
+    def __init__(self, task='walk', latency=0, xyz_noise_std=0.0, rpy_noise_std=0.0, min_obs_stack=1, render_mode=None):
         # PID params
         self.Kp = 0.8
         self.Ki = 0
@@ -41,7 +41,7 @@ class AntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # Define observation space (29-dimensional)
         observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(29,), dtype=np.float64)
         
-        mujoco_env.MujocoEnv.__init__(self, f'{dir_path}/mujoco.xml', 5, observation_space)
+        mujoco_env.MujocoEnv.__init__(self, f'{dir_path}/mujoco.xml', 5, observation_space, render_mode=render_mode)
         utils.EzPickle.__init__(self)
 
     def step(self, setpoints):
