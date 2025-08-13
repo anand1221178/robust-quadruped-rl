@@ -14,7 +14,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         # targets
         self.TARGET_VELOCITY = 2.0      # m/s -
         self.MAX_VELOCITY = 3.0         # m/s -
-        self.MIN_VELOCITY = 0.5         # m/s -
+        self.MIN_VELOCITY = 1         # m/s -
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
