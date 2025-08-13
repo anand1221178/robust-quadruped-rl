@@ -27,3 +27,10 @@ env:
   
 # Training for Phase 3 - start with 1M steps for testing
 total_timesteps: 1000000        # Will increase to 10M for full training
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
