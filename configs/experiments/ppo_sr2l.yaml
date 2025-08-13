@@ -1,12 +1,29 @@
 defaults:
-- /train/default
-- /env/realant
+  - /train/sr2l           # Use SR2L training config
+  - /env/realant          # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "PPO with SR2L (Smooth Regularized RL) - Phase 3 of research plan"
+  name: ppo_sr2l
+  tags: 
+    - ppo
+    - sr2l
+    - phase3
+    - smoothness
+
+# Domain randomization disabled (Phase 4)
 domain_randomization:
   enabled: false
-experiment:
-  description: PPO with SR2L only
-  name: ppo_sr2l
+
+# Enable SR2L (this is the main difference from baseline)
 sr2l:
   enabled: true
-  lambda: 0.01
-  perturbation_std: 0.05
+
+# Environment settings
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true      # Keep success wrapper for fair comparison
+  
+# Training for Phase 3 - start with 1M steps for testing
+total_timesteps: 1000000        # Will increase to 10M for full training

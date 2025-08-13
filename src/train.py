@@ -21,6 +21,9 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 
+# SR2L import
+from agents.ppo_sr2l import PPO_SR2L
+
 # Logging
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -141,33 +144,62 @@ def train(config: dict):
         activation_fn=nn.ReLU,
     )
     
-    # Create PPO model with config parameters
-    print("Creating PPO model with config parameters...")
-    model = PPO(
-        "MlpPolicy",
-        env,
-        learning_rate=config.get('ppo', {}).get('learning_rate', 3e-4),
-        n_steps=config.get('ppo', {}).get('n_steps', 2048),
-        batch_size=config.get('ppo', {}).get('batch_size', 2048),
-        n_epochs=config.get('ppo', {}).get('n_epochs', 10),
-        gamma=config.get('ppo', {}).get('gamma', 0.99),
-        gae_lambda=config.get('ppo', {}).get('gae_lambda', 0.95),
-        clip_range=config.get('ppo', {}).get('clip_range', 0.2),
-        ent_coef=config.get('ppo', {}).get('ent_coef', 0.0),
-        vf_coef=config.get('ppo', {}).get('vf_coef', 0.5),
-        max_grad_norm=config.get('ppo', {}).get('max_grad_norm', 0.5),
-        policy_kwargs=policy_kwargs,
-        verbose=config.get('logging', {}).get('verbose', 1),
-        tensorboard_log=f"./tensorboard/{run_id}",
-        seed=config.get('seed', 42),
-    )
+    # Check if SR2L is enabled
+    sr2l_enabled = config.get('sr2l', {}).get('enabled', False)
+    
+    # Create PPO model (with or without SR2L)
+    if sr2l_enabled:
+        print("Creating PPO model with SR2L (Smooth Regularized RL)...")
+        model = PPO_SR2L(
+            "MlpPolicy",
+            env,
+            sr2l_config=config.get('sr2l', {}),
+            learning_rate=config.get('ppo', {}).get('learning_rate', 3e-4),
+            n_steps=config.get('ppo', {}).get('n_steps', 2048),
+            batch_size=config.get('ppo', {}).get('batch_size', 2048),
+            n_epochs=config.get('ppo', {}).get('n_epochs', 10),
+            gamma=config.get('ppo', {}).get('gamma', 0.99),
+            gae_lambda=config.get('ppo', {}).get('gae_lambda', 0.95),
+            clip_range=config.get('ppo', {}).get('clip_range', 0.2),
+            ent_coef=config.get('ppo', {}).get('ent_coef', 0.0),
+            vf_coef=config.get('ppo', {}).get('vf_coef', 0.5),
+            max_grad_norm=config.get('ppo', {}).get('max_grad_norm', 0.5),
+            policy_kwargs=policy_kwargs,
+            verbose=config.get('logging', {}).get('verbose', 1),
+            tensorboard_log=f"./tensorboard/{run_id}",
+            seed=config.get('seed', 42),
+        )
+    else:
+        print("Creating standard PPO model...")
+        model = PPO(
+            "MlpPolicy",
+            env,
+            learning_rate=config.get('ppo', {}).get('learning_rate', 3e-4),
+            n_steps=config.get('ppo', {}).get('n_steps', 2048),
+            batch_size=config.get('ppo', {}).get('batch_size', 2048),
+            n_epochs=config.get('ppo', {}).get('n_epochs', 10),
+            gamma=config.get('ppo', {}).get('gamma', 0.99),
+            gae_lambda=config.get('ppo', {}).get('gae_lambda', 0.95),
+            clip_range=config.get('ppo', {}).get('clip_range', 0.2),
+            ent_coef=config.get('ppo', {}).get('ent_coef', 0.0),
+            vf_coef=config.get('ppo', {}).get('vf_coef', 0.5),
+            max_grad_norm=config.get('ppo', {}).get('max_grad_norm', 0.5),
+            policy_kwargs=policy_kwargs,
+            verbose=config.get('logging', {}).get('verbose', 1),
+            tensorboard_log=f"./tensorboard/{run_id}",
+            seed=config.get('seed', 42),
+        )
     
     # Print configuration
     print("\n" + "="*60)
     print("Training Configuration:")
     print("="*60)
     print(f"Environment: {env_name}")
-    print(f"Algorithm: PPO")
+    algorithm_name = "PPO + SR2L" if sr2l_enabled else "PPO"
+    print(f"Algorithm: {algorithm_name}")
+    if sr2l_enabled:
+        print(f"SR2L lambda: {config.get('sr2l', {}).get('lambda', 0.01)}")
+        print(f"SR2L perturbation std: {config.get('sr2l', {}).get('perturbation_std', 0.05)}")
     print(f"Total timesteps: {config.get('total_timesteps', 1000000):,}")
     print(f"Learning rate: {config.get('ppo', {}).get('learning_rate', 3e-4)}")
     print(f"Network architecture: {config.get('policy', {}).get('hidden_sizes', [64, 128])}")
