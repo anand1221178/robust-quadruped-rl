@@ -520,7 +520,10 @@ class SR2LEvaluator:
         print("\n3. RECORDING COMPARISON VIDEOS")
         print("-" * 40)
         
-        self.record_comparison_videos(env, output_dir)
+        # Create environment with render mode for video recording
+        env_for_video = gym.make('RealAntMujoco-v0', render_mode='rgb_array')
+        self.record_comparison_videos(env_for_video, output_dir)
+        env_for_video.close()
         
         # 4. Generate Plots
         print("\n4. GENERATING VISUALIZATIONS")
