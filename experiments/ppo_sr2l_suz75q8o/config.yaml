@@ -1,0 +1,36 @@
+batch_size: 2048
+clip_range: 0.2
+defaults:
+- /train/sr2l
+- /env/realant
+domain_randomization:
+  enabled: false
+ent_coef: 0.0
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+eval_freq: 10000
+experiment:
+  description: PPO with SR2L (Smooth Regularized RL) - Phase 3 of research plan
+  name: ppo_sr2l
+  tags:
+  - ppo
+  - sr2l
+  - phase3
+  - smoothness
+gae_lambda: 0.95
+gamma: 0.99
+learning_rate: 0.0003
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+max_grad_norm: 0.5
+n_epochs: 10
+n_steps: 2048
+save_freq: 50000
+sr2l:
+  enabled: true
+total_timesteps: 10000000
+vf_coef: 0.5

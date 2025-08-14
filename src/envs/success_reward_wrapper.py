@@ -11,10 +11,10 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.previous_x_position = 0
         
-        # targets
-        self.TARGET_VELOCITY = 2.0      # m/s -
-        self.MAX_VELOCITY = 3.0         # m/s -
-        self.MIN_VELOCITY = 1         # m/s -
+        # targets - More forgiving for initial learning
+        self.TARGET_VELOCITY = 1.0      # m/s - Lower target
+        self.MAX_VELOCITY = 2.5         # m/s - Reasonable max
+        self.MIN_VELOCITY = 0.3         # m/s - Lower minimum to encourage any forward movement
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
@@ -53,11 +53,11 @@ class SuccessRewardWrapper(gym.Wrapper):
             excess = instant_velocity - self.MAX_VELOCITY
             custom_reward += 3.0 - (excess * 0.5)
         elif 0 < instant_velocity < self.MIN_VELOCITY:
-            # Encourage movement but penalize being too slow
-            custom_reward += instant_velocity * 0.5 - 1.0  # Small penalty for being too slow
+            # Encourage any forward movement, gentle penalty for being slow
+            custom_reward += instant_velocity * 1.5 - 0.2  # More encouragement, less penalty
         else:
-            # Strong penalty for backward/stationary movement
-            custom_reward -= 2.0
+            # Penalty for backward/stationary movement
+            custom_reward -= 1.0  # Less harsh penalty
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range
