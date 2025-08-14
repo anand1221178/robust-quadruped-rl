@@ -354,22 +354,51 @@ class SR2LEvaluator:
     
     def _record_single_video(self, model, env, video_path: str, model_name: str, 
                            description: str, max_steps: int, fps: int):
-        """Record a single episode video"""
+        """Record a single episode video with metrics"""
         
         frames = []
         obs, _ = env.reset()
         
+        # Track metrics for display
+        velocities = []
+        total_reward = 0
+        action_changes = []
+        prev_action = None
+        
         for step in range(max_steps):
             # Render frame
             frame = env.render()
-            if frame is not None:
-                # Add text overlay with model info
-                frame_with_text = self._add_text_overlay(frame, model_name, description, step)
-                frames.append(frame_with_text)
             
             # Get action and step
             action, _ = model.predict(obs, deterministic=True)
             obs, reward, done, _, info = env.step(action)
+            
+            # Track metrics
+            total_reward += reward
+            # Velocity is in the observation (indices 0-2 for body velocity)
+            velocity = np.linalg.norm(obs[:3]) if len(obs) >= 3 else 0
+            velocities.append(velocity)
+            
+            if prev_action is not None:
+                action_change = np.linalg.norm(action - prev_action)
+                action_changes.append(action_change)
+            prev_action = action.copy()
+            
+            # Calculate smoothness metric
+            avg_smoothness = np.mean(action_changes) if action_changes else 0
+            
+            if frame is not None:
+                # Add enhanced text overlay with metrics
+                metrics = {
+                    'velocity': velocity,
+                    'avg_velocity': np.mean(velocities),
+                    'total_reward': total_reward,
+                    'action_smoothness': avg_smoothness
+                }
+                frame_with_text = self._add_text_overlay_with_metrics(
+                    frame, model_name, description, step, metrics
+                )
+                frames.append(frame_with_text)
             
             if done:
                 break
@@ -378,29 +407,104 @@ class SR2LEvaluator:
         if frames:
             self._save_video(frames, video_path, fps)
             print(f"    Saved: {video_path} ({len(frames)} frames)")
+            print(f"      Final metrics: Avg velocity={np.mean(velocities):.2f}, Total reward={total_reward:.1f}")
         else:
             print(f"    Failed to record: {video_path} (no frames captured)")
     
-    def _add_text_overlay(self, frame: np.ndarray, model_name: str, description: str, step: int) -> np.ndarray:
-        """Add text overlay to video frame"""
+    def _add_text_overlay_with_metrics(self, frame: np.ndarray, model_name: str, description: str, 
+                                     step: int, metrics: dict) -> np.ndarray:
+        """Add enhanced text overlay with sensor noise info and metrics"""
         frame_with_text = frame.copy()
         height, width = frame.shape[:2]
         
-        # Add text background
+        # Add text background (larger for more metrics)
         overlay = frame_with_text.copy()
-        cv2.rectangle(overlay, (10, 10), (width - 10, 80), (0, 0, 0), -1)
+        cv2.rectangle(overlay, (10, 10), (width - 10, 150), (0, 0, 0), -1)
         frame_with_text = cv2.addWeighted(frame_with_text, 0.7, overlay, 0.3, 0)
+        
+        # Parse sensor noise info from description
+        sensor_info = self._parse_sensor_noise_description(description)
         
         # Add text
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame_with_text, f"Model: {model_name}", (20, 35), 
+        y_pos = 30
+        
+        # Model and condition
+        cv2.putText(frame_with_text, f"Model: {model_name}", (20, y_pos), 
                    font, 0.7, (255, 255, 255), 2)
-        cv2.putText(frame_with_text, f"Condition: {description}", (20, 55), 
+        y_pos += 20
+        
+        cv2.putText(frame_with_text, f"Condition: {sensor_info['condition']}", (20, y_pos), 
                    font, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame_with_text, f"Step: {step}", (width - 150, 35), 
+        y_pos += 20
+        
+        # Sensor noise details
+        if sensor_info['has_noise']:
+            cv2.putText(frame_with_text, f"Sensor Noise:", (20, y_pos), 
+                       font, 0.5, (255, 100, 100), 1)
+            y_pos += 15
+            cv2.putText(frame_with_text, f"  Position: σ={sensor_info['pos_noise']:.3f}", (20, y_pos), 
+                       font, 0.4, (200, 200, 200), 1)
+            y_pos += 12
+            cv2.putText(frame_with_text, f"  Velocity: σ={sensor_info['vel_noise']:.3f}", (20, y_pos), 
+                       font, 0.4, (200, 200, 200), 1)
+            y_pos += 12
+            cv2.putText(frame_with_text, f"  Orientation: σ={sensor_info['ori_noise']:.3f}", (20, y_pos), 
+                       font, 0.4, (200, 200, 200), 1)
+        else:
+            cv2.putText(frame_with_text, "Sensor Noise: None", (20, y_pos), 
+                       font, 0.5, (100, 255, 100), 1)
+        
+        # Real-time metrics (right side)
+        right_x = width - 200
+        y_pos = 30
+        
+        cv2.putText(frame_with_text, f"Step: {step}", (right_x, y_pos), 
                    font, 0.5, (255, 255, 255), 1)
+        y_pos += 20
+        
+        cv2.putText(frame_with_text, f"Velocity: {metrics['velocity']:.2f} m/s", (right_x, y_pos), 
+                   font, 0.4, (100, 255, 255), 1)
+        y_pos += 15
+        
+        cv2.putText(frame_with_text, f"Avg Vel: {metrics['avg_velocity']:.2f} m/s", (right_x, y_pos), 
+                   font, 0.4, (100, 255, 255), 1)
+        y_pos += 15
+        
+        cv2.putText(frame_with_text, f"Reward: {metrics['total_reward']:.1f}", (right_x, y_pos), 
+                   font, 0.4, (255, 255, 100), 1)
+        y_pos += 15
+        
+        cv2.putText(frame_with_text, f"Smoothness: {metrics['action_smoothness']:.3f}", (right_x, y_pos), 
+                   font, 0.4, (255, 150, 255), 1)
         
         return frame_with_text
+    
+    def _parse_sensor_noise_description(self, description: str) -> dict:
+        """Parse sensor noise information from description string"""
+        info = {
+            'condition': description,
+            'has_noise': 'noisy' in description.lower(),
+            'pos_noise': 0.0,
+            'vel_noise': 0.0, 
+            'ori_noise': 0.0
+        }
+        
+        if 'σ=0.05' in description:
+            info['pos_noise'] = 0.05
+            info['vel_noise'] = 0.10  # velocity_std = noise_std * 2
+            info['ori_noise'] = 0.02  # orientation_std = noise_std * 0.4
+        elif 'σ=0.1' in description:
+            info['pos_noise'] = 0.10
+            info['vel_noise'] = 0.20
+            info['ori_noise'] = 0.04
+        
+        return info
+    
+    def _add_text_overlay(self, frame: np.ndarray, model_name: str, description: str, step: int) -> np.ndarray:
+        """Add text overlay to video frame (fallback method)"""
+        metrics = {'velocity': 0, 'avg_velocity': 0, 'total_reward': 0, 'action_smoothness': 0}
+        return self._add_text_overlay_with_metrics(frame, model_name, description, step, metrics)
     
     def _save_video(self, frames: List[np.ndarray], video_path: str, fps: int):
         """Save frames as MP4 video"""
@@ -587,10 +691,10 @@ class SR2LEvaluator:
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluate SR2L effectiveness')
-    parser.add_argument('--baseline_model', type=str, required=True,
-                       help='Path to baseline PPO model (.zip)')
-    parser.add_argument('--sr2l_model', type=str, required=True,
-                       help='Path to PPO+SR2L model (.zip)')
+    parser.add_argument('--baseline_model', type=str, 
+                       help='Path to baseline PPO model (.zip). Use "auto" to find latest custom_reward model')
+    parser.add_argument('--sr2l_model', type=str,
+                       help='Path to PPO+SR2L model (.zip). Use "auto" to find latest SR2L model')
     parser.add_argument('--baseline_norm', type=str, default=None,
                        help='Path to baseline VecNormalize (.pkl)')
     parser.add_argument('--sr2l_norm', type=str, default=None,
@@ -600,11 +704,37 @@ def main():
     
     args = parser.parse_args()
     
+    # Auto-detect models if requested
+    if args.baseline_model == "auto" or args.baseline_model is None:
+        print("Auto-detecting latest custom reward baseline model...")
+        try:
+            baseline_model, baseline_norm = find_latest_model("experiments/*custom_reward*")
+            args.baseline_model = baseline_model
+            if args.baseline_norm is None:
+                args.baseline_norm = baseline_norm
+        except FileNotFoundError:
+            # Fallback to ppo_baseline if no custom_reward found
+            print("No custom_reward model found, looking for ppo_baseline...")
+            baseline_model, baseline_norm = find_latest_model("experiments/ppo_baseline*")
+            args.baseline_model = baseline_model
+            if args.baseline_norm is None:
+                args.baseline_norm = baseline_norm
+    
+    if args.sr2l_model == "auto" or args.sr2l_model is None:
+        print("Auto-detecting latest SR2L model...")
+        sr2l_model, sr2l_norm = find_latest_model("experiments/ppo_sr2l*")
+        args.sr2l_model = sr2l_model
+        if args.sr2l_norm is None:
+            args.sr2l_norm = sr2l_norm
+    
     # Validate model files exist
     if not os.path.exists(args.baseline_model):
         raise FileNotFoundError(f"Baseline model not found: {args.baseline_model}")
     if not os.path.exists(args.sr2l_model):
         raise FileNotFoundError(f"SR2L model not found: {args.sr2l_model}")
+    
+    print(f"Using baseline model: {args.baseline_model}")
+    print(f"Using SR2L model: {args.sr2l_model}")
     
     # Run evaluation
     evaluator = SR2LEvaluator(

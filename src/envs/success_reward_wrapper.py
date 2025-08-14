@@ -40,21 +40,24 @@ class SuccessRewardWrapper(gym.Wrapper):
         # SIMPLE REWARD STRUCTURE - blend original with speed limit
         custom_reward = original_reward * 0.5
         
-        # Add velocity shaping 
-        if 0 < instant_velocity <= self.TARGET_VELOCITY:
-            # Reward proportional to velocity up to target
-            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 2.0
+        # Add velocity shaping with proper incentives
+        if instant_velocity >= self.MIN_VELOCITY and instant_velocity <= self.TARGET_VELOCITY:
+            # Strong reward for target walking speed
+            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 3.0
             custom_reward += velocity_reward
         elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
             # Flat reward in acceptable range
-            custom_reward += 2.0
+            custom_reward += 3.0
         elif instant_velocity > self.MAX_VELOCITY:
             # Gentle penalty for too fast
             excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 2.0 - (excess * 0.3)
+            custom_reward += 3.0 - (excess * 0.5)
+        elif 0 < instant_velocity < self.MIN_VELOCITY:
+            # Encourage movement but penalize being too slow
+            custom_reward += instant_velocity * 0.5 - 1.0  # Small penalty for being too slow
         else:
-            # Penalty for backward/stationary
-            custom_reward += instant_velocity
+            # Strong penalty for backward/stationary movement
+            custom_reward -= 2.0
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range
