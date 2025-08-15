@@ -37,21 +37,21 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Calculate velocity
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # SIMPLE REWARD STRUCTURE - blend original with speed limit
-        custom_reward = original_reward * 0.5
+        # SIMPLE REWARD STRUCTURE - prioritize forward movement
+        custom_reward = original_reward * 0.3  # Reduce base reward importance
         
         # Add velocity shaping with proper incentives
         if instant_velocity >= self.MIN_VELOCITY and instant_velocity <= self.TARGET_VELOCITY:
-            # Strong reward for target walking speed
-            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 3.0
+            # Very strong reward for target walking speed
+            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 5.0
             custom_reward += velocity_reward
         elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
             # Flat reward in acceptable range
-            custom_reward += 3.0
+            custom_reward += 5.0
         elif instant_velocity > self.MAX_VELOCITY:
             # Gentle penalty for too fast
             excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 3.0 - (excess * 0.5)
+            custom_reward += 5.0 - (excess * 0.5)
         elif 0 < instant_velocity < self.MIN_VELOCITY:
             # Encourage any forward movement, gentle penalty for being slow
             custom_reward += instant_velocity * 1.5 - 0.2  # More encouragement, less penalty
