@@ -4,8 +4,8 @@
 
 sr2l:
   enabled: true
-  lambda: 0.005                   # Reduced regularization weight for better speed
-  perturbation_std: 0.03          # Smaller perturbations for finer control 
+  lambda: 0.001                   # MUCH lower regularization - let them walk first!
+  perturbation_std: 0.02          # Very small perturbations 
   apply_frequency: 1              # Apply every N updates (1 = every update)  
   velocity_adaptive: true         # Scale SR2L loss based on walking performance
   

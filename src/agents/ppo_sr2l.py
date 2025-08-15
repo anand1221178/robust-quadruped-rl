@@ -141,7 +141,14 @@ class PPO_SR2L(PPO):
                     self.sr2l_update_counter % self.sr2l_config['apply_frequency'] == 0):
                     
                     sr2l_loss = self.compute_sr2l_loss(rollout_data.observations)
-                    total_loss = ppo_loss + self.sr2l_config['lambda'] * sr2l_loss
+                    
+                    # Adaptive SR2L - reduce regularization if policy is struggling
+                    adaptive_lambda = self.sr2l_config['lambda']
+                    if self.sr2l_config.get('velocity_adaptive', False):
+                        # Scale SR2L based on recent performance - less SR2L if struggling
+                        adaptive_lambda = self.sr2l_config['lambda'] * 0.1  # Much gentler
+                    
+                    total_loss = ppo_loss + adaptive_lambda * sr2l_loss
                     sr2l_loss_value = sr2l_loss.item()
                     sr2l_losses.append(sr2l_loss_value)
 

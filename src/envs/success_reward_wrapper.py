@@ -11,10 +11,10 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.previous_x_position = 0
         
-        # targets - More forgiving for initial learning
-        self.TARGET_VELOCITY = 1.0      # m/s - Lower target
-        self.MAX_VELOCITY = 2.5         # m/s - Reasonable max
-        self.MIN_VELOCITY = 0.3         # m/s - Lower minimum to encourage any forward movement
+        # targets - AGGRESSIVE - FORCE WALKING
+        self.TARGET_VELOCITY = 1.5      # m/s - Higher target for real walking
+        self.MAX_VELOCITY = 3.0         # m/s - Allow faster movement
+        self.MIN_VELOCITY = 0.8         # m/s - FORCE minimum walking speed
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
@@ -37,35 +37,35 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Calculate velocity
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # SIMPLE REWARD STRUCTURE - prioritize forward movement
-        custom_reward = original_reward * 0.3  # Reduce base reward importance
+        # AGGRESSIVE REWARD STRUCTURE - FORCE WALKING OR DIE
+        custom_reward = 0  # Ignore original reward completely - focus on walking
         
-        # Add velocity shaping with proper incentives
+        # EXTREME velocity shaping - walk or get punished
         if instant_velocity >= self.MIN_VELOCITY and instant_velocity <= self.TARGET_VELOCITY:
-            # Very strong reward for target walking speed
-            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 5.0
+            # MASSIVE reward for actual walking
+            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 10.0
             custom_reward += velocity_reward
         elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
-            # Flat reward in acceptable range
-            custom_reward += 5.0
+            # Big reward for fast walking
+            custom_reward += 10.0
         elif instant_velocity > self.MAX_VELOCITY:
-            # Gentle penalty for too fast
+            # Still reward but with penalty for being too fast
             excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 5.0 - (excess * 0.5)
-        elif 0 < instant_velocity < self.MIN_VELOCITY:
-            # Encourage any forward movement, gentle penalty for being slow
-            custom_reward += instant_velocity * 1.5 - 0.2  # More encouragement, less penalty
+            custom_reward += 10.0 - (excess * 1.0)
+        elif 0.1 < instant_velocity < self.MIN_VELOCITY:
+            # HARSH penalty for slow crawling - force them to walk faster
+            custom_reward -= 5.0 * (self.MIN_VELOCITY - instant_velocity)
         else:
-            # Penalty for backward/stationary movement
-            custom_reward -= 1.0  # Less harsh penalty
+            # SEVERE penalty for not moving
+            custom_reward -= 10.0
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range
             custom_reward += 0.1
         
-        # termination penalty
+        # termination penalty - REDUCED (robot learning to walk will fall)
         if terminated:
-            custom_reward -= 5.0
+            custom_reward -= 1.0  # Much gentler penalty
         
         self.previous_x_position = current_x_position
         
