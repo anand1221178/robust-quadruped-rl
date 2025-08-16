@@ -1,0 +1,32 @@
+defaults:
+  - /train/default           # Start with normal PPO training
+  - /env/realant
+
+# Experiment settings
+experiment:
+  description: "Phased SR2L training - First learn to walk, then add smoothness"
+  name: ppo_sr2l_phased
+  tags: 
+    - ppo
+    - sr2l
+    - phased
+    - phase3
+
+# Phase 1: Normal PPO training (no SR2L)
+sr2l:
+  enabled: false             # Start disabled
+
+# Environment settings
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+# Aggressive walking training  
+total_timesteps: 2000000     # 2M steps for learning to walk
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1

@@ -12,9 +12,9 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.previous_x_position = 0
         
         # targets - AGGRESSIVE - FORCE WALKING
-        self.TARGET_VELOCITY = 1.5      # m/s - Higher target for real walking
+        self.TARGET_VELOCITY = 1.0    # m/s - Higher target for real walking
         self.MAX_VELOCITY = 3.0         # m/s - Allow faster movement
-        self.MIN_VELOCITY = 0.8         # m/s - FORCE minimum walking speed
+        self.MIN_VELOCITY = 0.4         # m/s - FORCE minimum walking speed
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01

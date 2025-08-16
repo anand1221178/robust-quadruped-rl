@@ -16,9 +16,14 @@ experiment:
 domain_randomization:
   enabled: false
 
-# Enable SR2L (this is the main difference from baseline)
+# Enable SR2L with GENTLE settings that won't break learning
 sr2l:
   enabled: true
+  lambda: 0.0001                  # VERY gentle regularization
+  perturbation_std: 0.01          # Tiny perturbations
+  warmup_steps: 1000000           # Let it learn to walk for 1M steps first!
+  apply_frequency: 10             # Only apply every 10th update
+  max_perturbation: 0.05          # Limit perturbation size
 
 # Environment settings
 env:
