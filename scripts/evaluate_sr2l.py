@@ -375,8 +375,11 @@ class SR2LEvaluator:
             
             # Track metrics
             total_reward += reward
-            # Velocity is in the observation (indices 0-2 for body velocity)
-            velocity = np.linalg.norm(obs[:3]) if len(obs) >= 3 else 0
+            # Get velocity from wrapper info (correct way)
+            if 'current_velocity' in info:
+                velocity = abs(info['current_velocity'])  # Use wrapper's velocity calculation
+            else:
+                velocity = 0  # Fallback
             velocities.append(velocity)
             
             if prev_action is not None:
@@ -722,7 +725,10 @@ def main():
     
     if args.sr2l_model == "auto" or args.sr2l_model is None:
         print("Auto-detecting latest SR2L model...")
+        # Look for both ppo_sr2l and ppo_sr2l_phased models
         sr2l_model, sr2l_norm = find_latest_model("experiments/ppo_sr2l*")
+        if sr2l_model is None:
+            sr2l_model, sr2l_norm = find_latest_model("experiments/*sr2l*")
         args.sr2l_model = sr2l_model
         if args.sr2l_norm is None:
             args.sr2l_norm = sr2l_norm

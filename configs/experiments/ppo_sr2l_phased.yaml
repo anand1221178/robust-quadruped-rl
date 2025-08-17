@@ -4,7 +4,7 @@ defaults:
 
 # Experiment settings
 experiment:
-  description: "Phased SR2L training - First learn to walk, then add smoothness"
+  description: "Full Phased SR2L training - 4M no SR2L + 6M with SR2L"
   name: ppo_sr2l_phased
   tags: 
     - ppo
@@ -12,17 +12,23 @@ experiment:
     - phased
     - phase3
 
-# Phase 1: Normal PPO training (no SR2L)
+# Phase 1: Normal PPO training (no SR2L for first 4M steps)
+# Phase 2: Enable SR2L for remaining 6M steps
 sr2l:
-  enabled: false             # Start disabled
+  enabled: true
+  lambda: 0.0001                  # Gentle regularization
+  perturbation_std: 0.01          
+  warmup_steps: 4000000           # No SR2L for first 4M steps
+  apply_frequency: 10             
+  max_perturbation: 0.05
 
 # Environment settings
 env:
   name: RealAntMujoco-v0
   use_success_reward: true
 
-# Aggressive walking training  
-total_timesteps: 2000000     # 2M steps for learning to walk
+# Full 10M training - first 4M pure PPO, last 6M with SR2L
+total_timesteps: 10000000
 
 # Enable W&B logging
 logging:
