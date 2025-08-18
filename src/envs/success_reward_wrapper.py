@@ -37,27 +37,28 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Calculate velocity
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # AGGRESSIVE REWARD STRUCTURE - FORCE WALKING OR DIE
-        custom_reward = 0  # Ignore original reward completely - focus on walking
+        # PROGRESSIVE REWARD - Encourage faster walking gradually
+        custom_reward = 0
         
-        # EXTREME velocity shaping - walk or get punished
-        if instant_velocity >= self.MIN_VELOCITY and instant_velocity <= self.TARGET_VELOCITY:
-            # MASSIVE reward for actual walking
-            velocity_reward = (instant_velocity / self.TARGET_VELOCITY) * 10.0
-            custom_reward += velocity_reward
-        elif self.TARGET_VELOCITY < instant_velocity <= self.MAX_VELOCITY:
-            # Big reward for fast walking
-            custom_reward += 10.0
-        elif instant_velocity > self.MAX_VELOCITY:
-            # Still reward but with penalty for being too fast
-            excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward += 10.0 - (excess * 1.0)
-        elif 0.1 < instant_velocity < self.MIN_VELOCITY:
-            # HARSH penalty for slow crawling - force them to walk faster
-            custom_reward -= 5.0 * (self.MIN_VELOCITY - instant_velocity)
+        # Smooth reward curve that encourages speed
+        if instant_velocity <= 0.1:
+            # Not moving - penalty
+            custom_reward = -5.0
+        elif instant_velocity < self.MIN_VELOCITY:
+            # Moving but too slow - small penalty to small reward
+            progress = instant_velocity / self.MIN_VELOCITY
+            custom_reward = -2.0 + (progress * 7.0)  # -2 to +5
+        elif instant_velocity <= self.TARGET_VELOCITY:
+            # Good speed range - strong rewards
+            progress = (instant_velocity - self.MIN_VELOCITY) / (self.TARGET_VELOCITY - self.MIN_VELOCITY)
+            custom_reward = 5.0 + (progress * 10.0)  # +5 to +15
+        elif instant_velocity <= self.MAX_VELOCITY:
+            # Above target but not too fast - maximum reward
+            custom_reward = 15.0
         else:
-            # SEVERE penalty for not moving
-            custom_reward -= 10.0
+            # Too fast - reduce reward
+            excess = instant_velocity - self.MAX_VELOCITY
+            custom_reward = 15.0 - (excess * 2.0)
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range

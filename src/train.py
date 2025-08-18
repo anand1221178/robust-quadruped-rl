@@ -125,13 +125,39 @@ def train(config: dict):
     with open(f"{save_path}/config.yaml", 'w') as f:
         yaml.dump(config, f)
     
+    # Print training configuration header
+    print("\n" + "="*60)
+    print("TRAINING CONFIGURATION")
+    print("="*60)
+    
     # Create environments  
-    print(f"DEBUG: Full config env section: {config.get('env', {})}")
-    env_name = config.get('env', {}).get('name', 'RealAntMujoco-v0')  # Changed default to RealAnt
+    env_name = config.get('env', {}).get('name', 'RealAntMujoco-v0')
     use_success_reward = config.get('env', {}).get('use_success_reward', False)
-    print(f"Creating environment: {env_name}")
+    sr2l_config = config.get('sr2l', {})
+    
+    print(f"Experiment: {experiment_config.get('name', 'unknown')}")
+    print(f"Environment: {env_name}")
+    print(f"Success Reward Wrapper: {'ENABLED' if use_success_reward else 'DISABLED'}")
+    
     if use_success_reward:
-        print("With custom success reward wrapper")
+        print("\nVelocity Targets:")
+        print(f"  - Target velocity: 2.0 m/s")
+        print(f"  - Minimum velocity: 1.0 m/s") 
+        print(f"  - Maximum velocity: 4.0 m/s")
+    
+    print(f"\nSR2L Configuration:")
+    if sr2l_config.get('enabled', False):
+        print(f"  - SR2L: ENABLED")
+        print(f"  - Lambda: {sr2l_config.get('lambda', 0.01)}")
+        print(f"  - Perturbation std: {sr2l_config.get('perturbation_std', 0.05)}")
+        print(f"  - Warmup steps: {sr2l_config.get('warmup_steps', 0):,}")
+    else:
+        print(f"  - SR2L: DISABLED")
+    
+    print(f"\nTraining:")
+    print(f"  - Total timesteps: {config.get('total_timesteps', 1000000):,}")
+    print(f"  - Learning rate: {config.get('ppo', {}).get('learning_rate', 0.0003)}")
+    print("="*60 + "\n")
     
     # Create env config dict for the create_env function
     env_config_dict = {'env': config.get('env', {'name': env_name})}
