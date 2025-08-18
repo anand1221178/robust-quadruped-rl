@@ -16,11 +16,11 @@ experiment:
 # Phase 2: Enable SR2L for remaining 6M steps
 sr2l:
   enabled: true
-  lambda: 0.0001                  # Gentle regularization
-  perturbation_std: 0.01          
+  lambda: 0.001                   # 10x stronger for better smoothness
+  perturbation_std: 0.02          # Slightly larger perturbations
   warmup_steps: 4000000           # No SR2L for first 4M steps
-  apply_frequency: 10             
-  max_perturbation: 0.05
+  apply_frequency: 5              # Apply more frequently for stability
+  max_perturbation: 0.1           # Allow larger max perturbation
 
 # Environment settings
 env:

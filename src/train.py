@@ -141,9 +141,10 @@ def train(config: dict):
     
     if use_success_reward:
         print("\nVelocity Targets:")
-        print(f"  - Target velocity: 2.0 m/s")
-        print(f"  - Minimum velocity: 1.0 m/s") 
-        print(f"  - Maximum velocity: 4.0 m/s")
+        print(f"  - Target velocity: 1.5 m/s (realistic for RealAnt)")
+        print(f"  - Minimum velocity: 0.5 m/s") 
+        print(f"  - Maximum velocity: 2.5 m/s")
+        print(f"  - Stability bonus: ENABLED (penalizes slipping)")
     
     print(f"\nSR2L Configuration:")
     if sr2l_config.get('enabled', False):
