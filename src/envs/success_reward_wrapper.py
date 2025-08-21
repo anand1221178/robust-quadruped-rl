@@ -10,6 +10,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.initial_x_position = 0
         self.step_count = 0
         self.previous_x_position = 0
+        self.previous_action = None
         
         # targets - REALISTIC & STABLE WALKING
         self.TARGET_VELOCITY = 1.5      # m/s - Realistic target for RealAnt
@@ -24,6 +25,7 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.initial_x_position = self.env.unwrapped.data.qpos[0]
         self.previous_x_position = self.initial_x_position
         self.step_count = 0
+        self.previous_action = None  # Reset previous action
         return obs, info
     
     def step(self, action):
@@ -37,28 +39,25 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Calculate velocity
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # PROGRESSIVE REWARD - Encourage faster walking gradually
-        custom_reward = 0
+        # SIMPLE FORWARD REWARD - Just reward ANY forward movement
+        # Start with base forward reward
+        custom_reward = instant_velocity * 10.0  # 10x multiplier for forward movement
         
-        # Smooth reward curve that encourages speed
-        if instant_velocity <= 0.1:
-            # Not moving - penalty
-            custom_reward = -5.0
-        elif instant_velocity < self.MIN_VELOCITY:
-            # Moving but too slow - small penalty to small reward
-            progress = instant_velocity / self.MIN_VELOCITY
-            custom_reward = -2.0 + (progress * 7.0)  # -2 to +5
-        elif instant_velocity <= self.TARGET_VELOCITY:
-            # Good speed range - strong rewards
-            progress = (instant_velocity - self.MIN_VELOCITY) / (self.TARGET_VELOCITY - self.MIN_VELOCITY)
-            custom_reward = 5.0 + (progress * 10.0)  # +5 to +15
-        elif instant_velocity <= self.MAX_VELOCITY:
-            # Above target but not too fast - maximum reward
-            custom_reward = 15.0
-        else:
-            # Too fast - reduce reward
-            excess = instant_velocity - self.MAX_VELOCITY
-            custom_reward = 15.0 - (excess * 2.0)
+        # Add bonus for reaching minimum speed
+        if instant_velocity >= self.MIN_VELOCITY:
+            custom_reward += 5.0
+        
+        # Add bonus for reaching target speed  
+        if instant_velocity >= self.TARGET_VELOCITY:
+            custom_reward += 10.0
+        
+        # Only penalize if going backwards
+        if instant_velocity < 0:
+            custom_reward = instant_velocity * 20.0  # Harsh penalty for backwards
+        
+        # Small penalty for not moving at all
+        if abs(instant_velocity) < 0.01:
+            custom_reward -= 2.0
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range
@@ -72,9 +71,15 @@ class SuccessRewardWrapper(gym.Wrapper):
             else:
                 custom_reward -= (angular_vel - 2.0) * 0.5  # Penalize excessive spinning
         
+        # Remove action penalties for now - let it learn to walk first
+        # (We'll add smoothness back with SR2L later)
+        
         # termination penalty - REDUCED (robot learning to walk will fall)
         if terminated:
-            custom_reward -= 1.0  # Much gentler penalty
+            custom_reward -= 5.0  # Penalty but not too harsh
+        
+        # Store action for next step
+        self.previous_action = action.copy()
         
         self.previous_x_position = current_x_position
         

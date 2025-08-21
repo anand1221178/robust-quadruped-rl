@@ -1,0 +1,46 @@
+defaults:
+- /train/default
+- /env/realant
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+eval_freq: 10000
+experiment:
+  description: Full Phased SR2L training - 4M no SR2L + 6M with SR2L
+  name: ppo_sr2l_phased
+  tags:
+  - ppo
+  - sr2l
+  - phased
+  - phase3
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 50000
+seed: 42
+sr2l:
+  apply_frequency: 5
+  enabled: true
+  lambda: 0.001
+  max_perturbation: 0.1
+  perturbation_std: 0.02
+  warmup_steps: 4000000
+total_timesteps: 10000000

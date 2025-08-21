@@ -19,10 +19,11 @@ domain_randomization:
 # Enable SR2L with GENTLE settings that won't break learning
 sr2l:
   enabled: true
-  lambda: 0.0001                  # VERY gentle regularization
-  perturbation_std: 0.01          # Tiny perturbations
-  warmup_steps: 1000000           # Let it learn to walk for 1M steps first!
-  apply_frequency: 10             # Only apply every 10th update
+  lambda: 0.005                   # Stronger smoothness enforcement
+  perturbation_std: 0.015         # Slightly larger perturbations for robustness
+  warmup_steps: 500000            # Shorter warmup
+  apply_frequency: 2              # More frequent application for smoother actions
+  use_huber_loss: true            # Robust loss for outliers
   max_perturbation: 0.05          # Limit perturbation size
 
 # Environment settings
