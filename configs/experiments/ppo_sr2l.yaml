@@ -26,10 +26,11 @@ sr2l:
   use_huber_loss: true            # Robust loss for outliers
   max_perturbation: 0.05          # Limit perturbation size
 
-# Environment settings
+# Environment settings - Use target walking for fast walking + smoothness
 env:
   name: RealAntMujoco-v0
-  use_success_reward: true      # Keep success wrapper for fair comparison
+  use_target_walking: true      # Use target walking for fast movement
+  target_distance: 5.0          # Same as the successful model
   
 # Training for Phase 3 - start with 1M steps for testing
 total_timesteps: 10000000        # Will increase to 10M for full training
