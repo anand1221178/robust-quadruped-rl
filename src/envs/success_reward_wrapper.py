@@ -12,10 +12,10 @@ class SuccessRewardWrapper(gym.Wrapper):
         self.previous_x_position = 0
         self.previous_action = None
         
-        # targets - REALISTIC & STABLE WALKING
-        self.TARGET_VELOCITY = 1.5      # m/s - Realistic target for RealAnt
-        self.MAX_VELOCITY = 2.5         # m/s - Allow some faster movement
-        self.MIN_VELOCITY = 0.5         # m/s - Minimum walking speed
+        # targets - AGGRESSIVE SPEED FOCUS
+        self.TARGET_VELOCITY = 1.0      # m/s - Achievable target
+        self.MAX_VELOCITY = 2.0         # m/s - Upper limit
+        self.MIN_VELOCITY = 0.3         # m/s - Lower threshold
         
         # Get timestep
         self.dt = env.dt if hasattr(env, 'dt') else 0.01
@@ -39,25 +39,23 @@ class SuccessRewardWrapper(gym.Wrapper):
         # Calculate velocity
         instant_velocity = (current_x_position - self.previous_x_position) / self.dt
         
-        # SIMPLE FORWARD REWARD - Just reward ANY forward movement
-        # Start with base forward reward
-        custom_reward = instant_velocity * 10.0  # 10x multiplier for forward movement
+        # AGGRESSIVE SPEED REWARD - Force faster walking
+        # Exponential reward for speed
+        if instant_velocity > 0:
+            custom_reward = (instant_velocity ** 2) * 100.0  # Exponential speed reward
+        else:
+            custom_reward = instant_velocity * 50.0  # Big penalty for backwards
         
-        # Add bonus for reaching minimum speed
+        # Big bonuses for speed milestones
         if instant_velocity >= self.MIN_VELOCITY:
-            custom_reward += 5.0
+            custom_reward += 20.0  # Big bonus for walking speed
         
-        # Add bonus for reaching target speed  
         if instant_velocity >= self.TARGET_VELOCITY:
-            custom_reward += 10.0
+            custom_reward += 50.0  # Huge bonus for target speed
         
-        # Only penalize if going backwards
-        if instant_velocity < 0:
-            custom_reward = instant_velocity * 20.0  # Harsh penalty for backwards
-        
-        # Small penalty for not moving at all
+        # Penalty for being stationary
         if abs(instant_velocity) < 0.01:
-            custom_reward -= 2.0
+            custom_reward -= 10.0  # Strong penalty for not moving
         
         # Height bonus - maintain reasonable height (adjusted for RealAnt's smaller size)
         if 0.15 < z_position < 0.35:  # RealAnt starts at 0.235, so reasonable range

@@ -30,6 +30,7 @@ from wandb.integration.sb3 import WandbCallback
 
 #Custom success wrapper
 from envs.success_reward_wrapper import SuccessRewardWrapper
+from envs.target_walking_wrapper import TargetWalkingWrapper
 from utils.custom_callbacks import CustomMetricsCallback
 
 # Import RealAnt environments
@@ -77,15 +78,20 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     """Create environment based on config"""
     env_name = env_config['env']['name']
     
-    # Check if we should use success reward wrapper - FIX THIS LINE
+    # Check wrapper options
     use_success_reward = env_config['env'].get('use_success_reward', False)
+    use_target_walking = env_config['env'].get('use_target_walking', False)
     
     def make_env():
         env = gym.make(env_name)
         
-        # Apply success reward wrapper if enabled
-        if use_success_reward:
-            print("Using Success Reward Wrapper - Training for calm walking!")
+        # Apply reward wrapper (mutually exclusive)
+        if use_target_walking:
+            target_distance = env_config['env'].get('target_distance', 5.0)
+            print(f"Using Target Walking Wrapper - Goal-directed navigation ({target_distance}m targets)!")
+            env = TargetWalkingWrapper(env, target_distance=target_distance)
+        elif use_success_reward:
+            print("Using Success Reward Wrapper - Training for fast walking!")
             env = SuccessRewardWrapper(env)
             
         env = Monitor(env)
@@ -133,15 +139,23 @@ def train(config: dict):
     # Create environments  
     env_name = config.get('env', {}).get('name', 'RealAntMujoco-v0')
     use_success_reward = config.get('env', {}).get('use_success_reward', False)
+    use_target_walking = config.get('env', {}).get('use_target_walking', False)
     sr2l_config = config.get('sr2l', {})
     
     print(f"Experiment: {experiment_config.get('name', 'unknown')}")
     print(f"Environment: {env_name}")
-    print(f"Success Reward Wrapper: {'ENABLED' if use_success_reward else 'DISABLED'}")
     
-    if use_success_reward:
+    if use_target_walking:
+        target_dist = config.get('env', {}).get('target_distance', 5.0)
+        print(f"Target Walking Wrapper: ENABLED ({target_dist}m targets)")
+        print("Goal: Learn to navigate to specific target positions")
+    elif use_success_reward:
+        print("Success Reward Wrapper: ENABLED")
         print("\nVelocity Targets:")
-        print(f"  - Target velocity: 1.5 m/s (realistic for RealAnt)")
+        print(f"  - Target velocity: 1.0 m/s (achievable for RealAnt)")
+        print(f"  - Exponential speed rewards for faster walking!")
+    else:
+        print("Reward Wrapper: DISABLED (using default environment rewards)")
         print(f"  - Minimum velocity: 0.5 m/s") 
         print(f"  - Maximum velocity: 2.5 m/s")
         print(f"  - Stability bonus: ENABLED (penalizes slipping)")
@@ -243,9 +257,10 @@ def train(config: dict):
             verbose=2,
         ))
     
-    # Add custom metrics callback if using success reward
-    if use_success_reward:
-        print("Adding CustomMetricsCallback for success reward tracking")
+    # Add custom metrics callback if using custom rewards
+    if use_success_reward or use_target_walking:
+        wrapper_type = "target walking" if use_target_walking else "success reward"
+        print(f"Adding CustomMetricsCallback for {wrapper_type} tracking")
         callbacks.append(CustomMetricsCallback())
     
     # Checkpoint callback

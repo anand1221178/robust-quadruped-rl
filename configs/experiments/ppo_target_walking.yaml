@@ -1,0 +1,53 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment settings  
+experiment:
+  description: "PPO with target-based walking (A to B navigation)"
+  name: ppo_target_walking
+  tags: 
+    - ppo
+    - target
+    - navigation
+    - goal-directed
+
+# Environment with target wrapper
+env:
+  name: RealAntMujoco-v0
+  use_target_walking: true
+  target_distance: 5.0  # 5 meter targets
+
+# Disable everything else
+domain_randomization:
+  enabled: false
+sr2l:
+  enabled: false
+
+# PPO hyperparameters
+learning_rate: 0.0003
+n_steps: 2048
+batch_size: 64
+n_epochs: 10
+gamma: 0.99
+gae_lambda: 0.95
+clip_range: 0.2
+ent_coef: 0.01
+vf_coef: 0.5
+max_grad_norm: 0.5
+
+# Training
+total_timesteps: 15000000
+
+# Multiple environments
+num_envs: 16
+
+# Enable logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+save_freq: 100000
+eval_freq: 25000
