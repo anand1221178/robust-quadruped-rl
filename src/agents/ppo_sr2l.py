@@ -57,14 +57,21 @@ class PPO_SR2L(PPO):
         with torch.no_grad():
             original_actions, _, _ = self.policy(observations)
 
-        # Generate perturbation noise
-        noise = torch.randn_like(observations) * self.sr2l_config['perturbation_std']
+        # Generate realistic sensor noise - ONLY on joint sensors (dims 13-28)
+        # Following research proposal: realistic sensor noise for robustness
+        noise = torch.zeros_like(observations)
+        
+        # Joint position sensors (dims 13-20): encoder noise
+        noise[:, 13:21] = torch.randn_like(observations[:, 13:21]) * self.sr2l_config['perturbation_std']
+        
+        # Joint velocity sensors (dims 21-28): tachometer noise  
+        noise[:, 21:29] = torch.randn_like(observations[:, 21:29]) * self.sr2l_config['perturbation_std']
 
         # Clamp perturbations if max_perturbation is set
         if self.sr2l_config.get('max_perturbation', 0) > 0:
             noise = torch.clamp(noise, -self.sr2l_config['max_perturbation'], self.sr2l_config['max_perturbation'])
 
-        # Create perturbed observations
+        # Create perturbed observations - only joint sensors are noisy
         perturbed_observations = observations + noise
 
         # Get actions for perturbed observations (requires gradient)

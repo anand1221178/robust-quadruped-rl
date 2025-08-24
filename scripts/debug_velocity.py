@@ -70,7 +70,10 @@ def test_model_velocity(model_path, norm_path=None):
     print(f"Achievement: {(overall_avg/2.0)*100:.1f}% of target")
 
 if __name__ == "__main__":
-    model_path = "experiments/ppo_custom_reward_fzzp48df/best_model/best_model.zip"
-    norm_path = "experiments/ppo_custom_reward_fzzp48df/vec_normalize.pkl"
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('model_path', type=str, help='Path to model')
+    parser.add_argument('--norm_path', type=str, default=None, help='Path to vec_normalize')
+    args = parser.parse_args()
     
-    test_model_velocity(model_path, norm_path)
+    test_model_velocity(args.model_path, args.norm_path)

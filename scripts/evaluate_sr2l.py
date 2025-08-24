@@ -29,6 +29,20 @@ import realant_sim
 from stable_baselines3 import PPO
 from agents.ppo_sr2l import PPO_SR2L
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
+from envs.target_walking_wrapper import TargetWalkingWrapper
+from envs.success_reward_wrapper import SuccessRewardWrapper
+
+
+def create_correct_env(render_mode=None, use_target_walking=True):
+    """Create environment with correct wrapper based on model type"""
+    env = gym.make('RealAntMujoco-v0', render_mode=render_mode)
+    
+    if use_target_walking:
+        env = TargetWalkingWrapper(env, target_distance=5.0)
+    else:
+        env = SuccessRewardWrapper(env)
+    
+    return env
 
 
 class SensorNoiseWrapper(gym.Wrapper):
@@ -197,14 +211,14 @@ class SR2LEvaluator:
         
         if vec_normalize_baseline and os.path.exists(vec_normalize_baseline):
             print("Loading baseline VecNormalize...")
-            dummy_env = DummyVecEnv([lambda: gym.make('RealAntMujoco-v0')])
+            dummy_env = DummyVecEnv([lambda: create_correct_env(use_target_walking=True)])
             self.vec_normalize_baseline = VecNormalize.load(vec_normalize_baseline, dummy_env)
             self.vec_normalize_baseline.training = False
             dummy_env.close()
             
         if vec_normalize_sr2l and os.path.exists(vec_normalize_sr2l):
             print("Loading SR2L VecNormalize...")
-            dummy_env = DummyVecEnv([lambda: gym.make('RealAntMujoco-v0')])
+            dummy_env = DummyVecEnv([lambda: create_correct_env(use_target_walking=True)])
             self.vec_normalize_sr2l = VecNormalize.load(vec_normalize_sr2l, dummy_env)
             self.vec_normalize_sr2l.training = False
             dummy_env.close()
@@ -569,7 +583,7 @@ class SR2LEvaluator:
         print("="*60)
         
         # Create clean environment for testing
-        env = gym.make('RealAntMujoco-v0')
+        env = create_correct_env(use_target_walking=True)
         
         results = {}
         
@@ -628,7 +642,7 @@ class SR2LEvaluator:
         print("-" * 40)
         
         # Create environment with render mode for video recording
-        env_for_video = gym.make('RealAntMujoco-v0', render_mode='rgb_array')
+        env_for_video = create_correct_env(render_mode='rgb_array', use_target_walking=True)
         self.record_comparison_videos(env_for_video, output_dir)
         env_for_video.close()
         

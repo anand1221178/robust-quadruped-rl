@@ -231,6 +231,19 @@ def train(config: dict):
             seed=config.get('seed', 42),
         )
     
+    # Load from pretrained model if specified
+    pretrained_path = config.get('pretrained_model')
+    if pretrained_path:
+        print(f"\nLoading pretrained model from: {pretrained_path}")
+        if sr2l_enabled:
+            # For SR2L, load the pretrained weights but keep SR2L config
+            pretrained = PPO.load(pretrained_path)
+            model.policy.load_state_dict(pretrained.policy.state_dict())
+            print("Loaded pretrained weights into SR2L model")
+        else:
+            model = PPO.load(pretrained_path, env=env)
+            print("Loaded pretrained PPO model")
+    
     # Print configuration
     print("\n" + "="*60)
     print("Training Configuration:")
