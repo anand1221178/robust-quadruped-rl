@@ -52,6 +52,8 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.bakwandb/
-experiments/*/checkpoints/
+*.bak
 *.wandb
+
+# Archive folder (large files moved during cleanup)
+archive/

@@ -67,6 +67,7 @@
 - Kept only 2 essential models and 4 working configs
 - Freed ~1.2GB space, organized archive structure
 - Preserved all work in organized archive/ folders
+- Added archive/ to .gitignore to prevent large file uploads
 
 ### August 23, 2025 - SR2L Fix Attempt
 - **Problem**: Original SR2L failed catastrophically (81% → 26% success)
