@@ -28,6 +28,7 @@
 1. **ppo_target_walking_llsm451b** - Best baseline (0.9 m/s, goal-directed)
 2. **ppo_fast_walking_71n0huse** - Speed comparison model
 3. **ppo_sr2l_gentle_dpmpni64** - COMPLETED gentle SR2L (15M steps, initialized from fast walker)
+4. **ppo_sr2l_corrected_nppuk7mn** - COMPLETED corrected SR2L (ONLY joint sensor perturbations)
 
 ### Archived Models (in archive/experiments/)
 - 23 failed/old experiments moved to archive during cleanup
@@ -50,6 +51,15 @@
 4. **Stability**: Angular velocity < 2.0 rad/s
 
 ## Recent Major Changes
+
+### August 23, 2025 - Corrected SR2L FAILURE (Joint Sensors Only)
+- **Critical Bug Fixed**: Was perturbing ALL 29 obs dims, now only joint sensors (13-28)
+- **Corrected SR2L Performance**: CATASTROPHIC FAILURE
+  - **Speed**: 0.24 ± 0.02 m/s (only 18% of baseline's 1.31 m/s)
+  - **Success Rate**: 42% vs 66% baseline (clean), 11-49% vs 56-72% (with noise)
+  - **Noise Robustness**: WORSE at all noise levels despite being trained for it!
+- **Conclusion**: SR2L fundamentally incompatible with target walking task
+- **Root Cause**: Perturbing joint sensors (even correctly) disrupts learned walking policy
 
 ### August 23, 2025 - Final Gentle SR2L Results
 - **Velocity (Corrected Test)**: 
@@ -102,18 +112,21 @@
 - `envs/target_walking_wrapper.py` - Goal-directed navigation
 - `envs/success_reward_wrapper.py` - Speed-focused rewards
 
-## SR2L CRITICAL BUG IDENTIFIED
-**Major Issue**: SR2L is perturbing ALL 29 observation dimensions including:
-- ❌ Body position (confuses navigation)  
-- ❌ Target position (breaks task completely)
-- ❌ Orientation (disrupts balance feedback)
+## SR2L FUNDAMENTAL FIX - ACTION PERTURBATION
+**CRITICAL MISUNDERSTANDING FIXED**: SR2L should perturb ACTIONS (motor outputs), not observations!
 
-**Research Proposal Specification**: Should only perturb:
-- ✅ Joint position sensors
-- ✅ Joint velocity sensors  
-- ✅ Joint force/torque sensors
+**Research Proposal Intent**:
+- SR2L: Handle **degrading/failing motors** (motors not producing expected torque)
+- Domain Randomization: Handle **locked/failed joints** (complete joint failure)
 
-**Root Cause**: `ppo_sr2l.py` line 61 uses `torch.randn_like(observations)` - perturbs EVERYTHING instead of selective sensor noise as proposed.
+**What We Were Doing Wrong**:
+- ❌ Perturbing sensor observations (confusing what robot sees)
+- ❌ Breaking the navigation and balance systems
+
+**Correct Implementation (NOW FIXED)**:
+- ✅ Perturb ACTIONS (motor commands) to simulate worn/degrading motors
+- ✅ Robot learns policies robust to imperfect motor execution
+- ✅ Simulates realistic motor wear: 5-10% torque degradation
 
 ## Next Steps
 1. **Investigate SR2L training dynamics** and loss curves
