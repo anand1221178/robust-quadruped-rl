@@ -4,40 +4,41 @@ defaults:
 
 # Experiment settings
 experiment:
-  description: "Gentle SR2L initialized from fast target walker - Phase 3 refined"
+  description: "CORRECTED Gentle SR2L - Observation perturbations for sensor noise robustness"
   name: ppo_sr2l_gentle
   tags: 
     - ppo
     - sr2l
     - phase3
-    - smoothness
+    - sensor-noise-robustness
     - gentle
     - initialized
+    - correct-implementation
 
 # Domain randomization disabled (Phase 4)
 domain_randomization:
   enabled: false
 
-# VERY GENTLE SR2L settings to preserve walking behavior
+# GENTLE SR2L settings for sensor noise robustness (per research proposal)
 sr2l:
   enabled: true
-  lambda: 0.001                   # Much gentler regularization (was 0.005)
-  perturbation_std: 0.01          # Smaller perturbations (was 0.015)
-  warmup_steps: 2000000           # 2M step warmup - let it walk first! (was 500k)
-  apply_frequency: 4              # Less frequent application (was 2)
+  lambda: 0.001                   # Gentle regularization for sensor noise
+  perturbation_std: 0.01          # Realistic sensor noise levels
+  warmup_steps: 2000000           # 2M step warmup - preserve walking first
+  apply_frequency: 4              # Less frequent application
   use_huber_loss: true            # Robust loss for outliers
-  max_perturbation: 0.03          # Smaller max perturbation (was 0.05)
+  max_perturbation: 0.03          # Reasonable sensor noise limit
 
-# Environment settings - Use target walking for fast walking
+# Environment settings - Use target walking (valid locomotion training)
 env:
   name: RealAntMujoco-v0
-  use_target_walking: true       # Use target walking for fast movement
-  target_distance: 5.0            # Same as the successful model
+  use_target_walking: true       # Goal-directed navigation
+  target_distance: 5.0           # Same as successful baseline
   
-# Longer training for better results (matching successful baseline)
-total_timesteps: 15000000        # 15M steps like the successful models
+# 15M steps for thorough training
+total_timesteps: 15000000        
 
-# Initialize from the successful target walking model
+# Initialize from successful target walking baseline
 pretrained_model: experiments/ppo_target_walking_llsm451b/best_model/best_model.zip
 
 # Enable W&B logging
@@ -47,6 +48,6 @@ logging:
   wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
   verbose: 1
 
-# Save more frequently to track progress
+# Save frequently to track progress
 save_freq: 100000
 eval_freq: 25000

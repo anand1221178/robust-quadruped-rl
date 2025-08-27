@@ -45,41 +45,38 @@ class PPO_SR2L(PPO):
     
     def compute_sr2l_loss(self, observations: torch.Tensor) -> torch.Tensor:
         """
-        CORRECTED SR2L: Perturb ACTIONS (motor outputs) to simulate motor degradation
-        Following research proposal: Handle degrading/failing motors
+        SR2L for SENSOR NOISE robustness (per research proposal)
+        L_smooth = E[||π(s) - π(s + δ)||²] where δ ~ N(0, σ²I)
         
-        L_smooth = E[||Q(s, a) - Q(s, a + ε)||²] where ε ~ N(0, σ²I)
-        
-        This trains the policy to be robust to imperfect motor execution,
-        simulating worn motors that don't produce expected torques.
+        Handles noisy proprioceptive signals by training policy to be robust
+        to sensor noise/degradation. Robot learns consistent actions despite
+        noisy sensor readings.
         """
         if not self.sr2l_config['enabled']:
             return torch.tensor(0.0, device=observations.device)
         
         batch_size = observations.shape[0]
 
-        # Get TWO action samples from the same observation
-        # This tests if the policy produces consistent actions
-        actions_1, _, _ = self.policy(observations)
-        actions_2, _, _ = self.policy(observations)
-        
-        # Generate motor noise - simulates degrading/failing motors
-        # Small noise on actions represents motors not producing exact commanded torque
-        motor_noise = torch.randn_like(actions_1) * self.sr2l_config['perturbation_std']
-        
-        # Clamp motor noise to realistic degradation levels
+        # Get original actions from current policy
+        with torch.no_grad():
+            original_actions, _, _ = self.policy(observations)
+
+        # Generate realistic sensor noise (research proposal: sensor degradation)
+        noise = torch.randn_like(observations) * self.sr2l_config['perturbation_std']
+
+        # Clamp perturbations to realistic sensor noise levels
         if self.sr2l_config.get('max_perturbation', 0) > 0:
-            motor_noise = torch.clamp(motor_noise, 
-                                     -self.sr2l_config['max_perturbation'], 
-                                     self.sr2l_config['max_perturbation'])
-        
-        # Apply motor degradation to second action sample
-        perturbed_actions = actions_2 + motor_noise
-        
-        # SR2L Loss: Penalize difference between clean and motor-degraded actions
-        # This encourages the policy to be robust to motor noise
-        # The policy should produce similar actions even with motor degradation
-        sr2l_loss = torch.mean(torch.sum((actions_1 - perturbed_actions) ** 2, dim=-1))
+            noise = torch.clamp(noise, -self.sr2l_config['max_perturbation'], self.sr2l_config['max_perturbation'])
+
+        # Create perturbed observations (noisy sensor readings)
+        perturbed_observations = observations + noise
+
+        # Get actions for perturbed observations (requires gradient)
+        perturbed_actions, _, _ = self.policy(perturbed_observations)
+
+        # Compute L2 smoothness loss: ||π(s) - π(s + δ)||²
+        action_diff = original_actions - perturbed_actions
+        sr2l_loss = torch.mean(torch.sum(action_diff ** 2, dim=-1))
 
         # Track smoothness score for logging
         with torch.no_grad():

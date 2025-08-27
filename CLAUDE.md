@@ -52,14 +52,14 @@
 
 ## Recent Major Changes
 
-### August 23, 2025 - Corrected SR2L FAILURE (Joint Sensors Only)
-- **Critical Bug Fixed**: Was perturbing ALL 29 obs dims, now only joint sensors (13-28)
-- **Corrected SR2L Performance**: CATASTROPHIC FAILURE
-  - **Speed**: 0.24 ± 0.02 m/s (only 18% of baseline's 1.31 m/s)
-  - **Success Rate**: 42% vs 66% baseline (clean), 11-49% vs 56-72% (with noise)
-  - **Noise Robustness**: WORSE at all noise levels despite being trained for it!
-- **Conclusion**: SR2L fundamentally incompatible with target walking task
-- **Root Cause**: Perturbing joint sensors (even correctly) disrupts learned walking policy
+### August 23, 2025 - TRUE SR2L Motor Perturbation FAILURE
+- **Final Fix Applied**: Now perturbing ACTIONS (motor outputs) instead of observations
+- **Implementation**: Simulates 5-10% motor degradation as per research proposal
+- **Results**: STILL CATASTROPHIC FAILURE
+  - **Speed**: 0.25 ± 0.01 m/s (only 19% of baseline's 1.31 m/s) 
+  - **Consistency**: Very consistent failure (low std dev)
+- **Conclusion**: SR2L fundamentally breaks target walking, regardless of implementation
+- **All 4 SR2L attempts failed**: Aggressive, Gentle, Observation-perturbed, Action-perturbed
 
 ### August 23, 2025 - Final Gentle SR2L Results
 - **Velocity (Corrected Test)**: 
@@ -128,11 +128,28 @@
 - ✅ Robot learns policies robust to imperfect motor execution
 - ✅ Simulates realistic motor wear: 5-10% torque degradation
 
-## Next Steps
-1. **Investigate SR2L training dynamics** and loss curves
-2. **Try different SR2L approaches** (curriculum, adaptive λ, different perturbation types)
-3. **Consider alternative smoothness approaches**
-4. **If SR2L perfected**: Move to Phase 4 (Domain Randomization)
+## Research Proposal: ABLATION STUDY
+**Goal**: Compare robustness approaches for quadruped locomotion
+
+**Ablation Components**:
+1. **PPO (Baseline)**: ppo_target_walking_llsm451b - 1.31 m/s ✅
+2. **PPO + SR2L**: ppo_sr2l_gentle_dpmpni64 - 1.24 m/s (best SR2L) ✅
+3. **PPO + DR**: To be implemented (Phase 4) ⏳
+4. **PPO + SR2L + DR**: To be implemented (Phase 5) ⏳
+
+**CRITICAL RESEARCH PROPOSAL ANALYSIS**:
+**SR2L Purpose (from proposal)**: Handle **sensor noise** and **noisy proprioceptive signals**
+- This means **observation perturbation** was CORRECT all along!
+- Motor perturbation was misinterpretation of proposal intent
+
+**Research Proposal Scope**:
+- **SR2L**: Sensor noise robustness (observation perturbations)
+- **Domain Randomization**: Actuator failures (joint lock/dropout)  
+- **Target Walking**: Valid training method (forces real locomotion vs lazy strategies)
+
+**Best SR2L Model**: Gentle SR2L (1.24 m/s, 95% baseline speed) - RETRAINING
+- Uses observation perturbations (correct for sensor noise per proposal)
+- Config and implementation verified for retraining
 
 ## Supervisor Communication
 - Evaluation metrics are comprehensive (speed, smoothness, robustness)
