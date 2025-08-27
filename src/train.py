@@ -31,6 +31,7 @@ from wandb.integration.sb3 import WandbCallback
 #Custom success wrapper
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from envs.target_walking_wrapper import TargetWalkingWrapper
+from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
 from utils.custom_callbacks import CustomMetricsCallback
 
 # Import RealAnt environments
@@ -81,6 +82,7 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     # Check wrapper options
     use_success_reward = env_config['env'].get('use_success_reward', False)
     use_target_walking = env_config['env'].get('use_target_walking', False)
+    use_domain_randomization = env_config['env'].get('use_domain_randomization', False)
     
     def make_env():
         env = gym.make(env_name)
@@ -93,6 +95,18 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         elif use_success_reward:
             print("Using Success Reward Wrapper - Training for fast walking!")
             env = SuccessRewardWrapper(env)
+        
+        # Apply Domain Randomization wrapper if specified  
+        if use_domain_randomization:
+            dr_config = env_config.get('domain_randomization', {})
+            if dr_config.get('use_curriculum', False):
+                print("Using Curriculum Domain Randomization - Joint dropout & sensor noise!")
+                print(f"  Phase 2 (0-{dr_config.get('phase_2_steps', 5000000)}): Single joint + mild noise")
+                print(f"  Phase 3 ({dr_config.get('phase_2_steps', 5000000)}+): Multiple joints + high noise")
+                env = CurriculumDRWrapper(env, dr_config)
+            else:
+                print("Using Static Domain Randomization - Joint dropout & sensor noise!")
+                env = DomainRandomizationWrapper(env, dr_config)
             
         env = Monitor(env)
         return env
