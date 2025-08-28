@@ -57,9 +57,8 @@ class PPO_SR2L(PPO):
         
         batch_size = observations.shape[0]
 
-        # Get original actions from current policy
-        with torch.no_grad():
-            original_actions, _, _ = self.policy(observations)
+        # Get original actions from current policy (WITH gradients for proper regularization)
+        original_actions, _, _ = self.policy(observations)
 
         # Generate realistic sensor noise (research proposal: sensor degradation)
         noise = torch.randn_like(observations) * self.sr2l_config['perturbation_std']
@@ -69,12 +68,14 @@ class PPO_SR2L(PPO):
             noise = torch.clamp(noise, -self.sr2l_config['max_perturbation'], self.sr2l_config['max_perturbation'])
 
         # Create perturbed observations (noisy sensor readings)
-        perturbed_observations = observations + noise
+        # Detach noise to prevent gradients flowing through the perturbation
+        perturbed_observations = observations + noise.detach()
 
         # Get actions for perturbed observations (requires gradient)
         perturbed_actions, _, _ = self.policy(perturbed_observations)
 
         # Compute L2 smoothness loss: ||π(s) - π(s + δ)||²
+        # Both actions now have gradients for proper bidirectional regularization
         action_diff = original_actions - perturbed_actions
         sr2l_loss = torch.mean(torch.sum(action_diff ** 2, dim=-1))
 

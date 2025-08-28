@@ -4,10 +4,10 @@
 **Research Project**: Robust Quadruped RL with SR2L (Smooth Regularized Reinforcement Learning)
 **Objective**: Implement SR2L algorithm for robust quadruped locomotion using PPO and RealAnt simulation
 
-## Current Status (August 23, 2025)
-- **Phase**: 3 (SR2L Implementation) - Ready to evaluate gentle SR2L model
-- **Best Models**: ppo_target_walking_llsm451b (0.9 m/s), ppo_fast_walking_71n0huse
-- **Latest Training**: ppo_sr2l_gentle_dpmpni64 (COMPLETED - 15M steps, initialized from fast walker)
+## Current Status (August 28, 2025)
+- **Phase**: 3 (SR2L Implementation) - Fixed critical bug, retraining from scratch
+- **Best Models**: ppo_target_walking_llsm451b (1.31 m/s baseline)
+- **Latest Training**: ppo_sr2l_gentle_v5mqpx3e (FAILED - 0.11 m/s), ppo_dr_ef9vy61f (training - 0.31 m/s at 4.25M steps)
 
 ## Project Phases
 1. ✅ **Phase 1**: Environment Setup - Migrate from Ant-v4 to RealAnt
@@ -51,6 +51,27 @@
 4. **Stability**: Angular velocity < 2.0 rad/s
 
 ## Recent Major Changes
+
+### August 28, 2025 - CRITICAL SR2L BUG FOUND AND FIXED
+- **Major Discovery**: Found critical gradient flow bug in SR2L implementation
+- **Bug Location**: `src/agents/ppo_sr2l.py` line 62
+  - Original actions computed with `torch.no_grad()` - detached from computational graph
+  - SR2L loss couldn't properly backpropagate through original actions
+  - Caused one-sided regularization and policy instability
+- **Fix Applied**: 
+  - Removed `torch.no_grad()` wrapper from original action computation
+  - Added `noise.detach()` to prevent gradients through random perturbations
+  - Now both original and perturbed actions have proper gradients for bidirectional regularization
+- **New Training Strategy**: `configs/experiments/ppo_sr2l_scratch.yaml`
+  - Train from SCRATCH (no pretrained model conflicts)
+  - Very gentle parameters: λ=0.0005, std=0.005, max_perturb=0.02
+  - 1M step warmup before SR2L kicks in, 20M total training
+  - Still uses target walking for proper goal-directed locomotion
+- **Why All Previous SR2L Failed**: 
+  - Gradient flow bug prevented proper regularization
+  - Pretrained model weights conflicted with SR2L objectives
+  - Too aggressive regularization parameters
+  - All attempts (gentle, aggressive, motor, observation) failed due to same bug
 
 ### August 23, 2025 - TRUE SR2L Motor Perturbation FAILURE
 - **Final Fix Applied**: Now perturbing ACTIONS (motor outputs) instead of observations

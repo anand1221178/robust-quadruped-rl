@@ -1,0 +1,48 @@
+batch_size: 2048
+clip_range: 0.2
+defaults:
+- /train/sr2l
+- /env/realant
+domain_randomization:
+  enabled: false
+ent_coef: 0.0
+env:
+  name: RealAntMujoco-v0
+  target_distance: 5.0
+  use_target_walking: true
+eval_freq: 25000
+experiment:
+  description: CORRECTED Gentle SR2L - Observation perturbations for sensor noise
+    robustness
+  name: ppo_sr2l_gentle
+  tags:
+  - ppo
+  - sr2l
+  - phase3
+  - sensor-noise-robustness
+  - gentle
+  - initialized
+  - correct-implementation
+gae_lambda: 0.95
+gamma: 0.99
+learning_rate: 0.0003
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+max_grad_norm: 0.5
+n_epochs: 10
+n_steps: 2048
+pretrained_model: experiments/ppo_target_walking_llsm451b/best_model/best_model.zip
+save_freq: 100000
+sr2l:
+  apply_frequency: 4
+  enabled: true
+  lambda: 0.001
+  max_perturbation: 0.03
+  perturbation_std: 0.01
+  use_huber_loss: true
+  warmup_steps: 2000000
+total_timesteps: 15000000
+vf_coef: 0.5
