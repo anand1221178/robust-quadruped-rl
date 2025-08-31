@@ -1,0 +1,57 @@
+defaults:
+- /train/base
+- /env/realant
+domain_randomization:
+  enabled: true
+  phase_2_config:
+    joint_dropout_prob: 0.15
+    max_dropped_joints: 1
+    min_dropped_joints: 1
+    noise_joints_only: true
+    sensor_noise_std: 0.015
+  phase_2_steps: 5000000
+  phase_3_config:
+    joint_dropout_prob: 0.3
+    max_dropped_joints: 2
+    min_dropped_joints: 1
+    noise_joints_only: true
+    sensor_noise_std: 0.04
+  phase_3_steps: 20000000
+  use_curriculum: true
+env:
+  name: RealAntMujoco-v0
+  target_distance: 5.0
+  use_domain_randomization: true
+  use_target_walking: true
+eval_freq: 25000
+experiment:
+  description: PPO + Domain Randomization FROM SCRATCH - No pretrained model
+  name: ppo_dr_scratch
+  tags:
+  - ppo
+  - domain-randomization
+  - phase4
+  - from-scratch
+  - joint-dropout
+  - sensor-noise
+  - curriculum
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  n_steps: 2048
+  vf_coef: 0.5
+save_freq: 100000
+sr2l:
+  enabled: false
+total_timesteps: 20000000

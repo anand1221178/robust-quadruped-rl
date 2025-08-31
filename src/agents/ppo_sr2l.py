@@ -51,6 +51,8 @@ class PPO_SR2L(PPO):
         Handles noisy proprioceptive signals by training policy to be robust
         to sensor noise/degradation. Robot learns consistent actions despite
         noisy sensor readings.
+        
+        CRITICAL: Only perturb joint sensors (dims 13-28), NOT global position/orientation!
         """
         if not self.sr2l_config['enabled']:
             return torch.tensor(0.0, device=observations.device)
@@ -60,16 +62,26 @@ class PPO_SR2L(PPO):
         # Get original actions from current policy (WITH gradients for proper regularization)
         original_actions, _, _ = self.policy(observations)
 
-        # Generate realistic sensor noise (research proposal: sensor degradation)
-        noise = torch.randn_like(observations) * self.sr2l_config['perturbation_std']
-
+        # Create perturbed observations - ONLY perturb joint sensors!
+        perturbed_observations = observations.clone()
+        
+        # RealAnt observation space (29 dims):
+        # 0-2: position (x,y,z) - DO NOT PERTURB (breaks navigation)
+        # 3-6: orientation quaternion - DO NOT PERTURB (breaks balance)
+        # 7-9: linear velocity - DO NOT PERTURB (breaks speed tracking)
+        # 10-12: angular velocity - DO NOT PERTURB (breaks stability)
+        # 13-20: joint positions (8 joints) - PERTURB THESE
+        # 21-28: joint velocities (8 joints) - PERTURB THESE
+        
+        # Only perturb joint observations (dims 13-28)
+        joint_noise = torch.randn(batch_size, 16, device=observations.device) * self.sr2l_config['perturbation_std']
+        
         # Clamp perturbations to realistic sensor noise levels
         if self.sr2l_config.get('max_perturbation', 0) > 0:
-            noise = torch.clamp(noise, -self.sr2l_config['max_perturbation'], self.sr2l_config['max_perturbation'])
-
-        # Create perturbed observations (noisy sensor readings)
-        # Detach noise to prevent gradients flowing through the perturbation
-        perturbed_observations = observations + noise.detach()
+            joint_noise = torch.clamp(joint_noise, -self.sr2l_config['max_perturbation'], self.sr2l_config['max_perturbation'])
+        
+        # Apply noise only to joint sensors
+        perturbed_observations[:, 13:29] = observations[:, 13:29] + joint_noise.detach()
 
         # Get actions for perturbed observations (requires gradient)
         perturbed_actions, _, _ = self.policy(perturbed_observations)
@@ -147,13 +159,23 @@ class PPO_SR2L(PPO):
                     
                     sr2l_loss = self.compute_sr2l_loss(rollout_data.observations)
                     
-                    # Adaptive SR2L - reduce regularization if policy is struggling
-                    adaptive_lambda = self.sr2l_config['lambda']
-                    if self.sr2l_config.get('velocity_adaptive', False):
-                        # Scale SR2L based on recent performance - less SR2L if struggling
-                        adaptive_lambda = self.sr2l_config['lambda'] * 0.1  # Much gentler
+                    # CURRICULUM LEARNING: Gradually increase lambda
+                    if self.sr2l_config.get('use_curriculum', True):
+                        # Calculate progress (0 to 1) after warmup
+                        steps_after_warmup = self.sr2l_update_counter - self.sr2l_config['warmup_steps']
+                        curriculum_steps = self.sr2l_config.get('curriculum_steps', 5000000)  # 5M steps to reach full lambda
+                        progress = min(1.0, steps_after_warmup / curriculum_steps)
+                        
+                        # Start from 0, gradually increase to target lambda
+                        curriculum_lambda = self.sr2l_config['lambda'] * progress
+                        
+                        # Log curriculum progress
+                        if self.sr2l_update_counter % 10000 == 0:
+                            print(f"SR2L Curriculum: lambda = {curriculum_lambda:.6f} (progress: {progress*100:.1f}%)")
+                    else:
+                        curriculum_lambda = self.sr2l_config['lambda']
                     
-                    total_loss = ppo_loss + adaptive_lambda * sr2l_loss
+                    total_loss = ppo_loss + curriculum_lambda * sr2l_loss
                     sr2l_loss_value = sr2l_loss.item()
                     sr2l_losses.append(sr2l_loss_value)
 
@@ -203,7 +225,16 @@ class PPO_SR2L(PPO):
         if self.sr2l_config['enabled'] and sr2l_losses:
             self.logger.record("sr2l/loss", np.mean(sr2l_losses))
             self.logger.record("sr2l/smoothness_score", self.sr2l_smoothness_score)
-            self.logger.record("sr2l/lambda", self.sr2l_config['lambda'])
+            # Log current curriculum lambda if using curriculum
+            if self.sr2l_config.get('use_curriculum', True) and self.sr2l_update_counter >= self.sr2l_config['warmup_steps']:
+                steps_after_warmup = self.sr2l_update_counter - self.sr2l_config['warmup_steps']
+                curriculum_steps = self.sr2l_config.get('curriculum_steps', 5000000)
+                progress = min(1.0, steps_after_warmup / curriculum_steps)
+                current_lambda = self.sr2l_config['lambda'] * progress
+                self.logger.record("sr2l/current_lambda", current_lambda)
+                self.logger.record("sr2l/curriculum_progress", progress)
+            else:
+                self.logger.record("sr2l/current_lambda", self.sr2l_config['lambda'])
             self.logger.record("sr2l/perturbation_std", self.sr2l_config['perturbation_std'])
             self.logger.record("sr2l/update_counter", self.sr2l_update_counter)
         

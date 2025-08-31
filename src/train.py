@@ -194,9 +194,17 @@ def train(config: dict):
     eval_env = create_env(env_config_dict, normalize=True, norm_reward=False)
     
     # Define network architecture
+    activation_map = {
+        'relu': nn.ReLU,
+        'tanh': nn.Tanh,
+        'leaky_relu': nn.LeakyReLU,
+    }
+    activation_name = config.get('policy', {}).get('activation', 'relu')
+    activation_fn = activation_map.get(activation_name, nn.ReLU)
+    
     policy_kwargs = dict(
         net_arch=config.get('policy', {}).get('hidden_sizes', [64, 128]),
-        activation_fn=nn.ReLU,
+        activation_fn=activation_fn,
     )
     
     # Check if SR2L is enabled

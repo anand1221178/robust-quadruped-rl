@@ -4,10 +4,13 @@
 **Research Project**: Robust Quadruped RL with SR2L (Smooth Regularized Reinforcement Learning)
 **Objective**: Implement SR2L algorithm for robust quadruped locomotion using PPO and RealAnt simulation
 
-## Current Status (August 28, 2025)
-- **Phase**: 3 (SR2L Implementation) - Fixed critical bug, retraining from scratch
-- **Best Models**: ppo_target_walking_llsm451b (1.31 m/s baseline)
-- **Latest Training**: ppo_sr2l_gentle_v5mqpx3e (FAILED - 0.11 m/s), ppo_dr_ef9vy61f (training - 0.31 m/s at 4.25M steps)
+## Current Status (August 29, 2025)
+- **Phase**: 3/4 (SR2L/DR Implementation) - From-scratch training failed catastrophically
+- **Best Models**: ppo_target_walking_llsm451b (1.31 m/s baseline) - ONLY successful model
+- **Latest Results**: 
+  - ppo_sr2l_scratch_1i3st11y: 0.035 m/s (numerical instability, NaN/Inf errors)
+  - ppo_dr_scratch_ccbytmdp: -0.023 m/s (walks BACKWARDS!)
+  - ppo_dr_ef9vy61f: 0.31 m/s at 4.25M (with pretrained init)
 
 ## Project Phases
 1. ✅ **Phase 1**: Environment Setup - Migrate from Ant-v4 to RealAnt
@@ -51,6 +54,19 @@
 4. **Stability**: Angular velocity < 2.0 rad/s
 
 ## Recent Major Changes
+
+### August 29, 2025 - FROM-SCRATCH TRAINING COMPLETE FAILURE
+- **SR2L from scratch**: 0.035 m/s (1.8% of target) - Despite gradient fix, still unstable
+  - Numerical instability: NaN/Inf in QVEL and QPOS
+  - Physics simulation breaks under SR2L regularization
+  - Even gentle parameters (λ=0.0005) cause catastrophic failure
+- **DR from scratch**: -0.023 m/s (NEGATIVE velocity - walks backwards!)
+  - Can't learn basic forward locomotion with joint dropouts
+  - Even gentle curriculum (15% dropout) prevents learning
+- **Key Discovery**: Pretrained initialization is ESSENTIAL
+  - Target walking is too hard to learn from scratch with perturbations
+  - Need stable walking policy first, then add robustness
+  - Both SR2L and DR fail without good initialization
 
 ### August 28, 2025 - CRITICAL SR2L BUG FOUND AND FIXED
 - **Major Discovery**: Found critical gradient flow bug in SR2L implementation
