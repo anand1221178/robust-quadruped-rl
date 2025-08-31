@@ -1,0 +1,71 @@
+defaults:
+  - /train/sr2l              # Use SR2L training config
+  - /env/realant             # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "PPO + SR2L FIXED V2 - Keep small network for pretrained compatibility, joint-only perturbations, curriculum"
+  name: ppo_sr2l_fixed_v2
+  tags: 
+    - ppo
+    - sr2l
+    - phase3
+    - fixed-implementation
+    - joint-perturbations
+    - curriculum
+    - sensor-noise-robustness
+    - pretrained-compatible
+
+# SR2L configuration - FIXED implementation with curriculum
+sr2l:
+  enabled: true
+  lambda: 0.005                   # Target lambda (reached via curriculum) - gentler
+  perturbation_std: 0.01          # Small joint sensor noise
+  warmup_steps: 3000000           # 3M warmup before SR2L starts (longer)
+  apply_frequency: 4              # Apply less frequently
+  max_perturbation: 0.03          # Small max for joint sensors
+  use_curriculum: true            # ENABLE curriculum learning
+  curriculum_steps: 7000000       # 7M steps to reach full lambda (very gradual)
+
+# Environment settings - Use target walking (proven to work)
+env:
+  name: RealAntMujoco-v0
+  use_target_walking: true       # Goal-directed navigation
+  target_distance: 5.0           # Same as baseline
+  
+# CRITICAL: Use pretrained model (from-scratch fails)
+pretrained_model: experiments/ppo_target_walking_llsm451b/best_model/best_model.zip
+
+# Longer training for curriculum learning
+total_timesteps: 20000000        # 20M steps
+
+# KEEP ORIGINAL NETWORK SIZE for pretrained compatibility
+policy:
+  hidden_sizes:
+    - 64                         # Same as pretrained
+    - 128                        # Same as pretrained
+  activation: relu               # Same as pretrained
+
+# PPO hyperparameters - slightly adjusted for stability
+ppo:
+  learning_rate: 0.0002          # Slightly lower for stability with SR2L
+  n_steps: 2048                  
+  batch_size: 2048               
+  n_epochs: 10                   
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0                  
+  vf_coef: 0.5
+  max_grad_norm: 0.5             # Important for SR2L stability
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Save frequently to monitor curriculum progress
+save_freq: 100000
+eval_freq: 25000
