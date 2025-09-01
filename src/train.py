@@ -32,6 +32,7 @@ from wandb.integration.sb3 import WandbCallback
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from envs.target_walking_wrapper import TargetWalkingWrapper
 from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
+from envs.robust_dr_wrapper import RobustDRWrapper
 from utils.custom_callbacks import CustomMetricsCallback
 
 # Import RealAnt environments
@@ -99,7 +100,15 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         # Apply Domain Randomization wrapper if specified  
         if use_domain_randomization:
             dr_config = env_config.get('domain_randomization', {})
-            if dr_config.get('use_curriculum', False):
+            wrapper_type = dr_config.get('wrapper_type', 'standard')
+            
+            if wrapper_type == 'robust':
+                print("Using ROBUST Domain Randomization - Advanced fault modeling!")
+                print(f"  Fault types: {dr_config.get('fault_types', ['lock', 'weak', 'delay'])}")
+                print(f"  Surprise mode: {dr_config.get('surprise_mode', False)}")
+                print(f"  Curriculum: {dr_config.get('use_curriculum', False)}")
+                env = RobustDRWrapper(env, dr_config)
+            elif dr_config.get('use_curriculum', False):
                 print("Using Curriculum Domain Randomization - Joint dropout & sensor noise!")
                 print(f"  Phase 2 (0-{dr_config.get('phase_2_steps', 5000000)}): Single joint + mild noise")
                 print(f"  Phase 3 ({dr_config.get('phase_2_steps', 5000000)}+): Multiple joints + high noise")
