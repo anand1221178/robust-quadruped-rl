@@ -1,0 +1,64 @@
+batch_size: 2048
+clip_range: 0.2
+defaults:
+- /train/sr2l
+- /env/realant
+ent_coef: 0.0
+env:
+  name: RealAntMujoco-v0
+  target_distance: 5.0
+  use_target_walking: true
+eval_freq: 25000
+experiment:
+  description: PPO + SR2L FIXED V2 - Keep small network for pretrained compatibility,
+    joint-only perturbations, curriculum
+  name: ppo_sr2l_fixed_v2
+  tags:
+  - ppo
+  - sr2l
+  - phase3
+  - fixed-implementation
+  - joint-perturbations
+  - curriculum
+  - sensor-noise-robustness
+  - pretrained-compatible
+gae_lambda: 0.95
+gamma: 0.99
+learning_rate: 0.0003
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+max_grad_norm: 0.5
+n_epochs: 10
+n_steps: 2048
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0002
+  max_grad_norm: 0.5
+  n_epochs: 10
+  n_steps: 2048
+  vf_coef: 0.5
+pretrained_model: experiments/ppo_target_walking_llsm451b/best_model/best_model.zip
+save_freq: 100000
+sr2l:
+  apply_frequency: 4
+  curriculum_steps: 7000000
+  enabled: true
+  lambda: 0.005
+  max_perturbation: 0.03
+  perturbation_std: 0.01
+  use_curriculum: true
+  warmup_steps: 3000000
+total_timesteps: 20000000
+vf_coef: 0.5
