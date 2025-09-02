@@ -1,0 +1,90 @@
+defaults:
+  - /train/base              # Use base PPO training config
+  - /env/realant             # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "PPO + Robust DR - Proper joint locking, progressive curriculum, surprise training"
+  name: ppo_dr_robust
+  tags: 
+    - ppo
+    - domain-randomization
+    - robust-dr
+    - position-control
+    - progressive-curriculum
+    - surprise-training
+    - pretrained-init
+
+# Enable ROBUST Domain Randomization
+domain_randomization:
+  enabled: true
+  wrapper_type: "robust"  # Use new RobustDRWrapper
+  
+  # Fault configuration
+  joint_fault_prob: 0.3        # 30% episodes have faults (at full curriculum)
+  max_faulty_joints: 3         # Up to 3 simultaneous faults
+  min_faulty_joints: 1         # At least 1 fault when activated
+  
+  # Fault types and probabilities
+  fault_types: ["lock", "weak", "delay"]
+  fault_type_probs: [0.5, 0.3, 0.2]  # 50% lock, 30% weak, 20% delay
+  
+  # Sensor noise
+  sensor_noise_std: 0.03       # Moderate sensor noise at full strength
+  
+  # Progressive curriculum
+  use_curriculum: true
+  warmup_steps: 2000000        # 2M steps clean training first
+  curriculum_steps: 8000000    # 8M steps to reach full difficulty
+  
+  # Surprise training mode
+  surprise_mode: true          # Enable surprise failures
+  surprise_prob: 0.1           # 10% chance of surprise episode
+  normal_fault_prob: 0.1       # 10% fault rate in normal episodes
+
+# Disable SR2L (this is DR only)
+sr2l:
+  enabled: false
+
+# Environment settings - Match baseline exactly (SuccessRewardWrapper)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # CRITICAL: Match baseline wrapper exactly
+  use_domain_randomization: true # Enable DR wrapper
+  
+# Training duration
+total_timesteps: 20000000        # 20M steps for thorough training
+
+# CRITICAL: Initialize from CORRECT smooth walking baseline (SECURED in done/)
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# PPO hyperparameters - slightly adjusted for DR complexity
+ppo:
+  learning_rate: 0.0002          # Slightly lower for stability
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.001               # Tiny bit of exploration
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Network architecture - CRITICAL: Match baseline exactly  
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline
+  activation: relu               # Same as baseline
+
+# Save frequently to monitor curriculum progress
+save_freq: 100000
+eval_freq: 25000

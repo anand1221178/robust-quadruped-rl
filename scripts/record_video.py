@@ -70,7 +70,12 @@ def record_video(model_path, vec_normalize_path=None, output_path="walking_video
         
         # Track metrics from info
         if len(info) > 0 and info[0] is not None:
-            if 'current_velocity' in info[0]:
+            # Handle TargetWalkingWrapper metrics
+            if 'speed' in info[0]:
+                velocities.append(info[0]['speed'])
+                distances.append(sum([abs(v) * 0.05 for v in velocities]))
+            # Handle SuccessRewardWrapper metrics
+            elif 'current_velocity' in info[0]:
                 velocities.append(info[0]['current_velocity'])
             if 'distance_traveled' in info[0]:
                 distances.append(info[0]['distance_traveled'])

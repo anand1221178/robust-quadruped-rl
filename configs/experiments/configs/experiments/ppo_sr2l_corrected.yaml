@@ -1,0 +1,57 @@
+defaults:
+  - /train/sr2l           # Use SR2L training config
+  - /env/realant          # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "CORRECTED SR2L - Only perturb joint sensors as per research proposal"
+  name: ppo_sr2l_corrected
+  tags: 
+    - ppo
+    - sr2l
+    - phase3
+    - corrected
+    - joint-sensors-only
+
+# Domain randomization disabled (Phase 4)
+domain_randomization:
+  enabled: false
+
+# CORRECTED SR2L settings - only perturb joint sensors
+sr2l:
+  enabled: true
+  lambda: 0.002                   # Slightly stronger since we're only perturbing relevant sensors
+  perturbation_std: 0.02          # Realistic encoder/tachometer noise levels
+  warmup_steps: 1000000           # 1M step warmup - shorter since perturbations are realistic
+  apply_frequency: 2              # Every 2 steps
+  use_huber_loss: true            # Robust loss for outliers
+  max_perturbation: 0.05          # Reasonable sensor noise limit
+
+# Environment settings - Match baseline exactly (SuccessRewardWrapper)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # CRITICAL: Match baseline wrapper exactly
+  
+# 15M steps for thorough training
+total_timesteps: 15000000        
+
+# Initialize from CORRECT smooth walking baseline (SECURED in done/)
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Network architecture - CRITICAL: Match baseline exactly
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline  
+  activation: relu               # Same as baseline
+
+# Save frequently to track progress
+save_freq: 100000
+eval_freq: 25000
