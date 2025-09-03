@@ -1,0 +1,90 @@
+defaults:
+  - /train/base              # Use base PPO training config
+  - /env/realant             # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "PPO + Gentle DR v2 - Much gentler curriculum based on DR v1 results"
+  name: ppo_dr_gentle_v2
+  tags: 
+    - ppo
+    - domain-randomization
+    - gentle-dr
+    - position-control
+    - extended-warmup
+    - reduced-faults
+    - pretrained-init
+
+# Enable GENTLE Domain Randomization
+domain_randomization:
+  enabled: true
+  wrapper_type: "robust"  # Use new RobustDRWrapper
+  
+  # GENTLER Fault configuration
+  joint_fault_prob: 0.15       # REDUCED: 15% episodes (was 30%)
+  max_faulty_joints: 2         # REDUCED: Max 2 faults (was 3)
+  min_faulty_joints: 1         # At least 1 fault when activated
+  
+  # Fault types - Focus on weaker failures
+  fault_types: ["weak", "delay", "lock"]
+  fault_type_probs: [0.5, 0.3, 0.2]  # 50% weak, 30% delay, 20% lock
+  
+  # REDUCED Sensor noise
+  sensor_noise_std: 0.01       # MUCH gentler (was 0.03)
+  
+  # MUCH EXTENDED Progressive curriculum - BEEF UP THE TIME!
+  use_curriculum: true
+  warmup_steps: 8000000        # BEEFED UP: 8M steps clean baseline (was 2M)
+  curriculum_steps: 15000000   # BEEFED UP: 15M gradual ramp (was 8M)
+  
+  # DISABLE Surprise training initially  
+  surprise_mode: false         # DISABLED for stability
+  surprise_prob: 0.0           # No surprises
+  normal_fault_prob: 0.05      # REDUCED: 5% normal fault rate (was 10%)
+
+# Disable SR2L (this is DR only)
+sr2l:
+  enabled: false
+
+# Environment settings - Match baseline exactly (SuccessRewardWrapper)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # CRITICAL: Match baseline wrapper exactly
+  use_domain_randomization: true # Enable DR wrapper
+  
+# BEEFED UP Training duration - Give it the time it needs!
+total_timesteps: 30000000        # 30M steps total (was 20M)
+
+# CRITICAL: Initialize from CORRECT smooth walking baseline (SECURED in done/)
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# PPO hyperparameters - MATCH BASELINE EXACTLY for consistency
+ppo:
+  learning_rate: 0.0003          # MATCH baseline exactly (was 0.0001)
+  n_steps: 2048
+  batch_size: 2048               # MATCH baseline
+  n_epochs: 10                   # MATCH baseline
+  gamma: 0.99                    # MATCH baseline
+  gae_lambda: 0.95               # MATCH baseline
+  clip_range: 0.2                # MATCH baseline
+  ent_coef: 0.0                  # MATCH baseline exactly (was 0.0005)
+  vf_coef: 0.5                   # MATCH baseline
+  max_grad_norm: 0.5             # MATCH baseline
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Network architecture - CRITICAL: Match baseline exactly  
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline
+  activation: relu               # Same as baseline
+
+# Save frequently to monitor gentle curriculum progress
+save_freq: 100000
+eval_freq: 25000

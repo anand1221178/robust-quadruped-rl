@@ -1,0 +1,67 @@
+defaults:
+- /train/base
+- /env/realant
+domain_randomization:
+  curriculum_steps: 8000000
+  enabled: true
+  fault_type_probs:
+  - 0.5
+  - 0.3
+  - 0.2
+  fault_types:
+  - lock
+  - weak
+  - delay
+  joint_fault_prob: 0.3
+  max_faulty_joints: 3
+  min_faulty_joints: 1
+  normal_fault_prob: 0.1
+  sensor_noise_std: 0.03
+  surprise_mode: true
+  surprise_prob: 0.1
+  use_curriculum: true
+  warmup_steps: 2000000
+  wrapper_type: robust
+env:
+  name: RealAntMujoco-v0
+  use_domain_randomization: true
+  use_success_reward: true
+eval_freq: 25000
+experiment:
+  description: PPO + Robust DR - Proper joint locking, progressive curriculum, surprise
+    training
+  name: ppo_dr_robust
+  tags:
+  - ppo
+  - domain-randomization
+  - robust-dr
+  - position-control
+  - progressive-curriculum
+  - surprise-training
+  - pretrained-init
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.001
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0002
+  max_grad_norm: 0.5
+  n_epochs: 10
+  n_steps: 2048
+  vf_coef: 0.5
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+save_freq: 100000
+sr2l:
+  enabled: false
+total_timesteps: 20000000

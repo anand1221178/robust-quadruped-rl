@@ -1,0 +1,18 @@
+{
+  "noise_levels": [
+    "0%",
+    "5%",
+    "10%",
+    "15%",
+    "20%"
+  ],
+  "success_rates": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0
+  ],
+  "model_tested": "current_model",
+  "test_episodes": 10
+}
