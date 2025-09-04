@@ -1,0 +1,64 @@
+defaults:
+  - /train/default           # Use default PPO training config
+  - /env/realant             # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "Tuned Baseline - Optimized hyperparameters for better locomotion"
+  name: ppo_baseline_tuned
+  tags: 
+    - ppo
+    - baseline
+    - hyperparameter-tuned
+    - optimized
+    - control-study
+
+# Disable robustness methods (pure baseline)
+sr2l:
+  enabled: false
+  
+domain_randomization:
+  enabled: false
+
+# Environment settings - Match current baseline exactly
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # Same as current baseline
+  use_domain_randomization: false
+
+# Training duration - Same as current baseline for fair comparison
+total_timesteps: 10000000        # 10M steps (same as original baseline)
+
+# OPTIMIZED PPO hyperparameters based on locomotion best practices
+ppo:
+  learning_rate: 0.0001          # LOWER: More stable for continuous control
+  n_steps: 4096                  # HIGHER: More data per update (was 2048)
+  batch_size: 512                # LOWER: More gradient updates (was 2048) 
+  n_epochs: 20                   # HIGHER: More optimization per batch (was 10)
+  gamma: 0.995                   # HIGHER: Value longer-term rewards (was 0.99)
+  gae_lambda: 0.98               # HIGHER: Less biased advantage estimates (was 0.95)
+  clip_range: 0.15               # LOWER: More conservative policy updates (was 0.2)
+  ent_coef: 0.001                # SMALL: Encourage exploration (was 0.0)
+  vf_coef: 0.25                  # LOWER: Balance policy vs value (was 0.5)
+  max_grad_norm: 0.8             # HIGHER: Allow bigger gradients for locomotion (was 0.5)
+
+# Network architecture - Same as current baseline
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline  
+  activation: relu               # Same as baseline
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Save settings
+save_freq: 100000
+eval_freq: 25000
+
+# NO pretrained initialization - train from scratch
+# pretrained_model: null

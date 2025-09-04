@@ -1,0 +1,64 @@
+defaults:
+  - /train/default           # Use default PPO training config
+  - /env/realant             # Use RealAnt environment
+
+# Experiment settings
+experiment:
+  description: "Extended Baseline - Testing if 20M steps improves over 10M baseline"
+  name: ppo_baseline_20M
+  tags: 
+    - ppo
+    - baseline
+    - extended-training
+    - 20M-steps
+    - control-study
+
+# Disable robustness methods (pure baseline)
+sr2l:
+  enabled: false
+  
+domain_randomization:
+  enabled: false
+
+# Environment settings - Match current baseline exactly
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # Same as current baseline
+  use_domain_randomization: false
+
+# EXTENDED Training duration - 2x current baseline
+total_timesteps: 20000000        # 20M steps (vs 10M baseline)
+
+# PPO hyperparameters - IDENTICAL to current baseline
+ppo:
+  learning_rate: 0.0003          # Same as baseline
+  n_steps: 2048                  # Same as baseline  
+  batch_size: 2048               # Same as baseline
+  n_epochs: 10                   # Same as baseline
+  gamma: 0.99                    # Same as baseline
+  gae_lambda: 0.95               # Same as baseline
+  clip_range: 0.2                # Same as baseline
+  ent_coef: 0.0                  # Same as baseline
+  vf_coef: 0.5                   # Same as baseline
+  max_grad_norm: 0.5             # Same as baseline
+
+# Network architecture - IDENTICAL to current baseline
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline
+  activation: relu               # Same as baseline
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Save settings
+save_freq: 100000
+eval_freq: 25000
+
+# NO pretrained initialization - train from scratch
+# pretrained_model: null
