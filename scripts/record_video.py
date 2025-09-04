@@ -56,7 +56,7 @@ def record_video(model_path, vec_normalize_path=None, output_path="walking_video
     step_count = 0
     
     print("Recording video...")
-    for step in range(1500):  # Max 1500 steps (~30 seconds at 50Hz)
+    for step in range(500):  # Match debug_velocity episode length
         action, _ = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         

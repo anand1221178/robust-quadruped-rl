@@ -1,0 +1,79 @@
+# SR2L Gentle v3 Configuration - Learning from DR v2 Success
+# Using gentle curriculum and extended training that worked for DR
+
+name: "ppo_sr2l_gentle_v3"
+algorithm: "PPO_SR2L"
+
+# Environment settings
+env:
+  name: "RealAntMujoco-v0"
+  wrapper: "SuccessRewardWrapper"
+  normalize: true
+  use_success_reward: true  # Matches baseline
+
+# PPO hyperparameters (matching baseline exactly)
+ppo:
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  learning_rate: 0.0003
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef: 0.0
+  max_grad_norm: 0.5
+  gae_lambda: 0.95
+  gamma: 0.99
+
+# Network architecture (matching baseline)
+policy:
+  net_arch:
+    pi: [64, 128]  # Policy network
+    vf: [64, 128]  # Value network
+  activation_fn: "ReLU"
+
+# SR2L-specific parameters (VERY GENTLE like DR v2)
+sr2l:
+  lambda_smooth: 0.001  # Very gentle regularization
+  perturbation_std: 0.01  # Small perturbations (like DR v2 noise)
+  max_perturbation: 0.05  # Cap maximum perturbation
+  warmup_steps: 8000000  # 8M warmup like DR v2
+  curriculum_steps: 15000000  # 15M progressive increase like DR v2
+  perturb_only_joints: true  # Only perturb joint observations (dims 13-28)
+  joint_start_dim: 13
+  joint_end_dim: 28
+  
+# Training settings (30M steps like DR v2!)
+training:
+  total_timesteps: 30000000  # 30M total steps for robustness
+  save_freq: 500000  # Save every 500k steps
+  eval_freq: 100000  # Evaluate every 100k steps
+  eval_episodes: 10
+  verbose: 1
+  seed: 42
+
+# Initialization - start from baseline
+initialization:
+  load_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
+  load_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
+
+# Logging
+logging:
+  track: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anand_robotics"
+  wandb_tags: ["sr2l", "gentle_v3", "30M_steps", "joint_only"]
+
+# Device
+device: "auto"
+
+# Checkpoint settings
+checkpoint:
+  save_best: true
+  save_last: true
+  save_replay_buffer: false
+  
+# Success criteria
+success_criteria:
+  min_velocity: 0.15  # Slightly lower than baseline due to smoothness trade-off
+  min_distance: 3.0
+  max_falls: 0.1

@@ -90,10 +90,15 @@ def test_model_velocity(model_path, norm_path=None):
         else:
             total_distance = 0.0
             
+        # DEBUG INFO - Check physics calculation
+        episode_time = step * 0.05  # Each step is 0.05s
+        physics_velocity = total_distance / episode_time if episode_time > 0 else 0.0
+        
         velocities.append(avg_velocity)
         distances.append(total_distance)
         
         print(f"Episode {episode+1}: Avg velocity = {avg_velocity:.4f} m/s, Distance = {total_distance:.4f} m")
+        print(f"  DEBUG: {step} steps, {episode_time:.1f}s, Physics check: {physics_velocity:.4f} m/s")
     
     overall_avg = np.mean(velocities)
     overall_std = np.std(velocities)

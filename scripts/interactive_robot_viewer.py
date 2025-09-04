@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Interactive Robot Viewer with Real-time Visualization and Video Recording
-Watch your robot perform live with the ability to save videos and analyze performance
+🚀 DR-FOCUSED INTERACTIVE ROBOT VIEWER 🚀
+Real-time Domain Randomization Analysis & Video Recording
+
+Features:
+🎯 Joint failure simulation
+📊 DR performance metrics
+🎬 Two-pass video recording
+📈 Real-time fault analysis
 """
 
 import tkinter as tk
@@ -27,8 +33,9 @@ import io
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
 
-# Import session manager
+# Import session manager and two-pass video recorder
 from session_manager import get_session_manager, save_session_image, add_session_note, copy_session_file
+from utils.two_pass_video import TwoPassVideoRecorder
 
 # Try to import MuJoCo viewer
 try:
@@ -74,6 +81,8 @@ class InteractiveRobotViewer:
         self.reward_data = []
         self.time_data = []
         self.action_data = []
+        self.joint_torques = []  # Track individual joint outputs
+        self.stability_data = []  # Track robot stability
         self.max_data_points = 500  # More data points for smooth curves
         
         # Video recording
@@ -84,8 +93,13 @@ class InteractiveRobotViewer:
         # Visualization settings
         self.camera_angle = 0
         self.show_trails = True
-        self.noise_level = 0.0
         self.current_step = 0
+        
+        # DR-specific tracking
+        self.joint_failure_history = []
+        self.stability_metrics = []
+        self.dr_performance_ratio = []
+        self.fault_tolerance_score = []
         
         # UI Theme colors
         self.colors = {
@@ -370,35 +384,35 @@ class InteractiveRobotViewer:
         angle_scale.pack(fill=tk.X, pady=(0, 10))
         
         # Noise injection with beautiful styling
-        noise_label = tk.Label(viz_container,
-                              text="🌊 Sensor Noise Level:",
+        dr_label = tk.Label(viz_container,
+                           text="⚡ DR Joint Failure Rate:",
                               font=("Arial", 10, "bold"),
                               fg=self.colors['text'],
                               bg=self.colors['panel'])
-        noise_label.pack(anchor=tk.W, pady=(0, 3))
+        dr_label.pack(anchor=tk.W, pady=(0, 3))
         
-        self.noise_var = tk.DoubleVar(value=0.0)
-        noise_scale = tk.Scale(viz_container,
-                              from_=0.0, to=0.25,
-                              variable=self.noise_var,
+        self.dr_failure_var = tk.DoubleVar(value=0.0)
+        dr_scale = tk.Scale(viz_container,
+                           from_=0.0, to=0.3,
+                           variable=self.dr_failure_var,
                               orient=tk.HORIZONTAL,
                               bg=self.colors['panel'],
                               fg=self.colors['text'],
-                              activebackground=self.colors['secondary'],
+                           activebackground=self.colors['danger'],
                               troughcolor='#404040',
                               highlightbackground=self.colors['panel'],
-                              resolution=0.01,
+                           resolution=0.05,
                               relief='flat',
                               bd=0,
-                              command=self.update_noise_label)
-        noise_scale.pack(fill=tk.X, pady=(0, 5))
+                              command=self.update_dr_label)
+        dr_scale.pack(fill=tk.X, pady=(0, 5))
         
-        self.noise_label = tk.Label(viz_container,
-                                   text="0.0%",
-                                   font=("Arial", 9),
-                                   fg=self.colors['accent'],
-                                   bg=self.colors['panel'])
-        self.noise_label.pack(pady=(0, 10))
+        self.dr_failure_label = tk.Label(viz_container,
+                                         text="0%",
+                                         font=("Arial", 9),
+                                         fg=self.colors['danger'],
+                                         bg=self.colors['panel'])
+        self.dr_failure_label.pack(pady=(0, 10))
         
         # Trail toggle with modern checkbox styling
         self.trails_var = tk.BooleanVar(value=True)
@@ -553,7 +567,7 @@ class InteractiveRobotViewer:
         # Create figure with dark theme
         plt.style.use('dark_background')
         self.perf_fig, ((self.vel_ax, self.reward_ax), 
-                       (self.action_ax, self.noise_ax)) = plt.subplots(2, 2, figsize=(12, 8))
+                       (self.action_ax, self.dr_ax)) = plt.subplots(2, 2, figsize=(12, 8))
         
         # Apply beautiful dark theme
         self.perf_fig.patch.set_facecolor('#1e1e1e')
@@ -584,14 +598,15 @@ class InteractiveRobotViewer:
         self.action_ax.grid(True, alpha=0.3, color='gray')
         
         # Noise impact with eye-catching design
-        self.noise_ax.set_title('Noise Impact', fontweight='bold', color='white')
-        self.noise_ax.set_ylabel('Performance Degradation', color='white')
-        self.noise_ax.set_xlabel('Time Steps', color='white')
-        self.noise_ax.set_facecolor('#2d2d2d')
-        self.noise_ax.grid(True, alpha=0.3, color='gray')
+        self.dr_ax.set_title('DR Joint Health', fontweight='bold', color='white')
+        self.dr_ax.set_ylabel('Joint Functionality (%)', color='white')
+        self.dr_ax.set_xlabel('Time Steps', color='white')
+        self.dr_ax.set_facecolor('#2d2d2d')
+        self.dr_ax.grid(True, alpha=0.3, color='gray')
+        self.dr_ax.set_ylim(0, 100)
         
         # Style all axes beautifully
-        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.noise_ax]:
+        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.dr_ax]:
             ax.tick_params(colors='white')
             ax.xaxis.label.set_color('white')
             ax.yaxis.label.set_color('white')
@@ -655,10 +670,10 @@ class InteractiveRobotViewer:
 • Automated report generation
 
 ⚙️ Interactive Controls:
-• Real-time noise injection
-• Camera angle adjustment
+• Real-time DR joint failure simulation
+• Camera angle adjustment  
 • Movement trail visualization
-• Performance threshold monitoring"""
+• DR performance analysis tools"""
         
         self.stats_display.insert(1.0, analysis_text)
         self.stats_display.config(state='disabled')
@@ -788,9 +803,10 @@ class InteractiveRobotViewer:
             else:
                 self.current_model = PPO.load(file_path)
             
-            # Create environment
+            # Create environment with rendering support
             def make_env():
-                _env = gym.make('RealAntMujoco-v0')
+                # Add render_mode for live visualization
+                _env = gym.make('RealAntMujoco-v0', render_mode='rgb_array')
                 _env = SuccessRewardWrapper(_env)
                 _env = Monitor(_env)
                 return _env
@@ -868,19 +884,24 @@ class InteractiveRobotViewer:
         # Update status and start simulation
         self.status_indicator.config(text="🟢 RUNNING", fg=self.colors['success'])
         
-        # Start rendering if MuJoCo is available  
+        # DISABLE RENDERING THREAD - Causes system crashes due to OpenGL threading issues
         print(f"RENDER DEBUG: MUJOCO_AVAILABLE = {MUJOCO_AVAILABLE}")
-        print(f"RENDER DEBUG: has robot_canvas = {hasattr(self, 'robot_canvas')}")
-        print(f"RENDER DEBUG: base_env = {type(self.base_env) if self.base_env else 'None'}")
+        print(f"RENDER DEBUG: Rendering disabled to prevent system crashes")
         
-        if MUJOCO_AVAILABLE and hasattr(self, 'robot_canvas') and self.base_env:
-            print(f"✅ Starting rendering thread for environment: {type(self.base_env)}")
-            self.render_running = True
-            self.render_thread = threading.Thread(target=self.rendering_loop, daemon=True)
-            self.render_thread.start()
-            self.render_status.config(text="🎥 Attempting live rendering...")
+        if MUJOCO_AVAILABLE and hasattr(self, 'robot_canvas'):
+            self.render_status.config(text="⚠️ Live rendering disabled (prevents crashes)")
+            # Show a message instead of crashing
+            self.robot_canvas.create_text(400, 200, 
+                                        text="🤖 ROBOT SIMULATION RUNNING\n\n" +
+                                             "Live rendering disabled due to\n" +
+                                             "OpenGL threading conflicts\n\n" +
+                                             "📊 Use performance graphs to\n" +
+                                             "monitor robot behavior\n\n" +
+                                             "🎬 Use 'Record Video' for\n" +
+                                             "accurate visual recordings", 
+                                        fill="white", font=("Arial", 12))
         else:
-            print(f"❌ NOT starting rendering thread - conditions not met")
+            print(f"❌ MuJoCo not available for rendering")
         
         # Start simulation thread
         self.thread = threading.Thread(target=self.simulation_loop, daemon=True)
@@ -930,7 +951,7 @@ class InteractiveRobotViewer:
         self.vel_line.set_data([], [])
         self.reward_line.set_data([], [])
         
-        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.noise_ax]:
+        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.dr_ax]:
             ax.clear()
         
         # Reconfigure plots with fresh beautiful styling
@@ -954,14 +975,15 @@ class InteractiveRobotViewer:
         self.action_ax.set_facecolor('#2d2d2d')
         self.action_ax.grid(True, alpha=0.3, color='gray')
         
-        self.noise_ax.set_title('Noise Impact', fontweight='bold', color='white')
-        self.noise_ax.set_ylabel('Performance Degradation', color='white')
-        self.noise_ax.set_xlabel('Time Steps', color='white')
-        self.noise_ax.set_facecolor('#2d2d2d')
-        self.noise_ax.grid(True, alpha=0.3, color='gray')
+        self.dr_ax.set_title('DR Joint Health', fontweight='bold', color='white')
+        self.dr_ax.set_ylabel('Joint Functionality (%)', color='white')
+        self.dr_ax.set_xlabel('Time Steps', color='white')
+        self.dr_ax.set_facecolor('#2d2d2d')
+        self.dr_ax.grid(True, alpha=0.3, color='gray')
+        self.dr_ax.set_ylim(0, 100)
         
         # Style all axes beautifully
-        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.noise_ax]:
+        for ax in [self.vel_ax, self.reward_ax, self.action_ax, self.dr_ax]:
             ax.tick_params(colors='white')
             ax.xaxis.label.set_color('white')
             ax.yaxis.label.set_color('white')
@@ -1009,17 +1031,44 @@ class InteractiveRobotViewer:
                 # Get action from model
                 action, _ = self.current_model.predict(obs, deterministic=True)
                 
-                # Add noise if specified
-                if self.noise_var.get() > 0:
-                    noise = np.random.normal(0, self.noise_var.get(), obs.shape)
-                    obs_noisy = obs + noise
-                    action, _ = self.current_model.predict(obs_noisy, deterministic=True)
+                # Apply DR joint failures if specified
+                if self.dr_failure_var.get() > 0:
+                    action = self.apply_joint_failures(action)
+                    
+                    # Track joint health for DR visualization
+                    joint_health = self.calculate_joint_health()
+                    self.joint_failure_history.append(joint_health)
+                    
+                    # Calculate stability metrics
+                    stability = self.calculate_stability_score(obs)
+                    self.stability_metrics.append(stability)
                 
                 # Execute action
                 obs, reward, done, info = self.current_env.step(action)
                 
                 # Extract velocity (pass reward for fallback method)
                 velocity = self.extract_velocity_with_reward(info, reward)
+                
+                # Store trajectory data if recording (Pass 1: No rendering)
+                if self.is_recording and hasattr(self, 'recording_trajectory'):
+                    self.recording_trajectory['actions'].append(action.copy())
+                    self.recording_trajectory['observations'].append(obs.copy())
+                    self.recording_trajectory['rewards'].append(reward[0] if hasattr(reward, '__len__') else reward)
+                    self.recording_trajectory['velocities'].append(velocity)
+                    self.recording_trajectory['infos'].append(info[0] if hasattr(info, '__len__') else info)
+                    
+                    # Update recorder's internal trajectory
+                    if hasattr(self, 'two_pass_recorder'):
+                        self.two_pass_recorder.trajectory = self.recording_trajectory
+                        # Update performance metrics
+                        self.two_pass_recorder.performance_metrics = {
+                            'episode_reward': episode_reward,
+                            'episode_length': len(self.recording_trajectory['actions']),
+                            'avg_velocity': np.mean(self.recording_trajectory['velocities']) if self.recording_trajectory['velocities'] else 0.0,
+                            'max_velocity': np.max(self.recording_trajectory['velocities']) if self.recording_trajectory['velocities'] else 0.0,
+                            'min_velocity': np.min(self.recording_trajectory['velocities']) if self.recording_trajectory['velocities'] else 0.0,
+                            'velocity_std': np.std(self.recording_trajectory['velocities']) if self.recording_trajectory['velocities'] else 0.0
+                        }
                 
                 # Debug velocity extraction every 50 steps
                 if step_count % 50 == 0 and step_count > 0:
@@ -1040,12 +1089,15 @@ class InteractiveRobotViewer:
                 self.time_data.append(step_count)
                 self.velocity_data.append(velocity)
                 self.reward_data.append(reward[0])
+                self.action_data.append(action.copy() if hasattr(action, 'copy') else action)
                 
                 # Keep only recent data
                 if len(self.time_data) > self.max_data_points:
                     self.time_data.pop(0)
                     self.velocity_data.pop(0)
                     self.reward_data.pop(0)
+                    if self.action_data:
+                        self.action_data.pop(0)
                 
                 episode_reward += reward[0]
                 step_count += 1
@@ -1100,17 +1152,41 @@ class InteractiveRobotViewer:
             
             print(f"  DEBUG: Final unwrapped base_env type: {type(base_env)}")
             print(f"  DEBUG: Final base_env has sim: {hasattr(base_env, 'sim')}")
-            if hasattr(base_env, 'sim'):
-                print(f"  DEBUG: sim.data exists: {hasattr(base_env.sim, 'data')}")
+            print(f"  DEBUG: Final base_env has _sim: {hasattr(base_env, '_sim')}")  
+            print(f"  DEBUG: Final base_env has data: {hasattr(base_env, 'data')}")
+            print(f"  DEBUG: Final base_env has model: {hasattr(base_env, 'model')}")
+            
+            # List some attributes for debugging
+            if hasattr(base_env, '__dict__'):
+                attrs = [attr for attr in dir(base_env) if not attr.startswith('__')]
+                print(f"  DEBUG: Available attributes: {attrs[:10]}...")  # First 10
             
             # For MuJoCo envs, get x velocity directly
             if hasattr(base_env, 'sim') and hasattr(base_env.sim, 'data'):
                 # Get center of mass velocity
                 velocity = base_env.sim.data.qvel[0]  # x-velocity
                 print(f"  DEBUG: SUCCESS! Raw qvel[0] = {velocity}")
+            elif hasattr(base_env, '_sim') and hasattr(base_env._sim, 'data'):
+                # Try alternative sim attribute
+                velocity = base_env._sim.data.qvel[0]
+                print(f"  DEBUG: SUCCESS via _sim! Raw qvel[0] = {velocity}")
+            elif hasattr(base_env, 'model') and hasattr(base_env, 'data'):
+                # Try direct model/data access
+                velocity = base_env.data.qvel[0]
+                print(f"  DEBUG: SUCCESS via data! Raw qvel[0] = {velocity}")
             else:
-                velocity = 0
-                print(f"  DEBUG: FALLBACK - no sim access, using velocity = 0")
+                # Fallback - extract from reward or info
+                if info and len(info) > 0 and info[0] is not None:
+                    info_dict = info[0] if isinstance(info, list) else info
+                    if 'current_velocity' in info_dict:
+                        velocity = info_dict['current_velocity']
+                        print(f"  DEBUG: FALLBACK via info - velocity = {velocity}")
+                    else:
+                        velocity = 0
+                        print(f"  DEBUG: FALLBACK - no velocity info, using velocity = 0")
+                else:
+                    velocity = 0
+                    print(f"  DEBUG: FALLBACK - no info, using velocity = 0")
         except Exception as e:
             print(f"Velocity extraction error: {e}")
             velocity = 0
@@ -1135,15 +1211,13 @@ class InteractiveRobotViewer:
         return velocity
     
     def rendering_loop(self):
-        """Real-time MuJoCo rendering loop - simplified approach"""
+        """Real-time MuJoCo rendering loop - dynamic environment access"""
         print("🎬 RENDERING LOOP STARTED!")
         print(f"🎬 MUJOCO_AVAILABLE: {MUJOCO_AVAILABLE}")
-        print(f"🎬 base_env exists: {self.base_env is not None}")
-        print(f"🎬 base_env has sim: {hasattr(self.base_env, 'sim') if self.base_env else False}")
         
-        if not MUJOCO_AVAILABLE or not self.base_env or not hasattr(self.base_env, 'sim'):
-            print("❌ RENDERING LOOP EXITING - conditions not met")
-            self.root.after(0, lambda: self.render_status.config(text="❌ No simulation available for rendering"))
+        if not MUJOCO_AVAILABLE or not self.current_env:
+            print("❌ RENDERING LOOP EXITING - MuJoCo not available or no env")
+            self.root.after(0, lambda: self.render_status.config(text="❌ MuJoCo not available"))
             return
             
         try:
@@ -1152,50 +1226,74 @@ class InteractiveRobotViewer:
             from PIL import Image, ImageTk
             
             print("Setting up MuJoCo rendering...")
-            print(f"Base env type: {type(self.base_env)}")
-            print(f"Has sim: {hasattr(self.base_env, 'sim')}")
-            print(f"Has render: {hasattr(self.base_env, 'render')}")
             
-            # Test what render modes are available
-            if hasattr(self.base_env, 'render'):
+            # Wait for simulation to start and environment to be ready
+            for i in range(10):  # Try for 5 seconds
+                if self.is_running and self.current_env:
+                    break
+                time.sleep(0.5)
+            
+            if not self.is_running:
+                print("❌ Simulation stopped before rendering could start")
+                return
+            
+            # Dynamically get the actual base environment
+            def get_base_env():
+                """Extract base environment dynamically like in velocity extraction"""
                 try:
-                    # Try to get the render modes
-                    if hasattr(self.base_env, 'metadata') and 'render_modes' in self.base_env.metadata:
-                        print(f"Available render modes: {self.base_env.metadata['render_modes']}")
+                    if hasattr(self.current_env, 'venv'):
+                        base_env = self.current_env.venv.envs[0]
                     else:
-                        print("No render modes metadata found")
+                        base_env = self.current_env.envs[0]
+                    
+                    # Unwrap all the way
+                    while hasattr(base_env, 'env'):
+                        base_env = base_env.env
+                    
+                    return base_env
                 except:
-                    print("Could not determine available render modes")
-                
-                # Try a simple test render
+                    return None
+            
+            # Test rendering with dynamic environment
+            base_env = get_base_env()
+            if base_env and hasattr(base_env, 'render'):
                 try:
-                    test_render = self.base_env.render(mode='rgb_array')
+                    # Try without mode parameter (gymnasium style)
+                    test_render = base_env.render()
                     if test_render is not None:
                         print(f"✅ Render test successful! Shape: {test_render.shape}")
                         self.root.after(0, lambda: self.render_status.config(
-                            text="✅ Rendering working!"))
+                            text="✅ Rendering initialized!"))
                     else:
                         print("❌ Render test returned None")
                         self.root.after(0, lambda: self.render_status.config(
-                            text="❌ Render returns None"))
+                            text="⚠️ Render not available"))
+                        return
                 except Exception as e:
                     print(f"❌ Render test failed: {e}")
+                    # Try to understand the error
+                    if "mode" in str(e):
+                        print("Note: This environment doesn't accept 'mode' parameter")
                     self.root.after(0, lambda: self.render_status.config(
-                        text=f"❌ Render error: {str(e)[:40]}..."))
+                        text="⚠️ Cannot render this environment"))
+                    return
             else:
-                print("❌ Environment has no render method")
+                print("❌ No base environment with render method")
                 self.root.after(0, lambda: self.render_status.config(
-                    text="❌ No render method available"))
+                    text="⚠️ Environment not renderable"))
+                return
             
             # Wait a bit for simulation to initialize
             time.sleep(1.0)
             
             while self.render_running:
                 try:
-                    if self.base_env and hasattr(self.base_env, 'render'):
-                        # Simple render approach
+                    # Get current base environment dynamically
+                    base_env = get_base_env()
+                    if base_env and hasattr(base_env, 'render'):
+                        # Simple render approach (no mode parameter)
                         try:
-                            rgb = self.base_env.render(mode='rgb_array')
+                            rgb = base_env.render()  # No mode parameter
                             if rgb is not None and hasattr(rgb, 'shape'):
                                 # Convert to image and display
                                 pil_image = Image.fromarray(rgb)
@@ -1208,12 +1306,12 @@ class InteractiveRobotViewer:
                                 self.root.after(0, lambda: self.render_status.config(
                                     text="🎥 Live rendering active!"))
                         except Exception as render_e:
-                            print(f"Render loop error: {render_e}")
-                            self.root.after(0, lambda: self.render_status.config(
-                                text=f"❌ Render error: {str(render_e)[:30]}..."))
-                            break
+                            # Don't spam errors, just update status occasionally
+                            if np.random.random() < 0.1:  # Only 10% of the time
+                                print(f"Render loop warning: {render_e}")
                     else:
-                        break
+                        # Environment not ready yet, keep trying
+                        time.sleep(0.1)
                         
                     time.sleep(0.2)  # 5 FPS to reduce load
                     
@@ -1246,7 +1344,7 @@ class InteractiveRobotViewer:
 Current Velocity: {velocity:.3f} m/s
 Episode Reward: {episode_reward:.2f}
 Step Count: {step_count}
-Noise Level: {self.noise_var.get()*100:.1f}%
+DR Failure Rate: {self.dr_failure_var.get()*100:.0f}%
 
 Recent Performance:
 Avg Velocity: {np.mean(self.velocity_data[-50:]):.3f} m/s
@@ -1279,16 +1377,162 @@ Status: {"🟢 Excellent" if velocity > 0.15 else "🟡 Good" if velocity > 0.05
         self.reward_ax.relim()
         self.reward_ax.autoscale_view()
         
+        # Update action plot
+        if self.action_data and len(self.action_data) > 1:
+            self.action_ax.clear()
+            self.action_ax.set_title('Action Commands', fontweight='bold', color='white')
+            self.action_ax.set_ylabel('Action Magnitude', color='white')
+            self.action_ax.set_xlabel('Time Steps', color='white')
+            self.action_ax.set_facecolor('#2d2d2d')
+            self.action_ax.grid(True, alpha=0.3, color='gray')
+            
+            # Plot action magnitudes
+            action_magnitudes = [np.linalg.norm(a) if hasattr(a, '__len__') else abs(a) 
+                               for a in self.action_data[-len(self.time_data):]]
+            if action_magnitudes:
+                self.action_ax.plot(self.time_data[-len(action_magnitudes):], action_magnitudes,
+                                   color='#ffe66d', linewidth=2, alpha=0.9)
+                
+            # Style the axis
+            for spine in self.action_ax.spines.values():
+                spine.set_color('white')
+            self.action_ax.tick_params(colors='white')
+        
+        # Update DR joint health plot
+        if self.joint_failure_history and len(self.joint_failure_history) > 1:
+            self.dr_ax.clear()
+            self.dr_ax.set_title('DR Joint Health', fontweight='bold', color='white')
+            self.dr_ax.set_ylabel('Joint Functionality (%)', color='white')
+            self.dr_ax.set_xlabel('Time Steps', color='white')
+            self.dr_ax.set_facecolor('#2d2d2d')
+            self.dr_ax.grid(True, alpha=0.3, color='gray')
+            self.dr_ax.set_ylim(0, 100)
+            
+            # Plot joint health over time
+            dr_time = list(range(len(self.joint_failure_history)))
+            self.dr_ax.plot(dr_time, self.joint_failure_history, 
+                           color='#ff6b6b', linewidth=2, label='Joint Health')
+            
+            # Add stability score if available
+            if len(self.stability_metrics) == len(self.joint_failure_history):
+                stability_pct = [s * 100 for s in self.stability_metrics]
+                self.dr_ax.plot(dr_time, stability_pct, 
+                               color='#4ecdc4', linewidth=2, label='Stability')
+            
+            # Add failure rate reference line
+            failure_rate = self.dr_failure_var.get()
+            expected_health = (1.0 - failure_rate) * 100
+            self.dr_ax.axhline(y=expected_health, color='#ffe66d', 
+                              linestyle='--', alpha=0.8, 
+                              label=f'Expected ({expected_health:.0f}%)')
+            
+            self.dr_ax.legend()
+            
+            # Style the axis
+            for spine in self.dr_ax.spines.values():
+                spine.set_color('white')
+            self.dr_ax.tick_params(colors='white')
+        
         # Redraw
         try:
-            self.perf_fig.canvas.draw()
-        except:
-            pass  # Ignore drawing errors
+            self.perf_fig.canvas.draw_idle()  # Use draw_idle for thread safety
+            self.perf_fig.canvas.flush_events()
+        except Exception as e:
+            print(f"Graph update error: {e}")  # Log errors for debugging
             
-    def update_noise_label(self, value):
-        """Update noise level label"""
-        noise_pct = float(value) * 100
-        self.noise_label.config(text=f"{noise_pct:.1f}%")
+    def update_dr_label(self, value):
+        """Update DR failure rate label"""
+        failure_pct = float(value) * 100
+        self.dr_failure_label.config(text=f"{failure_pct:.0f}%")
+    
+    def apply_joint_failures(self, action):
+        """Simulate joint failures for DR testing"""
+        if len(action.shape) > 1:
+            action = action[0]  # Remove batch dimension if present
+            
+        modified_action = action.copy()
+        failure_rate = self.dr_failure_var.get()
+        
+        # Simulate different types of joint failures
+        for i in range(len(modified_action)):
+            if np.random.random() < failure_rate:
+                failure_type = np.random.choice(['lock', 'weak', 'noise'])
+                if failure_type == 'lock':
+                    modified_action[i] = 0.0  # Joint locked
+                elif failure_type == 'weak':
+                    modified_action[i] *= 0.3  # Weak joint (30% power)
+                elif failure_type == 'noise':
+                    modified_action[i] += np.random.normal(0, 0.5)  # Noisy joint
+                    
+        return modified_action.reshape(action.shape)
+    
+    def calculate_joint_health(self):
+        """Calculate overall joint health percentage"""
+        failure_rate = self.dr_failure_var.get()
+        return (1.0 - failure_rate) * 100
+    
+    def calculate_stability_score(self, obs):
+        """Calculate robot stability score from observations"""
+        if len(obs.shape) > 1:
+            obs = obs[0]  # Remove batch dimension
+            
+        # Use angular velocities as stability indicator
+        # Assuming obs contains angular velocities in positions 3-6
+        if len(obs) > 6:
+            ang_vels = obs[3:6] if len(obs) > 6 else obs[:3]
+            stability = 1.0 / (1.0 + np.sum(np.abs(ang_vels)))
+            return min(stability, 1.0)
+        return 1.0
+    
+    def simulate_joint_failure(self):
+        """Manually trigger a joint failure for testing"""
+        if self.is_running:
+            # Temporarily increase failure rate for dramatic effect
+            old_rate = self.dr_failure_var.get()
+            self.dr_failure_var.set(0.8)  # 80% failure rate
+            
+            # Reset after 2 seconds
+            self.root.after(2000, lambda: self.dr_failure_var.set(old_rate))
+            
+            add_session_note("Manual joint failure simulation triggered")
+        else:
+            messagebox.showinfo("Info", "Start simulation first to test joint failures!")
+    
+    def show_dr_analysis(self):
+        """Show detailed DR performance analysis"""
+        if not self.joint_failure_history:
+            messagebox.showinfo("Info", "No DR data available. Run simulation with DR enabled first!")
+            return
+            
+        # Create analysis window
+        analysis_window = tk.Toplevel(self.root)
+        analysis_window.title("DR Performance Analysis")
+        analysis_window.geometry("800x600")
+        analysis_window.configure(bg=self.colors['bg'])
+        
+        # Add analysis content here
+        analysis_text = f"""
+        DR PERFORMANCE ANALYSIS
+        ========================
+        
+        Average Joint Health: {np.mean(self.joint_failure_history):.1f}%
+        Stability Score: {np.mean(self.stability_metrics) if self.stability_metrics else 0:.3f}
+        
+        Total Simulation Steps: {len(self.velocity_data)}
+        DR Failure Rate: {self.dr_failure_var.get()*100:.0f}%
+        
+        Performance Under Failures:
+        - Average Velocity: {np.mean(self.velocity_data[-100:]) if len(self.velocity_data) > 0 else 0:.3f} m/s
+        - Velocity Stability: {np.std(self.velocity_data[-100:]) if len(self.velocity_data) > 0 else 0:.3f}
+        """
+        
+        text_widget = tk.Text(analysis_window, 
+                             bg=self.colors['panel'], 
+                             fg=self.colors['text'],
+                             font=("Consolas", 11))
+        text_widget.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        text_widget.insert(1.0, analysis_text)
+        text_widget.config(state=tk.DISABLED)
         
     def toggle_recording(self):
         """Toggle video recording"""
@@ -1298,7 +1542,7 @@ Status: {"🟢 Excellent" if velocity > 0.15 else "🟡 Good" if velocity > 0.05
             self.stop_recording()
             
     def start_recording(self):
-        """Start video recording - capture performance plots"""
+        """Start TWO-PASS video recording for accurate performance"""
         if not self.is_running:
             messagebox.showwarning("Warning", "Start simulation first!")
             return
@@ -1307,40 +1551,76 @@ Status: {"🟢 Excellent" if velocity > 0.15 else "🟡 Good" if velocity > 0.05
         self.video_filename = self.session_manager.get_session_path('videos', f'robot_demo_{timestamp}.mp4')
         
         try:
-            # Initialize video writer for plot recording
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            self.video_writer = cv2.VideoWriter(str(self.video_filename), fourcc, 5.0, (1200, 800))
+            # Initialize two-pass recorder
+            self.two_pass_recorder = TwoPassVideoRecorder()
+            
+            # Initialize trajectory storage
+            self.recording_trajectory = {
+                'actions': [],
+                'observations': [], 
+                'rewards': [],
+                'velocities': [],
+                'infos': []
+            }
             
             self.is_recording = True
             self.record_btn.config(text="⏹️ STOP RECORDING")
-            self.record_status.config(text="🔴 RECORDING...")
+            self.record_status.config(text="🔴 PASS 1: COLLECTING (No Render)")
             
-            add_session_note(f"Started video recording: {self.video_filename.name}")
+            add_session_note(f"Started TWO-PASS recording: {self.video_filename.name}")
+            messagebox.showinfo("Two-Pass Recording", 
+                              "Pass 1: Collecting trajectory without rendering\n" +
+                              "Pass 2 will create video when you stop recording")
             
         except Exception as e:
             messagebox.showerror("Recording Error", f"Failed to start recording: {str(e)}")
             
     def stop_recording(self):
-        """Stop video recording"""
+        """Stop recording and create video using Pass 2 of two-pass method"""
         if not self.is_recording:
             return
             
         self.is_recording = False
         self.record_btn.config(text="🎬 START RECORDING")
-        self.record_status.config(text="⚪ READY TO RECORD")
+        self.record_status.config(text="🎥 PASS 2: CREATING VIDEO...")
         
         try:
-            if self.video_writer:
-                self.video_writer.release()
-                self.video_writer = None
+            if hasattr(self, 'recording_trajectory') and len(self.recording_trajectory['actions']) > 0:
+                # Pass 2: Create video from trajectory
+                add_session_note(f"Creating video from {len(self.recording_trajectory['actions'])} steps")
                 
-            if self.video_filename and self.video_filename.exists():
-                add_session_note(f"Stopped video recording. Saved: {self.video_filename.name}")
-                messagebox.showinfo("Recording Complete", f"Performance video saved to:\\n{self.video_filename}")
+                # Use the two-pass recorder to replay with rendering
+                from envs.success_reward_wrapper import SuccessRewardWrapper
+                success = self.two_pass_recorder.replay_with_rendering(
+                    trajectory=self.recording_trajectory,
+                    output_path=str(self.video_filename),
+                    wrapper_class=SuccessRewardWrapper,
+                    show_progress=False
+                )
+                
+                if success:
+                    # Get true performance metrics
+                    metrics = self.two_pass_recorder.get_metrics()
+                    
+                    self.record_status.config(text="✅ VIDEO SAVED")
+                    add_session_note(f"Video saved: {self.video_filename.name}")
+                    add_session_note(f"TRUE Performance: {metrics['avg_velocity']:.3f} m/s")
+                    
+                    messagebox.showinfo("Two-Pass Recording Complete", 
+                                      f"Video saved to: {self.video_filename.name}\n\n" +
+                                      f"TRUE PERFORMANCE (No Rendering Overhead):\n" +
+                                      f"Average Velocity: {metrics['avg_velocity']:.3f} m/s\n" +
+                                      f"Max Velocity: {metrics['max_velocity']:.3f} m/s\n" +
+                                      f"Episode Length: {metrics['episode_length']} steps")
+                else:
+                    self.record_status.config(text="⚠️ VIDEO FAILED")
+                    messagebox.showwarning("Recording Failed", "Failed to create video from trajectory")
             else:
-                messagebox.showwarning("Recording Warning", "Video file was not created properly")
+                self.record_status.config(text="⚪ READY TO RECORD")
+                messagebox.showwarning("No Data", "No trajectory recorded")
                 
         except Exception as e:
+            self.record_status.config(text="⚪ READY TO RECORD")
             messagebox.showerror("Recording Error", f"Error stopping recording: {str(e)}")
     
     def capture_video_frame(self):
@@ -1426,7 +1706,7 @@ Performance Summary:
 - Total Reward: {sum(self.reward_data):.2f}
 
 Settings Used:
-- Noise Level: {self.noise_var.get()*100:.1f}%
+- DR Failure Rate: {self.dr_failure_var.get()*100:.0f}%
 - Camera Angle: {self.angle_var.get():.1f}°
 - Movement Trails: {self.trails_var.get()}
 

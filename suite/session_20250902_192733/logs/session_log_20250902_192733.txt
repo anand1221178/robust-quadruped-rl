@@ -1,4 +1,0 @@
-[2025-09-02 19:27:47] NOTE: Loaded model for interactive visualization: done
-[2025-09-02 19:27:56] NOTE: Started real-time robot simulation
-[2025-09-02 19:28:25] NOTE: Stopped real-time robot simulation
-[2025-09-02 19:28:29] NOTE: Generated comprehensive performance report

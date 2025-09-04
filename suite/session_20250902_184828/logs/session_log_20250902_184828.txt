@@ -1,7 +1,0 @@
-[2025-09-02 18:48:35] NOTE: Loaded model for interactive visualization: done
-[2025-09-02 18:48:37] NOTE: Started real-time robot simulation
-[2025-09-02 18:49:02] NOTE: Stopped real-time robot simulation
-[2025-09-02 18:49:07] NOTE: Started real-time robot simulation
-[2025-09-02 18:49:08] NOTE: Started video recording: robot_demo_20250902_184908.mp4
-[2025-09-02 18:49:14] NOTE: Stopped video recording. Saved: robot_demo_20250902_184908.mp4
-[2025-09-02 18:49:19] NOTE: Stopped real-time robot simulation
