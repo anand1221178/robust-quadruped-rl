@@ -1,79 +1,78 @@
-# SR2L Gentle v3 Configuration - Learning from DR v2 Success
-# Using gentle curriculum and extended training that worked for DR
+defaults:
+  - /train/base              # Use base PPO training config
+  - /env/realant             # Use RealAnt environment
 
-name: "ppo_sr2l_gentle_v3"
-algorithm: "PPO_SR2L"
+# Experiment settings
+experiment:
+  description: "PPO + SR2L Gentle v3 - Using gentle curriculum that worked for DR v2"
+  name: ppo_sr2l_gentle_v3
+  tags: 
+    - ppo
+    - sr2l
+    - gentle-v3
+    - joint-perturbations
+    - extended-warmup
+    - 30M-steps
+    - pretrained-init
 
-# Environment settings
-env:
-  name: "RealAntMujoco-v0"
-  wrapper: "SuccessRewardWrapper"
-  normalize: true
-  use_success_reward: true  # Matches baseline
-
-# PPO hyperparameters (matching baseline exactly)
-ppo:
-  n_steps: 2048
-  batch_size: 64
-  n_epochs: 10
-  learning_rate: 0.0003
-  clip_range: 0.2
-  vf_coef: 0.5
-  ent_coef: 0.0
-  max_grad_norm: 0.5
-  gae_lambda: 0.95
-  gamma: 0.99
-
-# Network architecture (matching baseline)
-policy:
-  net_arch:
-    pi: [64, 128]  # Policy network
-    vf: [64, 128]  # Value network
-  activation_fn: "ReLU"
-
-# SR2L-specific parameters (VERY GENTLE like DR v2)
+# Enable SR2L (Smooth Regularized RL)
 sr2l:
-  lambda_smooth: 0.001  # Very gentle regularization
-  perturbation_std: 0.01  # Small perturbations (like DR v2 noise)
-  max_perturbation: 0.05  # Cap maximum perturbation
-  warmup_steps: 8000000  # 8M warmup like DR v2
-  curriculum_steps: 15000000  # 15M progressive increase like DR v2
-  perturb_only_joints: true  # Only perturb joint observations (dims 13-28)
+  enabled: true
+  lambda_smooth: 0.001          # Very gentle regularization (like DR v2)
+  perturbation_std: 0.01        # Small perturbations (like DR v2 noise)
+  max_perturbation: 0.05        # Cap maximum perturbation
+  warmup_steps: 8000000         # 8M warmup like DR v2
+  curriculum_steps: 15000000    # 15M progressive increase like DR v2
+  perturb_only_joints: true     # Only perturb joint observations (dims 13-28)
   joint_start_dim: 13
   joint_end_dim: 28
   
-# Training settings (30M steps like DR v2!)
-training:
-  total_timesteps: 30000000  # 30M total steps for robustness
-  save_freq: 500000  # Save every 500k steps
-  eval_freq: 100000  # Evaluate every 100k steps
-  eval_episodes: 10
-  verbose: 1
-  seed: 42
+  # Use curriculum like DR v2
+  use_curriculum: true
 
-# Initialization - start from baseline
-initialization:
-  load_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
-  load_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
+# Disable Domain Randomization (this is SR2L only)
+domain_randomization:
+  enabled: false
 
-# Logging
-logging:
-  track: true
-  wandb_project: "robust-quadruped-rl"
-  wandb_entity: "anand_robotics"
-  wandb_tags: ["sr2l", "gentle_v3", "30M_steps", "joint_only"]
-
-# Device
-device: "auto"
-
-# Checkpoint settings
-checkpoint:
-  save_best: true
-  save_last: true
-  save_replay_buffer: false
+# Environment settings - Match baseline exactly (SuccessRewardWrapper)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true       # CRITICAL: Match baseline wrapper exactly
+  use_domain_randomization: false # Disable DR (SR2L only)
   
-# Success criteria
-success_criteria:
-  min_velocity: 0.15  # Slightly lower than baseline due to smoothness trade-off
-  min_distance: 3.0
-  max_falls: 0.1
+# BEEFED UP Training duration - Give it the time it needs like DR v2!
+total_timesteps: 30000000        # 30M steps total (same as DR v2)
+
+# CRITICAL: Initialize from CORRECT smooth walking baseline (SECURED in done/)
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# PPO hyperparameters - MATCH BASELINE EXACTLY for consistency
+ppo:
+  learning_rate: 0.0003          # MATCH baseline exactly
+  n_steps: 2048
+  batch_size: 2048               # MATCH baseline
+  n_epochs: 10                   # MATCH baseline
+  gamma: 0.99                    # MATCH baseline
+  gae_lambda: 0.95               # MATCH baseline
+  clip_range: 0.2                # MATCH baseline
+  ent_coef: 0.0                  # MATCH baseline exactly
+  vf_coef: 0.5                   # MATCH baseline
+  max_grad_norm: 0.5             # MATCH baseline
+
+# Enable W&B logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Network architecture - CRITICAL: Match baseline exactly  
+policy:
+  hidden_sizes:
+    - 64                         # Same as baseline
+    - 128                        # Same as baseline
+  activation: relu               # Same as baseline
+
+# Save frequently to monitor gentle curriculum progress
+save_freq: 100000
+eval_freq: 25000
