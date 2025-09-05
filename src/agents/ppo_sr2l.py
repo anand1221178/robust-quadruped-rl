@@ -21,17 +21,23 @@ class PPO_SR2L(PPO):
 
         default_sr2l_config = {
             'enabled' :True,
-            'lambda' : 0.01,
-            'perturbation_std' : 0.05,
+            'lambda' : 0.001,  # Lower default
+            'perturbation_std' : 0.01,  # Lower default
             'apply_frequency' : 1,
             'target_dimensions' : 'all',
             'warmup_steps': 0,
-            'max_perturbation' : 0.2,
+            'max_perturbation' : 0.05,  # Lower default
             'log_smoothness_metrics': True
         }
 
         #merge configs:
-        self.sr2l_config = {**default_sr2l_config, **(sr2l_config or {})}
+        merged_config = {**default_sr2l_config, **(sr2l_config or {})}
+        
+        # Handle config key mapping (lambda_smooth -> lambda)
+        if 'lambda_smooth' in merged_config:
+            merged_config['lambda'] = merged_config['lambda_smooth']
+            
+        self.sr2l_config = merged_config
 
         #State tracking:
         self.sr2l_update_counter = 0
