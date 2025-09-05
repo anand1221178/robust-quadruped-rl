@@ -84,6 +84,7 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     use_success_reward = env_config['env'].get('use_success_reward', False)
     use_target_walking = env_config['env'].get('use_target_walking', False)
     use_domain_randomization = env_config['env'].get('use_domain_randomization', False)
+    use_straight_line = env_config['env'].get('use_straight_line', False)
     
     # Check for permanent DR in full config
     use_permanent_dr = False
@@ -91,6 +92,11 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     if full_config:
         permanent_dr_config = full_config.get('permanent_dr', {})
         use_permanent_dr = permanent_dr_config.get('enabled', False)
+        
+    # Check for straight-line config
+    straight_line_config = {}
+    if full_config:
+        straight_line_config = full_config.get('straight_line', {})
     
     def make_env():
         env = gym.make(env_name)
@@ -141,6 +147,21 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
             else:
                 print("Using Static Domain Randomization - Joint dropout & sensor noise!")
                 env = DomainRandomizationWrapper(env, dr_config)
+        
+        # Apply Straight-Line wrapper if specified
+        if use_straight_line:
+            print("Using Straight-Line Locomotion - Constraining to forward movement!")
+            print(f"  Lateral penalty: {straight_line_config.get('lateral_penalty', 2.0)}")
+            print(f"  Rotation penalty: {straight_line_config.get('rotation_penalty', 1.0)}")
+            print(f"  Max deviation: {straight_line_config.get('max_lateral_deviation', 2.0)}m")
+            from envs.straight_line_wrapper import StraightLineWrapper
+            env = StraightLineWrapper(
+                env,
+                lateral_penalty=straight_line_config.get('lateral_penalty', 2.0),
+                rotation_penalty=straight_line_config.get('rotation_penalty', 1.0),
+                straight_bonus=straight_line_config.get('straight_bonus', 0.5),
+                max_lateral_deviation=straight_line_config.get('max_lateral_deviation', 2.0)
+            )
             
         env = Monitor(env)
         return env
@@ -224,6 +245,13 @@ def train(config: dict):
         print(f"  - Max failed joints: {permanent_dr_config.get('max_failed_joints', 4)}")
         print(f"  - Failure rate: {permanent_dr_config.get('failure_rate', 0.001)}")
         print(f"  - Curriculum duration: {permanent_dr_config.get('curriculum_steps', 10000000):,} steps")
+    
+    if use_straight_line:
+        print(f"\nStraight-Line Locomotion:")
+        print(f"  - Status: ENABLED")
+        print(f"  - Lateral penalty: {straight_line_config.get('lateral_penalty', 2.0)}")
+        print(f"  - Rotation penalty: {straight_line_config.get('rotation_penalty', 1.0)}")
+        print(f"  - Goal: Force robot to walk straight forward (no circling!)")
     
     print(f"\nTraining:")
     print(f"  - Total timesteps: {config.get('total_timesteps', 1000000):,}")

@@ -121,7 +121,12 @@ class PermanentDRWrapper(gym.Wrapper):
             modified_action[joint_idx] = 0.0
         
         # Step the environment with modified action
-        obs, reward, done, info = self.env.step(modified_action)
+        result = self.env.step(modified_action)
+        if len(result) == 5:  # New gymnasium format
+            obs, reward, terminated, truncated, info = result
+            done = terminated or truncated
+        else:  # Old gym format
+            obs, reward, done, info = result
         
         # Add failure info to the info dict
         info['permanent_failures'] = list(self.failed_joints)

@@ -716,5 +716,62 @@ New evaluation will use correct smooth-walking baseline for proper comparison.
 - Success would demonstrate true robustness, not just noise tolerance
 - Could enable real quadrupedal robots with actual hardware failures to continue operating
 
+## Current Research Strategy & Decisions (September 5, 2025)
+
+### ✅ WHAT WE WANT TO DO:
+1. **Focus on Permanent DR**: Train robot to adapt to permanent joint disabilities
+   - **Rationale**: Addresses real-world hardware failures (not temporary noise)
+   - **Approach**: Once joints fail, they stay failed forever (true adaptation required)
+   - **Timeline**: 40M steps with sophisticated curriculum learning
+   
+2. **Stick with Current Models**: Don't retrain baseline/DR for straight-line
+   - **Rationale**: Avoid cascade retraining that invalidates months of work
+   - **Evidence**: Test scripts inconclusive on whether robots circle significantly
+   - **Decision**: Launch permanent DR, then assess if straight-line needed
+   
+3. **Fix Technical Issues**: Address Gymnasium compatibility problems
+   - **Fixed**: ValueError in permanent_dr_wrapper.py (5-value vs 4-value return)
+   - **Status**: Ready to launch cluster training after bug fixes
+
+### ❌ WHAT WE DON'T WANT TO DO:
+1. **Cascade Retraining**: Don't retrain everything for straight-line locomotion
+   - **Risk**: 100M+ steps of compute (baseline + DR + permanent DR)
+   - **Uncertainty**: Unclear if circling is actually the main problem
+   - **Alternative**: Test permanent DR first, add straight-line later if needed
+   
+2. **More SR2L Attempts**: Stop trying to fix SR2L 
+   - **Evidence**: 6 different approaches all failed catastrophically
+   - **Conclusion**: SR2L fundamentally incompatible with complex locomotion
+   - **Decision**: Archive all SR2L work, focus on DR approaches
+   
+3. **Overthink Baseline**: Stop trying to improve baseline
+   - **Evidence**: All 3 improvement attempts made it worse
+   - **Conclusion**: Original baseline (0.214 m/s) is already optimal
+   - **Decision**: Use current baseline for all future training
+
+### 🎯 IMMEDIATE ACTION PLAN:
+1. **Fix Cluster Training**: Address Gymnasium compatibility issue
+   - **Bug**: ValueError in permanent_dr_wrapper.py (too many values to unpack)
+   - **Fix**: Handle both 4-value (old gym) and 5-value (new gymnasium) returns
+   - **Status**: Fixed, ready to launch
+   
+2. **Launch Permanent DR**: Begin 40M step training on cluster
+   - **Config**: `ppo_permanent_dr.yaml`
+   - **Command**: `sbatch scripts/train_ppo_cluster.sh ppo_permanent_dr`
+   - **Duration**: ~24 hours training time
+   
+3. **Monitor and Evaluate**: Track permanent DR progress
+   - **Success criteria**: >0.150 m/s at 30% permanent failures
+   - **Comparison**: Must outperform baseline (0.105 m/s) and standard DR (0.075 m/s)
+   - **Decision point**: If successful, consider straight-line version
+
+### 🔬 RESEARCH HYPOTHESIS:
+**"Robots trained with permanent joint failures will develop true adaptive locomotion strategies, significantly outperforming temporary failure approaches at extreme damage levels."**
+
+**Success Metrics**:
+- **Performance retention**: >70% speed maintained with 4 permanently failed joints
+- **Adaptation evidence**: New gait patterns emerge when joints fail
+- **Real robustness**: Outperform baseline/standard DR at extreme failure rates
+
 ---
 *This file is updated after every significant change or conversation to maintain project context and memory.*

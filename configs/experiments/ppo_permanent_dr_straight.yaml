@@ -1,0 +1,86 @@
+# PPO with PERMANENT Domain Randomization + Straight Line Locomotion
+# The ultimate robustness test: maintain forward progress with permanent disabilities
+
+defaults:
+  - /train/base
+  - /env/realant
+
+experiment:
+  name: ppo_permanent_dr_straight
+  description: "Permanent joint failures + straight-line locomotion constraint"
+  tags:
+    - ppo
+    - permanent_dr
+    - straight_line
+    - ultimate_robustness
+
+# Enable permanent DR
+permanent_dr:
+  enabled: true
+  failure_rate: 0.0008       # Slightly lower rate for harder task
+  max_failed_joints: 4       
+  warmup_steps: 3000000      # 3M steps to learn basic straight walking first
+  curriculum_steps: 20000000 # 20M steps curriculum (longer for harder task)
+  start_failures: 0          
+  end_failures: 4            
+  verbose: false             
+
+# Enable straight-line locomotion
+straight_line:
+  enabled: true
+  lateral_penalty: 2.0       # Penalize sideways movement
+  rotation_penalty: 1.0      # Penalize rotation
+  straight_bonus: 0.5        # Bonus for staying centered
+  max_lateral_deviation: 2.0 # Reset if too far off track
+
+# SR2L disabled
+sr2l:
+  enabled: false
+
+# Standard DR disabled
+domain_randomization:
+  enabled: false
+
+# Environment settings
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_straight_line: true    # New flag for straight-line wrapper
+  use_domain_randomization: false
+
+# VERY EXTENDED training for this extremely difficult task
+total_timesteps: 50000000  # 50M steps (hardest task yet)
+
+# PPO hyperparameters
+ppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01            # Encourage exploration
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture
+policy:
+  hidden_sizes:
+    - 64
+    - 128
+  activation: relu
+
+# Initialize from baseline
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Save settings  
+save_freq: 100000
+eval_freq: 50000
