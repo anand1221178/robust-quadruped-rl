@@ -4,7 +4,60 @@
 **Research Project**: Robust Quadruped RL with SR2L (Smooth Regularized Reinforcement Learning)
 **Objective**: Implement SR2L algorithm for robust quadruped locomotion using PPO and RealAnt simulation
 
-## Current Status (September 5, 2025 - DR INADEQUACY DISCOVERED, PERMANENT DR DEVELOPMENT)
+## Current Status (September 9, 2025 - SUPERVISOR FEEDBACK, SR2L TANH INVESTIGATION)
+
+### Latest Supervisor Feedback & Action Plan (September 9, 2025):
+
+#### Supervisor Insights:
+- **SR2L Fix Identified**: Missing tanh activation causing NaN issues
+  - ReLU outputs unbounded actions → physics instability
+  - Solution: Test with `activation: tanh` for bounded action spaces
+- **Research Direction Confirmed**: Include SR2L as negative result (not dropped)
+- **DR Success Validated**: 4.2x robustness at extreme failures is significant
+- **Pretraining Strategy Confirmed**: Two-phase training approach is correct
+
+#### 🎯 ACTION PLAN - Fix Both SR2L and DR:
+
+**Problem Analysis**:
+1. **SR2L Issue**: Using ReLU instead of tanh → unbounded actions → NaN/physics crashes
+2. **Standard DR Flaw**: Failures are too short-lived (single timestep) - unrealistic!
+   - Current: Joint fails for 1 step, then recovers
+   - Reality: Hardware failures persist for extended periods
+   - This explains why DR only helps moderately - it's not learning true adaptation
+
+**Phase 1: Fix SR2L with Tanh Activation**
+- [ ] Create `ppo_sr2l_tanh.yaml` config with `activation: tanh`
+- [ ] Test if tanh prevents NaN issues during training
+- [ ] Run 30M step training matching successful DR timeline
+- [ ] If still fails → strong negative result with clear explanation
+- [ ] If succeeds → compare smoothness vs baseline
+
+**Phase 2: Redesign Standard DR for Realistic Failures**
+- [ ] Create `PersistentDRWrapper` - failures last entire episodes (not single steps)
+- [ ] Implement failure duration sampling:
+  - Short failures: 50-200 steps (component stress)
+  - Medium failures: 200-1000 steps (temporary damage)
+  - Episode-long failures: Entire episode (permanent damage)
+- [ ] Test with same 30M timeline as DR v2
+- [ ] Compare to current short-lived DR and permanent DR
+
+**Phase 3: Evaluation & Analysis**
+- [ ] Permanent DR (currently training) - should complete ~Sept 6
+- [ ] SR2L with tanh - test numerical stability
+- [ ] Persistent DR - realistic failure durations
+- [ ] Create comprehensive comparison table
+
+**Expected Outcomes**:
+- **SR2L + Tanh**: Either fixes NaN (success) or still fails (strong negative result)
+- **Persistent DR**: Should outperform short-lived DR by learning true adaptation
+- **Permanent DR**: Most extreme test - complete permanent failures
+
+**Research Narrative**:
+- SR2L handles sensor noise (if tanh works)
+- Persistent DR handles realistic hardware failures (minutes to hours)
+- Permanent DR handles catastrophic failures (permanent damage)
+
+## Previous Status (September 5, 2025 - DR INADEQUACY DISCOVERED, PERMANENT DR DEVELOPMENT)
 - **Phase**: 3.5/4 - Current DR fails at extreme scenarios, developing Permanent DR solution ⚠️
 - **Latest Session Achievements (Session 3 - FINAL FIXES)**:
   - ✅ **INTERACTIVE ROBOT VIEWER FULLY FIXED**: All critical issues resolved
@@ -102,7 +155,29 @@
 
 ## Recent Major Changes
 
-### September 5, 2025 - ⚠️ DR INADEQUACY DISCOVERED - PERMANENT DR DEVELOPMENT!
+### September 5, 2025 - 🔄 PERMANENT DR TRAINING IN PROGRESS (Current Status)
+- **Training Launched**: ppo_permanent_dr successfully started on cluster after fixing compatibility bugs
+- **Technical Fixes Applied**:
+  - ✅ **Fixed variable scope bug**: `use_straight_line` undefined in train.py
+  - ✅ **Fixed Gymnasium compatibility**: 4-value vs 5-value return format mismatch
+  - ✅ **Verified clean config**: No straight-line contamination in permanent DR training
+- **Current Training Details**:
+  - **Model**: ppo_permanent_dr_[cluster_id]
+  - **Timeline**: 40M timesteps ≈ 24+ hours
+  - **Started**: ~9:30 AM September 5, 2025
+  - **Expected finish**: ~9:30 AM September 6, 2025
+  - **Monitoring**: W&B project "robust-quadruped-rl"
+- **Training Approach**:
+  - **Warmup**: 2M steps normal walking (learn basics)
+  - **Curriculum**: 15M steps progressive failure introduction (0→4 joints)
+  - **Consolidation**: 23M steps with full difficulty
+  - **Failure simulation**: Once joints fail, they stay failed permanently
+- **Success Criteria**: Must achieve >0.150 m/s with 4 permanently failed joints
+  - **Beat baseline**: Currently 0.105 m/s at 30% failures
+  - **Beat standard DR**: Currently 0.075 m/s at 30% failures
+  - **Prove concept**: True adaptive locomotion with permanent disabilities
+
+### September 5, 2025 - 🚀 PERMANENT DR TRAINING LAUNCHED!
 - **CRITICAL FINDING**: Current DR model **FAILS at extreme failure rates**!
   - **At 30% failures**: Baseline (0.105 m/s) **beats** DR (0.075 m/s) by 40%!
   - **At 20% failures**: DR (0.122 m/s) beats baseline (0.104 m/s) by 17%
@@ -115,7 +190,7 @@
   - ✅ **Permanent DR Wrapper**: Created `PermanentDRWrapper` with curriculum learning
   - ✅ **Training Config**: `ppo_permanent_dr.yaml` with 40M steps, extensive curriculum
   - ✅ **Training Integration**: Modified `train.py` to support permanent failures
-  - 🔄 **Cluster Training**: Ready to launch permanent DR training
+  - ✅ **Cluster Training**: **LAUNCHED!** Permanent DR training in progress (40M steps, ~24h)
 - **Enhanced Video Tools**: Created sophisticated comparison videos
   - ✅ **Two-pass recording**: True performance metrics + accurate visuals
   - ✅ **Joint health indicators**: Real-time visualization of failed joints
@@ -129,7 +204,12 @@
 ### September 5, 2025 - 🏁 INITIAL RESULTS ANALYSIS COMPLETE!
 - **SR2L v3 Training Complete**: ppo_sr2l_gentle_v3_fyb5mkti finished 30M steps
   - **Result**: FAILED - 0.051 m/s (76% worse than baseline)
-  - **Conclusion**: SR2L fundamentally incompatible with locomotion task
+  - **Root Cause Analysis**: Missing tanh activation for bounded action spaces
+    - Currently using ReLU activation → unbounded outputs
+    - RealAnt has bounded action space (Box)
+    - Unbounded actions → extreme torques → physics instability → NaN values
+  - **Solution**: Test with tanh activation as per Schulman et al. 2017
+  - **Research Value**: Important negative result if fails even with tanh
   - **Archived**: Moved to archive/ folder
 - **Final Model Comparison**:
   - **Baseline**: 0.214 m/s (optimal performance)
@@ -755,10 +835,12 @@ New evaluation will use correct smooth-walking baseline for proper comparison.
    - **Fix**: Handle both 4-value (old gym) and 5-value (new gymnasium) returns
    - **Status**: Fixed, ready to launch
    
-2. **Launch Permanent DR**: Begin 40M step training on cluster
+2. **Launch Permanent DR**: ✅ **LAUNCHED** - 40M step training on cluster
    - **Config**: `ppo_permanent_dr.yaml`
-   - **Command**: `sbatch scripts/train_ppo_cluster.sh ppo_permanent_dr`
-   - **Duration**: ~24 hours training time
+   - **Status**: 🔄 **TRAINING IN PROGRESS**
+   - **Launch time**: September 5, 2025 ~9:30 AM
+   - **Expected completion**: September 6, 2025 ~9:30 AM (24+ hours)
+   - **Progress**: Can monitor via W&B: `robust-quadruped-rl/ppo_permanent_dr`
    
 3. **Monitor and Evaluate**: Track permanent DR progress
    - **Success criteria**: >0.150 m/s at 30% permanent failures

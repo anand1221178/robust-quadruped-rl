@@ -148,6 +148,18 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
                 print("Using Static Domain Randomization - Joint dropout & sensor noise!")
                 env = DomainRandomizationWrapper(env, dr_config)
         
+        # Apply Persistent DR wrapper if specified (NEW)
+        elif env_config.get('use_persistent_dr', False):
+            from envs.persistent_dr_wrapper import PersistentDRWrapper
+            persistent_dr_config = env_config.get('persistent_dr', {})
+            print("Using PERSISTENT Domain Randomization - Realistic failure durations!")
+            print(f"  Failure prob: {persistent_dr_config.get('failure_prob', 0.15)}")
+            print(f"  Short failures: {persistent_dr_config.get('short_duration', [50, 200])} steps")
+            print(f"  Medium failures: {persistent_dr_config.get('medium_duration', [200, 1000])} steps")
+            print(f"  Long failures: entire episode")
+            print(f"  Curriculum: {persistent_dr_config.get('use_curriculum', True)}")
+            env = PersistentDRWrapper(env, persistent_dr_config)
+        
         # Apply Straight-Line wrapper if specified
         if use_straight_line:
             print("Using Straight-Line Locomotion - Constraining to forward movement!")

@@ -1,0 +1,70 @@
+# SR2L with Tanh Activation - Fix for NaN Issues
+# Testing if tanh activation resolves numerical instability in SR2L
+# As per Schulman et al. 2017 recommendation for bounded action spaces
+
+defaults:
+  - /train/base
+  - /env/realant
+
+# Override base config parameters
+total_timesteps: 30000000      # 30M steps matching successful DR v2
+eval_freq: 10000               # Frequent evaluation
+n_eval_episodes: 5              # Quick evaluation
+save_freq: 100000              # Save every 100k steps
+verbose: 1                      # Show training progress
+
+# Environment configuration
+env:
+  use_success_reward: true       # Match baseline
+  reward_type: "distance"        # Simple distance rewards
+  target_distance: 5.0           # 5m targets
+  max_episode_steps: 1000        # Standard episode length
+
+# PPO hyperparameters (matching baseline)
+learning_rate: 0.0003           # Standard PPO learning rate
+n_steps: 2048                   # Steps per update
+batch_size: 64                  # Batch size
+n_epochs: 10                    # PPO epochs
+gamma: 0.99                     # Discount factor
+gae_lambda: 0.95               # GAE lambda
+clip_range: 0.2                # PPO clip range
+ent_coef: 0.0                  # No entropy bonus (matching baseline)
+vf_coef: 0.5                   # Value function coefficient
+max_grad_norm: 0.5             # Gradient clipping
+
+# Network architecture
+policy:
+  hidden_sizes: [64, 128]       # Same as baseline
+  activation: tanh              # *** KEY CHANGE: TANH ACTIVATION FOR BOUNDED ACTIONS ***
+
+# SR2L configuration
+sr2l:
+  enabled: true                 # Enable SR2L
+  lambda_smooth: 0.001          # Gentle regularization (same as SR2L v3)
+  perturbation_std: 0.01        # Small perturbations (sensor noise level)
+  max_perturbation: 0.05        # Bound perturbations
+  warmup_steps: 8000000         # 8M warmup like successful DR v2
+  curriculum_steps: 15000000    # Gradual increase over 15M steps
+  target_dimensions: "joints"   # Only perturb joint sensors (13-28)
+  apply_frequency: 1            # Apply every step
+  log_smoothness_metrics: true  # Track smoothness scores
+
+# Model initialization - train from scratch with tanh
+model_path: null                # Train from scratch to avoid ReLU pretrained conflicts
+
+# Logging
+use_wandb: true
+wandb_project: "robust-quadruped-rl"
+wandb_name: "ppo_sr2l_tanh"
+log_interval: 10                # Log every 10 updates
+
+# Cluster-specific settings
+device: "auto"                  # Auto-detect GPU
+n_envs: 8                       # Parallel environments
+
+# Notes:
+# - Tanh activation ensures outputs are bounded to [-1, 1]
+# - This should prevent unbounded actions causing NaN in physics
+# - Training from scratch to avoid pretrained ReLU conflicts
+# - Using same successful timeline as DR v2 (8M warmup + 15M curriculum)
+# - If this still produces NaN, SR2L is fundamentally incompatible with locomotion

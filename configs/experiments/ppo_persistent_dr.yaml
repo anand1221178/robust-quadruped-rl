@@ -1,0 +1,86 @@
+# Persistent DR - Realistic Failure Durations
+# Failures persist for 50-1000+ timesteps (not single steps)
+# More realistic simulation of actual hardware failures
+
+defaults:
+  - /train/base
+  - /env/realant
+
+# Override base config parameters
+total_timesteps: 30000000      # 30M steps like successful DR v2
+eval_freq: 10000               # Frequent evaluation
+n_eval_episodes: 5              # Quick evaluation
+save_freq: 100000              # Save every 100k steps
+verbose: 1                      # Show training progress
+
+# Environment configuration
+env:
+  use_success_reward: true       # Match baseline
+  reward_type: "distance"        # Simple distance rewards
+  target_distance: 5.0           # 5m targets
+  max_episode_steps: 1000        # Standard episode length
+  
+  # Persistent DR configuration
+  use_persistent_dr: true         # Enable persistent failures
+  persistent_dr:
+    # Failure probability and severity
+    failure_prob: 0.15           # 15% of episodes have failures
+    max_failed_joints: 2         # Up to 2 joints can fail
+    
+    # Realistic failure durations (in timesteps)
+    duration_probs: [0.4, 0.4, 0.2]  # [short, medium, long]
+    short_duration: [50, 200]     # Brief issues (2.5-10 seconds at 20Hz)
+    medium_duration: [200, 1000]  # Temporary damage (10-50 seconds)
+    # Long = entire episode (permanent for that episode)
+    
+    # Failure types
+    failure_types: ['lock', 'weak', 'erratic']
+    failure_type_probs: [0.5, 0.3, 0.2]  # Lock most common (stuck joint)
+    
+    # Progressive curriculum (like DR v2 success)
+    use_curriculum: true
+    warmup_steps: 8000000         # 8M steps warmup
+    curriculum_steps: 15000000    # 15M gradual increase
+
+# PPO hyperparameters (matching baseline)
+learning_rate: 0.0003           # Standard PPO learning rate
+n_steps: 2048                   # Steps per update
+batch_size: 64                  # Batch size
+n_epochs: 10                    # PPO epochs
+gamma: 0.99                     # Discount factor
+gae_lambda: 0.95               # GAE lambda
+clip_range: 0.2                # PPO clip range
+ent_coef: 0.0                  # No entropy bonus
+vf_coef: 0.5                   # Value function coefficient
+max_grad_norm: 0.5             # Gradient clipping
+
+# Network architecture
+policy:
+  hidden_sizes: [64, 128]       # Same as baseline
+  activation: relu              # ReLU (DR doesn't have NaN issues)
+
+# Model initialization - start from baseline
+model_path: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
+vec_normalize_path: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
+
+# SR2L disabled for DR
+sr2l:
+  enabled: false
+
+# Logging
+use_wandb: true
+wandb_project: "robust-quadruped-rl"
+wandb_name: "ppo_persistent_dr"
+log_interval: 10                # Log every 10 updates
+
+# Cluster-specific settings
+device: "auto"                  # Auto-detect GPU
+n_envs: 8                       # Parallel environments
+
+# Notes:
+# - Failures persist for realistic durations (not single timesteps)
+# - Short: Component stress (2.5-10 seconds)
+# - Medium: Temporary damage (10-50 seconds)
+# - Long: Episode-long (simulates permanent damage for that trial)
+# - This should teach true adaptation, not just momentary recovery
+# - Compare to: standard DR (single-step), permanent DR (never recovers)
