@@ -151,7 +151,10 @@ class PermanentDRWrapper(gym.Wrapper):
             len(self.failed_joints)
         )
         
-        return obs, reward, done, info
+        # Return 5 values for new gymnasium format
+        terminated = done
+        truncated = False
+        return obs, reward, terminated, truncated, info
     
     def get_training_stats(self):
         """Get training statistics"""
