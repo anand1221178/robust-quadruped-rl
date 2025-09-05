@@ -1,0 +1,78 @@
+# PPO with PERMANENT Domain Randomization
+# Trains robot to adapt to permanent joint disabilities
+
+defaults:
+  - /train/base
+  - /env/realant
+
+experiment:
+  name: ppo_permanent_dr
+  description: "PPO with permanent joint failures - adaptive locomotion"
+  tags:
+    - ppo
+    - permanent_dr
+    - adaptive
+    - disability_robust
+
+# Enable permanent DR (custom setting)
+permanent_dr:
+  enabled: true
+  # Start gentle and increase difficulty
+  failure_rate: 0.001        # 0.1% chance per step of new failure
+  max_failed_joints: 4       # Up to 4 joints can fail permanently
+  warmup_steps: 2000000      # 2M steps to learn basic walking first
+  curriculum_steps: 15000000 # 15M steps to increase difficulty
+  start_failures: 0          # Start with 0 failed joints
+  end_failures: 4            # End with up to 4 failed joints
+  verbose: false             # Print failure events
+
+# SR2L disabled
+sr2l:
+  enabled: false
+
+# Standard DR disabled (using permanent instead)
+domain_randomization:
+  enabled: false
+
+# Environment settings
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false  # Using custom permanent DR
+
+# EXTENDED training time for this difficult task
+total_timesteps: 40000000  # 40M steps (much harder than regular DR)
+
+# PPO hyperparameters - similar to successful DR v2
+ppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01          # Small entropy for exploration
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture - same as baseline
+policy:
+  hidden_sizes:
+    - 64
+    - 128
+  activation: relu
+
+# Initialize from baseline for faster learning
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Save settings
+save_freq: 100000
+eval_freq: 50000

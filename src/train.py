@@ -76,7 +76,7 @@ def merge_configs(*configs):
     return env"""
 
 
-def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = True):
+def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = True, full_config: dict = None):
     """Create environment based on config"""
     env_name = env_config['env']['name']
     
@@ -84,6 +84,13 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     use_success_reward = env_config['env'].get('use_success_reward', False)
     use_target_walking = env_config['env'].get('use_target_walking', False)
     use_domain_randomization = env_config['env'].get('use_domain_randomization', False)
+    
+    # Check for permanent DR in full config
+    use_permanent_dr = False
+    permanent_dr_config = {}
+    if full_config:
+        permanent_dr_config = full_config.get('permanent_dr', {})
+        use_permanent_dr = permanent_dr_config.get('enabled', False)
     
     def make_env():
         env = gym.make(env_name)
@@ -97,8 +104,26 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
             print("Using Success Reward Wrapper - Training for fast walking!")
             env = SuccessRewardWrapper(env)
         
+        # Apply Permanent DR wrapper if specified (takes precedence)
+        if use_permanent_dr:
+            print("Using PERMANENT Domain Randomization - Adaptive locomotion with disabilities!")
+            print(f"  Max failed joints: {permanent_dr_config.get('max_failed_joints', 4)}")
+            print(f"  Failure rate: {permanent_dr_config.get('failure_rate', 0.001)}")
+            print(f"  Warmup steps: {permanent_dr_config.get('warmup_steps', 1000000):,}")
+            print(f"  Curriculum steps: {permanent_dr_config.get('curriculum_steps', 10000000):,}")
+            from envs.permanent_dr_wrapper import PermanentDRCurriculumWrapper
+            env = PermanentDRCurriculumWrapper(
+                env,
+                failure_rate=permanent_dr_config.get('failure_rate', 0.001),
+                max_failed_joints=permanent_dr_config.get('max_failed_joints', 4),
+                warmup_steps=permanent_dr_config.get('warmup_steps', 1000000),
+                curriculum_steps=permanent_dr_config.get('curriculum_steps', 10000000),
+                start_failures=permanent_dr_config.get('start_failures', 0),
+                end_failures=permanent_dr_config.get('end_failures', 4),
+                verbose=permanent_dr_config.get('verbose', False)
+            )
         # Apply Domain Randomization wrapper if specified  
-        if use_domain_randomization:
+        elif use_domain_randomization:
             dr_config = env_config.get('domain_randomization', {})
             wrapper_type = dr_config.get('wrapper_type', 'standard')
             
@@ -192,6 +217,14 @@ def train(config: dict):
     else:
         print(f"  - SR2L: DISABLED")
     
+    permanent_dr_config = config.get('permanent_dr', {})
+    if permanent_dr_config.get('enabled', False):
+        print(f"\nPERMANENT Domain Randomization:")
+        print(f"  - Status: ENABLED")
+        print(f"  - Max failed joints: {permanent_dr_config.get('max_failed_joints', 4)}")
+        print(f"  - Failure rate: {permanent_dr_config.get('failure_rate', 0.001)}")
+        print(f"  - Curriculum duration: {permanent_dr_config.get('curriculum_steps', 10000000):,} steps")
+    
     print(f"\nTraining:")
     print(f"  - Total timesteps: {config.get('total_timesteps', 1000000):,}")
     print(f"  - Learning rate: {config.get('ppo', {}).get('learning_rate', 0.0003)}")
@@ -199,8 +232,8 @@ def train(config: dict):
     
     # Create env config dict for the create_env function
     env_config_dict = {'env': config.get('env', {'name': env_name})}
-    env = create_env(env_config_dict, normalize=True)
-    eval_env = create_env(env_config_dict, normalize=True, norm_reward=False)
+    env = create_env(env_config_dict, normalize=True, full_config=config)
+    eval_env = create_env(env_config_dict, normalize=True, norm_reward=False, full_config=config)
     
     # Define network architecture
     activation_map = {

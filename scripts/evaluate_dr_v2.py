@@ -76,7 +76,7 @@ def main():
     # Models to test
     models = {
         'Baseline': 'done/ppo_baseline_ueqbjf2x/best_model/best_model.zip',
-        'DR v2': 'experiments/ppo_dr_gentle_v2_wptws01u/best_model/best_model.zip'
+        'DR v2': 'done/ppo_dr_gentle_v2_wptws01u/best_model/best_model.zip'
     }
     
     # Failure rates to test
