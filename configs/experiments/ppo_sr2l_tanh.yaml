@@ -15,10 +15,12 @@ verbose: 1                      # Show training progress
 
 # Environment configuration
 env:
+  name: "RealAntMujoco-v0"        # Required: environment name
   use_success_reward: true       # Match baseline
   reward_type: "distance"        # Simple distance rewards
   target_distance: 5.0           # 5m targets
   max_episode_steps: 1000        # Standard episode length
+  use_domain_randomization: false # No DR for pure SR2L test
 
 # PPO hyperparameters (matching baseline)
 learning_rate: 0.0003           # Standard PPO learning rate
