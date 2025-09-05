@@ -246,6 +246,10 @@ def train(config: dict):
         print(f"  - Failure rate: {permanent_dr_config.get('failure_rate', 0.001)}")
         print(f"  - Curriculum duration: {permanent_dr_config.get('curriculum_steps', 10000000):,} steps")
     
+    # Check for straight-line in main config (not just in create_env)
+    use_straight_line = config.get('env', {}).get('use_straight_line', False)
+    straight_line_config = config.get('straight_line', {})
+    
     if use_straight_line:
         print(f"\nStraight-Line Locomotion:")
         print(f"  - Status: ENABLED")
