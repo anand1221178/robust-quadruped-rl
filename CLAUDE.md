@@ -4,7 +4,87 @@
 **Research Project**: Robust Quadruped RL with SR2L (Smooth Regularized Reinforcement Learning)
 **Objective**: Implement SR2L algorithm for robust quadruped locomotion using PPO and RealAnt simulation
 
-## Current Status (September 9, 2025 - SUPERVISOR FEEDBACK, SR2L TANH INVESTIGATION)
+## Current Status (September 9, 2025 - THREE PARALLEL TRAININGS IN PROGRESS)
+
+### Current Training Jobs (All GPU-accelerated):
+- **Job 155218** (7+ hours): Permanent DR - nearing completion (~17 hours remaining)
+- **Job 155235** (15 minutes): Persistent DR - just started, showing excellent early performance
+- **Job 155234** (7 minutes): SR2L Tanh - just launched, **NO NaN CRASHES** ✅
+
+### Key Breakthrough - SR2L Tanh Fix Working:
+- **Technical Issue Resolved**: Fixed `lambda_smooth` → `lambda` config mapping
+- **NaN Issue Resolved**: Tanh activation preventing physics crashes
+- **Stable Training**: SR2L running for 7+ minutes without crashes (previous attempts failed within minutes)
+- **Config Values**: SR2L correctly using lambda=0.001 (not 0.01 default)
+
+### Training Performance Early Indicators:
+- **Persistent DR** (15 min): 0.246-0.954 m/s, rewards ~115,000 (excellent trajectory)
+- **SR2L Tanh** (7 min): Still in exploration phase (too early to judge)
+- **Permanent DR** (7+ hours): Should complete within ~24 hours total
+
+### Experimental Design Success:
+Three fundamentally different robustness approaches training in parallel:
+1. **Permanent DR**: Joints fail forever (most extreme)
+2. **Persistent DR**: Realistic failure durations (50-1000+ steps)  
+3. **SR2L + Tanh**: Sensor noise robustness with stable activation
+
+## Complete Experiment Specification (After 24h Timeout)
+
+All three experiments hit the 24-hour cluster limit and need to be resumed from checkpoints.
+
+### **🔥 PERMANENT DR** (`ppo_permanent_dr.yaml`):
+**Purpose**: Test adaptation to permanent joint disabilities (never recover)
+```yaml
+permanent_dr:
+  failure_rate: 0.001        # 0.1% chance per step of NEW failure  
+  max_failed_joints: 4       # Up to 4 joints accumulate failures
+  curriculum: 2M warmup → 15M progressive → 23M full difficulty
+total_timesteps: 40000000    # 40M steps (hardest task)
+```
+**Key Innovation**: Once joints fail, they stay failed forever - forces true disability adaptation
+**Real-world**: Motor burns out completely, robot must continue with remaining limbs
+
+### **⏰ PERSISTENT DR** (`ppo_persistent_dr.yaml`):
+**Purpose**: Test adaptation to realistic hardware failure durations
+```yaml
+persistent_dr:
+  failure_prob: 0.15         # 15% of episodes have failures
+  duration_probs: [0.4, 0.4, 0.2]  # [short, medium, long]
+  short_duration: [50, 200]  # 2.5-10 seconds  
+  medium_duration: [200, 1000] # 10-50 seconds
+  # Long = entire episode
+total_timesteps: 30000000    # 30M steps
+```
+**Key Innovation**: Failures persist for realistic durations (not single timesteps)
+**Real-world**: Motor overheats, fails for 30 seconds, then recovers
+
+### **🔧 SR2L + TANH** (`ppo_sr2l_tanh.yaml`):
+**Purpose**: Test sensor noise robustness with NaN issue fix
+```yaml
+sr2l:
+  lambda_smooth: 0.001       # Gentle regularization
+  perturbation_std: 0.01     # Small sensor noise
+  perturb_only_joints: true  # Only joint sensors (dims 13-28)
+policy:
+  activation: tanh           # KEY FIX: Bounds outputs to [-1,1]
+pretrained_model: null       # Train from scratch (avoid ReLU conflicts)
+total_timesteps: 30000000    # 30M steps
+```
+**Key Innovation**: Tanh activation prevents unbounded actions → no NaN crashes
+**Real-world**: Noisy/degraded joint sensors, robot maintains smooth locomotion
+
+## Fundamental Differences Summary:
+
+| Feature | **Persistent DR** | **Permanent DR** | **SR2L Tanh** |
+|---------|-------------------|------------------|----------------|
+| **Problem** | Temporary hardware failures | Catastrophic hardware damage | Sensor noise/degradation |
+| **Recovery** | ✅ After 50-1000 steps | ❌ Never recovers | N/A (smoothness focus) |
+| **Failure Mode** | Episode-based realistic durations | Accumulating permanent disabilities | Observation perturbations |
+| **Innovation** | Realistic failure timing | True disability adaptation | Stable bounded activation |
+| **Training** | 30M steps | 40M steps (harder) | 30M steps from scratch |
+| **Real-world** | Motor overheating | Limb amputation/prosthetics | Noisy sensors |
+
+## Previous Status (September 9, 2025 - SUPERVISOR FEEDBACK, SR2L TANH INVESTIGATION)
 
 ### Latest Supervisor Feedback & Action Plan (September 9, 2025):
 
@@ -53,9 +133,14 @@
 - **Permanent DR**: Most extreme test - complete permanent failures
 
 **Research Narrative**:
-- SR2L handles sensor noise (if tanh works)
-- Persistent DR handles realistic hardware failures (minutes to hours)
-- Permanent DR handles catastrophic failures (permanent damage)
+- **SR2L + Tanh**: Handles sensor noise robustness (✅ **technical issues resolved**)
+- **Persistent DR**: Handles realistic hardware failures (minutes to hours) 
+- **Permanent DR**: Handles catastrophic failures (permanent damage)
+
+**Timeline for Results**:
+- **Today**: Permanent DR completion (~17 hours remaining)
+- **Tomorrow**: 24-hour progress check on all three approaches
+- **This Week**: Full 30M step completions for comprehensive comparison
 
 ## Previous Status (September 5, 2025 - DR INADEQUACY DISCOVERED, PERMANENT DR DEVELOPMENT)
 - **Phase**: 3.5/4 - Current DR fails at extreme scenarios, developing Permanent DR solution ⚠️

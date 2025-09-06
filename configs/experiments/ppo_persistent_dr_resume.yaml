@@ -1,0 +1,92 @@
+# Resume Persistent DR Training after 24h timeout
+# Continue from checkpoint after cluster time limit
+
+defaults:
+  - /train/base
+  - /env/realant
+
+experiment:
+  name: ppo_persistent_dr_resume
+  description: "Resume Persistent DR training after 24h cluster timeout"
+  tags:
+    - ppo
+    - persistent_dr
+    - resume
+    - realistic_failures
+
+# Disable standard Domain Randomization
+domain_randomization:
+  enabled: false
+
+# Disable SR2L
+sr2l:
+  enabled: false
+
+# Environment settings - ENABLE PERSISTENT DR
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false
+  
+  # ENABLE PERSISTENT DR
+  use_persistent_dr: true
+  persistent_dr:
+    # Same settings as before
+    failure_prob: 0.15
+    max_failed_joints: 2
+    
+    # Realistic failure durations
+    duration_probs: [0.4, 0.4, 0.2]
+    short_duration: [50, 200]
+    medium_duration: [200, 1000]
+    
+    # Failure types
+    failure_types: ['lock', 'weak', 'erratic']
+    failure_type_probs: [0.5, 0.3, 0.2]
+    
+    # Progressive curriculum
+    use_curriculum: true
+    warmup_steps: 8000000         # Might be completed
+    curriculum_steps: 15000000    # In progress
+
+# REMAINING timesteps - 23.9M completed, 6.1M to go
+total_timesteps: 6100000  # Remaining steps (30M - 23.9M)
+
+# PPO hyperparameters (same as before)
+ppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture
+policy:
+  hidden_sizes: [64, 128]
+  activation: relu
+
+# LOAD from latest checkpoint (23.9M steps completed)
+pretrained_model: experiments/ppo_persistent_dr_9km9jeq1/checkpoints/model_23900000_steps.zip  
+vec_normalize_path: experiments/ppo_persistent_dr_9km9jeq1/checkpoints/model_vecnormalize_23900000_steps.pkl
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_name: "ppo_persistent_dr_resume"
+  verbose: 1
+
+# Save settings
+eval_freq: 10000
+n_eval_episodes: 5
+save_freq: 100000
+
+# Notes:
+# - Resumes from checkpoint after 24h timeout
+# - Adjust total_timesteps based on actual progress
+# - Update pretrained_model path to latest checkpoint
