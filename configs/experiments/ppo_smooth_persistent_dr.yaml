@@ -1,0 +1,100 @@
+# Persistent DR + Smooth Goal-Directed Locomotion
+# Joint failures with ACTUAL A-to-B goals!
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: ppo_smooth_persistent_dr
+  description: "Persistent DR with smooth goal-directed locomotion - joint failure robustness with A-to-B behavior"
+  tags:
+    - ppo
+    - persistent_dr
+    - smooth_target_walking
+    - joint_failure_robustness
+    - goal_directed
+
+# Environment settings - SMOOTH + GOAL-DIRECTED + PERSISTENT DR
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: false           # NO speed-only rewards
+  use_target_walking: false           # NO jerky version
+  use_smooth_target_walking: true     # SMOOTH goal-directed version!
+  target_distance: 5.0                # 5m targets
+  use_domain_randomization: false
+  
+  # ENABLE PERSISTENT DR
+  use_persistent_dr: true
+  persistent_dr:
+    failure_prob: 0.15                # 15% of episodes have failures
+    max_failed_joints: 2              # Up to 2 joints fail simultaneously
+    
+    # Realistic failure durations (key innovation)
+    duration_probs: [0.4, 0.4, 0.2]  # [short, medium, long]
+    short_duration: [50, 200]         # 2.5-10 seconds
+    medium_duration: [200, 1000]      # 10-50 seconds (long enough to adapt)
+    
+    # Failure types
+    failure_types: ['lock', 'weak', 'erratic']
+    failure_type_probs: [0.5, 0.3, 0.2]
+    
+    # Progressive curriculum - learn goals first!
+    use_curriculum: true
+    warmup_steps: 10000000            # 10M steps learning smooth goal walking
+    curriculum_steps: 20000000        # 20M steps gradual failure introduction
+
+# Disable other methods
+sr2l:
+  enabled: false
+
+domain_randomization:
+  enabled: false
+
+permanent_dr:
+  enabled: false
+
+# PPO settings
+ppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture
+policy:
+  hidden_sizes: [64, 128]
+  activation: relu
+
+# Training settings - EXTRA LONG FOR COMPLEXITY
+total_timesteps: 50000000       # 50M steps - most complex task!
+num_envs: 8
+seed: 42
+
+# No pretrained model - new obs space
+pretrained_model: null
+vec_normalize_path: null
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_name: "ppo_smooth_persistent_dr"
+  verbose: 1
+
+# Save settings
+save_freq: 100000
+eval_freq: 10000
+n_eval_episodes: 5
+
+# EXPECTED OUTCOME:
+# - Robot walks from A to B even when joints fail for minutes
+# - Adapts gait when joint locked/weak for 200-1000 timesteps
+# - Maintains goal-directed behavior during failures
+# - Much better than speed-only DR because it has PURPOSE

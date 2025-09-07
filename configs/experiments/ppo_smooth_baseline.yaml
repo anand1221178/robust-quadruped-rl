@@ -1,0 +1,77 @@
+# PROPER Smooth + Goal-Directed Baseline
+# This is what we should have built from day 1!
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: ppo_smooth_baseline
+  description: "TRUE baseline: Smooth goal-directed A-to-B locomotion (not just speed walking)"
+  tags:
+    - ppo
+    - smooth_target_walking
+    - goal_directed
+    - proper_baseline
+    - a_to_b_locomotion
+
+# Environment settings - THE FOUNDATION
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: false           # NO MORE SPEED-ONLY BULLSHIT!
+  use_target_walking: false           # Don't use jerky version
+  use_smooth_target_walking: true     # USE SMOOTH GOAL-DIRECTED VERSION!
+  target_distance: 5.0                # Walk to targets 5m ahead
+  use_domain_randomization: false
+
+# PPO settings (proven to work)
+ppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture (proven to work)
+policy:
+  hidden_sizes: [64, 128]
+  activation: relu
+
+# Disable other features for clean baseline
+sr2l:
+  enabled: false
+
+domain_randomization:
+  enabled: false
+
+permanent_dr:
+  enabled: false
+
+# Training settings - GO BIG OR GO HOME!
+total_timesteps: 30000000    # 30M steps - same as robustness models!
+num_envs: 8
+seed: 42
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_name: "ppo_smooth_baseline"
+  verbose: 1
+
+# Save settings
+save_freq: 50000
+eval_freq: 10000
+n_eval_episodes: 5
+
+# EXPECTED OUTCOME:
+# - Robot walks from Point A to Point B (actual goals!)
+# - Smooth locomotion (no jerkiness)
+# - Consistent target reaching behavior
+# - 30M steps should give us the BEST possible baseline
+# - This becomes the TRUE baseline for all robustness comparisons

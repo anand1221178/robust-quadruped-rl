@@ -31,6 +31,7 @@ from wandb.integration.sb3 import WandbCallback
 #Custom success wrapper
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from envs.target_walking_wrapper import TargetWalkingWrapper
+from envs.smooth_target_wrapper import SmoothTargetWrapper
 from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
 from envs.robust_dr_wrapper import RobustDRWrapper
 from utils.custom_callbacks import CustomMetricsCallback
@@ -83,6 +84,7 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
     # Check wrapper options
     use_success_reward = env_config['env'].get('use_success_reward', False)
     use_target_walking = env_config['env'].get('use_target_walking', False)
+    use_smooth_target_walking = env_config['env'].get('use_smooth_target_walking', False)
     use_domain_randomization = env_config['env'].get('use_domain_randomization', False)
     use_straight_line = env_config['env'].get('use_straight_line', False)
     
@@ -102,7 +104,11 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         env = gym.make(env_name)
         
         # Apply reward wrapper (mutually exclusive)
-        if use_target_walking:
+        if use_smooth_target_walking:
+            target_distance = env_config['env'].get('target_distance', 5.0)
+            print(f"🎯 Using SMOOTH Target Walking Wrapper - Goal-directed + smooth locomotion ({target_distance}m targets)!")
+            env = SmoothTargetWrapper(env, target_distance=target_distance)
+        elif use_target_walking:
             target_distance = env_config['env'].get('target_distance', 5.0)
             print(f"Using Target Walking Wrapper - Goal-directed navigation ({target_distance}m targets)!")
             env = TargetWalkingWrapper(env, target_distance=target_distance)
