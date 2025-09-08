@@ -1,0 +1,79 @@
+# EMERGENCY PIVOT: Fine-tune working baseline with TargetWalkingWrapper
+# Use proven baseline + add goal-directed behavior
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: ppo_target_baseline_finetune
+  description: "EMERGENCY FIX: Fine-tune working baseline with goal-directed behavior"
+  tags:
+    - ppo
+    - target_walking
+    - finetune
+    - emergency_fix
+
+# Environment settings - USE PROVEN TARGETWALKINGWRAPPER
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: false           # NO MORE SUCCESS REWARD
+  use_target_walking: true            # PROVEN goal-directed wrapper
+  use_smooth_target_walking: false    # ABANDON BROKEN APPROACH
+  target_distance: 5.0                # 5m targets
+  use_domain_randomization: false
+
+# PPO settings (proven to work)
+ppo:
+  learning_rate: 0.0001               # Lower LR for fine-tuning
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture (same as working baseline)
+policy:
+  hidden_sizes: [64, 128]
+  activation: relu
+
+# Disable other features
+sr2l:
+  enabled: false
+
+domain_randomization:
+  enabled: false
+
+permanent_dr:
+  enabled: false
+
+# Fine-tuning settings - MUCH SHORTER
+total_timesteps: 10000000    # 10M steps should be enough for fine-tuning
+num_envs: 8
+seed: 42
+
+# LOAD FROM WORKING BASELINE
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+vec_normalize_path: done/ppo_baseline_ueqbjf2x/vec_normalize.pkl
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_name: "ppo_target_baseline_finetune"
+  verbose: 1
+
+# Save settings
+save_freq: 50000
+eval_freq: 10000
+n_eval_episodes: 5
+
+# EXPECTED OUTCOME:
+# - Start with 0.214 m/s smooth walking ability
+# - Learn to walk toward targets (A-to-B behavior)
+# - Much faster than training from scratch
+# - Actually works unlike SmoothTargetWrapper!

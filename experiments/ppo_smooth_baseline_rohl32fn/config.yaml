@@ -1,0 +1,53 @@
+defaults:
+- /train/default
+- /env/realant
+domain_randomization:
+  enabled: false
+env:
+  name: RealAntMujoco-v0
+  target_distance: 5.0
+  use_domain_randomization: false
+  use_smooth_target_walking: true
+  use_success_reward: false
+  use_target_walking: false
+eval_freq: 10000
+experiment:
+  description: 'TRUE baseline: Smooth goal-directed A-to-B locomotion (not just speed
+    walking)'
+  name: ppo_smooth_baseline
+  tags:
+  - ppo
+  - smooth_target_walking
+  - goal_directed
+  - proper_baseline
+  - a_to_b_locomotion
+logging:
+  verbose: 1
+  wandb: true
+  wandb_name: ppo_smooth_baseline
+  wandb_project: robust-quadruped-rl
+n_eval_episodes: 5
+num_envs: 8
+permanent_dr:
+  enabled: false
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  n_steps: 2048
+  vf_coef: 0.5
+save_freq: 50000
+seed: 42
+sr2l:
+  enabled: false
+total_timesteps: 30000000
