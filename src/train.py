@@ -157,13 +157,13 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
         # DEBUG: Check all DR-related flags
         print(f"DEBUG: use_permanent_dr = {use_permanent_dr}")
         print(f"DEBUG: use_domain_randomization = {use_domain_randomization}")  
-        print(f"DEBUG: env_config.get('use_persistent_dr') = {env_config.get('use_persistent_dr', False)}")
-        print(f"DEBUG: env_config keys = {list(env_config.keys())}")
+        print(f"DEBUG: env_config['env'].get('use_persistent_dr') = {env_config['env'].get('use_persistent_dr', False)}")
+        print(f"DEBUG: env_config['env'] keys = {list(env_config['env'].keys())}")
         
         # Apply Persistent DR wrapper if specified (NEW)
-        if env_config.get('use_persistent_dr', False):
+        if env_config['env'].get('use_persistent_dr', False):
             from envs.persistent_dr_wrapper import PersistentDRWrapper
-            persistent_dr_config = env_config.get('persistent_dr', {})
+            persistent_dr_config = env_config['env'].get('persistent_dr', {})
             print("Using PERSISTENT Domain Randomization - Realistic failure durations!")
             print(f"  Failure prob: {persistent_dr_config.get('failure_prob', 0.15)}")
             print(f"  Max failed joints: {persistent_dr_config.get('max_failed_joints', 2)}")
