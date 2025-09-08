@@ -130,6 +130,141 @@
 3. **Test Early** - Should have tested TargetWalkingWrapper first
 4. **Don't Overthink** - The basic approach was already optimal
 
+## 📊 VERIFICATION & VALIDATION (September 8, 2025)
+
+### ✅ TargetWalkingWrapper Performance Verification
+
+#### Bulletproof Walking Test Results:
+**Script**: `scripts/verify_walking_performance.py`
+- **Average Velocity**: 0.218 m/s (101.9% of baseline!)
+- **Target Reaching**: 2 targets consistently reached
+- **Time per Target**: 21.0 seconds (420 steps)
+- **Distance per Episode**: 5.46m in 25 seconds
+- **Consistency**: Some variability (std: 0.175) but acceptable
+
+#### Baseline Speed Comparison:
+**Script**: `scripts/compare_baselines.py`
+- **Raw Baseline (SuccessRewardWrapper)**: 0.209 m/s
+- **With TargetWalkingWrapper**: 0.220 m/s
+- **Performance Gain**: +5.3% FASTER with goals!
+- **Conclusion**: No speed penalty for goal-directed behavior
+
+### 🔍 Deep Dive: Why SmoothTargetWrapper Failed
+
+#### Reward Component Analysis:
+```python
+# SmoothTargetWrapper's broken reward logic:
+velocity_reward = 5.0 * exp(-velocity_diff * 2)     # Rewards standing still!
+smoothness_reward = 2.0 * exp(-action_change * 3)   # Rewards not moving!
+height_reward = 0.5                                 # Free points for existing
+```
+
+**Robot's Discovered Exploit**:
+- Stand still → Maximum smoothness (2.0)
+- Don't move → Good velocity reward (5.0)
+- Stay upright → Height bonus (0.5)
+- **Total**: ~7.5 reward/step × 1000 steps = 7500 reward for doing NOTHING!
+
+#### VecNormalize Debugging Discovery:
+- **Training Mode Issue**: Was set to `True` during evaluation
+- **Reward Scaling**: 112x difference between normalized and raw rewards
+- **Fix Applied**: `env.training = False` and `env.norm_reward = False`
+- **Result**: Proper reward values matching W&B training curves
+
+## 🚀 PHASE 2 TRAINING IN PROGRESS (September 8, 2025)
+
+### ✅ ALL THREE MODELS LAUNCHED SUCCESSFULLY!
+
+**Training Status**: All 3 Phase 2 jobs running in parallel on cluster
+- **SR2L**: `ppo_target_sr2l_z4qicqex` - 20M steps 
+- **Persistent DR**: `ppo_target_persistent_dr_3rsu2mzu` - 25M steps
+- **Permanent DR**: `ppo_target_permanent_dr_eowza9yn` - 30M steps
+- **Expected Completion**: ~23 hours (limited by longest job)
+
+#### 1. SR2L with Goal-Directed Behavior ✅ TRAINING
+**Model**: `ppo_target_sr2l_z4qicqex`
+- **Base**: TargetWalkingWrapper (proven goal-directed behavior)
+- **Approach**: Fine-tune from working baseline (0.220 m/s)
+- **Training**: 20M steps total (~15h)
+- **Warmup**: 5M steps to maintain goals
+- **Key Features**:
+  - Tanh activation (NaN prevention)
+  - Joint-only perturbations (dims 13-28)  
+  - Lower LR (0.0001) for fine-tuning
+  - λ=0.001 gentle regularization
+- **Innovation**: Sensor noise robustness with goal-directed A-to-B locomotion
+
+#### 2. Persistent DR with Goals ✅ TRAINING  
+**Model**: `ppo_target_persistent_dr_3rsu2mzu`
+- **Base**: TargetWalkingWrapper (proven goal-directed behavior)
+- **Approach**: Realistic hardware failure durations (NEW APPROACH!)
+- **Training**: 25M steps total (~19h)
+- **Warmup**: 5M steps goal maintenance
+- **Persistent DR Implementation**:
+  - **Short failures**: 50-200 steps (2.5-10s) - transient issues
+  - **Medium failures**: 200-1000 steps (10-50s) - temporary damage
+  - **Long failures**: Entire episode - permanent for that episode
+  - **Failure types**: Lock (50%), Weak (30%), Erratic (20%)
+  - **Episode failure probability**: 15% (curriculum: 2% → 15%)
+  - **Max simultaneous failures**: 2 joints
+  - **Curriculum**: 5M warmup → 15M gradual introduction
+- **Innovation**: Failures persist for realistic durations (not single timesteps!)
+
+#### 3. Permanent DR with Goals ✅ TRAINING
+**Model**: `ppo_target_permanent_dr_eowza9yn` 
+- **Base**: TargetWalkingWrapper (proven goal-directed behavior)
+- **Approach**: Permanent disabilities (MOST EXTREME!)
+- **Training**: 30M steps total (~23h) - hardest task
+- **Warmup**: 5M steps goal maintenance
+- **Permanent DR Implementation**:
+  - **Once joints fail, they NEVER recover** (true adaptation required)
+  - **Failure rate**: 0.001 per step (0.1% chance of new permanent failure)
+  - **Max permanent failures**: Up to 4 joints accumulate
+  - **Curriculum**: 5M warmup → 20M progressive (0→4 joints)
+  - **Failure mechanism**: Disabled joints output zero torque forever
+  - **Reward adaptation**: Disability bonus for forward progress (more failures = higher bonus)
+- **Innovation**: True prosthetic/amputation adaptation - robot must develop new gaits
+
+### 🎯 Phase 2 Strategy Improvements:
+
+#### Fine-Tuning Approach:
+- **Start Point**: Proven baseline (0.220 m/s, reaches targets)
+- **Learning Rate**: 0.0001 (10x lower for stability)
+- **Warmup Period**: 5M steps maintaining goal behavior
+- **Expected**: Faster convergence, better final performance
+
+#### Key Configuration Changes:
+```yaml
+# ALL configs now use:
+use_target_walking: true         # Proven wrapper
+use_smooth_target_walking: false # Abandoned broken approach
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+learning_rate: 0.0001            # Fine-tuning rate
+```
+
+### 📈 Expected Outcomes:
+
+| Model | Training Time | Expected Performance |
+|-------|--------------|---------------------|
+| **SR2L** | 20M steps (~15h) | 0.18-0.20 m/s with sensor noise robustness |
+| **Persistent DR** | 25M steps (~19h) | 0.15-0.18 m/s adapting to temporary failures |
+| **Permanent DR** | 30M steps (~23h) | 0.10-0.15 m/s with permanent disabilities |
+
+**All models will maintain goal-directed A-to-B locomotion!**
+
+### 🔬 Technical Discoveries:
+
+#### Video Rendering Issues:
+- **Frame calculation bug**: Wrong position tracking in replay
+- **Perception issue**: 20fps makes robot look slower than reality
+- **Actual performance**: Verified at 0.218 m/s via multiple tests
+- **Solution**: Trust numerical tests over video perception
+
+#### Wrapper Compatibility:
+- **TargetWalkingWrapper**: 29D obs space (matches baseline)
+- **SmoothTargetWrapper**: 31D obs space (added direction info)
+- **Result**: TargetWalkingWrapper has direct compatibility advantage
+
 ---
 
 ## ARCHIVED STATUS (September 7, 2025 - SPEED-ONLY FAILURES)
