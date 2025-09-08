@@ -154,8 +154,14 @@ def create_env(env_config: dict, normalize: bool = True, norm_reward: bool = Tru
                 print("Using Static Domain Randomization - Joint dropout & sensor noise!")
                 env = DomainRandomizationWrapper(env, dr_config)
         
+        # DEBUG: Check all DR-related flags
+        print(f"DEBUG: use_permanent_dr = {use_permanent_dr}")
+        print(f"DEBUG: use_domain_randomization = {use_domain_randomization}")  
+        print(f"DEBUG: env_config.get('use_persistent_dr') = {env_config.get('use_persistent_dr', False)}")
+        print(f"DEBUG: env_config keys = {list(env_config.keys())}")
+        
         # Apply Persistent DR wrapper if specified (NEW)
-        elif env_config.get('use_persistent_dr', False):
+        if env_config.get('use_persistent_dr', False):
             from envs.persistent_dr_wrapper import PersistentDRWrapper
             persistent_dr_config = env_config.get('persistent_dr', {})
             print("Using PERSISTENT Domain Randomization - Realistic failure durations!")
