@@ -100,9 +100,7 @@ EXPERIMENT=${1:-ppo_baseline}  # Default to ppo_baseline if no argument
 
 # Run training
 $PYTHON_CMD src/train.py \
-    --config configs/experiments/${EXPERIMENT}.yaml \
-    --override logging.wandb_entity="anandpatel1221178-university-of-the-witswatersrand" \
-    --override logging.wandb_project="robust-quadruped-rl"
+    --config configs/experiments/${EXPERIMENT}.yaml
 
 EXITCODE=$?
 
