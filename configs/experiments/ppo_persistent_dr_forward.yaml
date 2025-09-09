@@ -1,0 +1,85 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment settings
+experiment:
+  description: "PPO + Persistent DR for forward locomotion - Realistic failure durations"
+  name: ppo_persistent_dr_forward
+  tags: 
+    - ppo
+    - persistent-dr
+    - forward-locomotion
+    - realistic-failures
+    - extended-durations
+    - joint-failures
+
+# Disable SR2L (this is DR only)
+sr2l:
+  enabled: false
+
+# Enable Domain Randomization with PERSISTENT failure approach
+domain_randomization:
+  enabled: true
+  # Standard DR settings that work with current wrapper (FIXED PARAMETER NAMES)
+  joint_dropout_prob: 0.15           # 15% chance of joint failures per episode
+  max_dropped_joints: 2              # Up to 2 joints can fail simultaneously  
+  min_dropped_joints: 1              # At least 1 joint fails when dropout occurs
+  sensor_noise_std: 0.02             # Light sensor noise
+  noise_joints_only: true            # Only add noise to joint sensors
+
+# Environment settings - MATCH BASELINE EXACTLY
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true           # Match baseline wrapper exactly (forward locomotion)
+  use_domain_randomization: true     # Enable DR wrapper
+
+# Total training steps - sufficient for DR convergence with curriculum
+total_timesteps: 25000000            # 25M steps for persistent DR learning
+
+# Initialize from baseline for faster convergence
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# PPO hyperparameters - MATCH BASELINE EXACTLY
+ppo:
+  learning_rate: 0.0001              # Lower LR for fine-tuning from pretrained model
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01                     # Small entropy for exploration under failures
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Network architecture - ReLU works fine with DR (no NaN issues)
+policy:
+  hidden_sizes: [64, 128]           # Same as baseline
+  activation: relu                  # ReLU (DR doesn't cause NaN like SR2L)
+
+# Environment setup
+num_envs: 8
+seed: 42
+
+# Evaluation settings
+eval_freq: 10000                    # Frequent evaluation
+save_freq: 100000                   # Save every 100k steps
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# Notes:
+# - Uses current domain_randomization_wrapper.py (realistic with existing code)
+# - Joint failures simulate persistent hardware issues
+# - Curriculum prevents failures early to let model maintain forward walking
+# - Fine-tunes from proven baseline for faster convergence
+# - Expected performance: 0.15-0.18 m/s with good failure adaptation
+# 
+# FUTURE ENHANCEMENT: Could implement true persistent DR wrapper with:
+# - Failure durations: short (50-200 steps), medium (200-1000 steps), long (episode)
+# - More realistic failure types: lock, weak, erratic
+# - Current implementation uses episode-level failures which is reasonable approximation
