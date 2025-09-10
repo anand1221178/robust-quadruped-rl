@@ -1,0 +1,115 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment settings
+experiment:
+  description: "PPO + GENTLE Curriculum DR - Fixed progressive training"
+  name: ppo_curriculum_gentle_dr
+  tags: 
+    - ppo
+    - curriculum-dr
+    - gentle-progression
+    - research-fixed
+    - progressive-robustness
+
+# Disable SR2L (this is DR only)
+sr2l:
+  enabled: false
+
+# Enable Domain Randomization with GENTLE CURRICULUM
+domain_randomization:
+  enabled: true
+  
+  # FIXED CURRICULUM IMPLEMENTATION:
+  # Phase 1 (0-10M steps): Clean training → learn solid locomotion
+  # Phase 2 (10-20M steps): OPTIONAL failures (not forced!) + tiny noise  
+  # Phase 3 (20-30M steps): More frequent failures + moderate noise
+  
+  # Phase 1: Perfect clean training (0-10M steps)
+  phase_1_steps: 10000000
+  phase_1_config:
+    joint_dropout_prob: 0.0        # No failures - master locomotion first
+    max_dropped_joints: 0
+    min_dropped_joints: 0
+    sensor_noise_std: 0.0          # No noise - perfect conditions
+  
+  # Phase 2: GENTLE introduction (10-20M steps) 
+  phase_2_steps: 10000000
+  phase_2_config:
+    joint_dropout_prob: 0.03       # 3% chance (gentle start!)
+    max_dropped_joints: 1          # Single joint max
+    min_dropped_joints: 0          # 🔥 KEY FIX: 0 = failures are OPTIONAL!
+    sensor_noise_std: 0.005        # Tiny noise (half SR2L training noise)
+  
+  # Phase 3: Moderate challenge (20-30M steps)
+  phase_3_config:
+    joint_dropout_prob: 0.08       # 8% chance (still reasonable!)
+    max_dropped_joints: 2          # Up to 2 joints max
+    min_dropped_joints: 0          # 🔥 KEY FIX: Still optional!
+    sensor_noise_std: 0.015        # Moderate noise (1.5x SR2L training)
+    
+  noise_joints_only: true          # Only joint sensors get noise
+
+# Environment settings - MATCH BASELINE EXACTLY
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true         # Same reward structure as baseline
+  use_domain_randomization: true   # Enable gentle curriculum DR
+
+# Total training steps - LONGER FOR ROBUSTNESS
+total_timesteps: 30000000          # 30M steps (10M + 10M + 10M phases)
+
+# 🔥 START FROM BASELINE - GUARANTEED GOOD STARTING POINT
+pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+
+# PPO hyperparameters - GENTLE FINE-TUNING  
+ppo:
+  learning_rate: 0.00005           # 🔥 ULTRA-LOW LR for gentle adaptation
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.15                 # 🔥 SMALLER clips for stability
+  ent_coef: 0.005                  # 🔥 REDUCED entropy - don't explore too much
+  vf_coef: 0.5
+  max_grad_norm: 0.3               # 🔥 TIGHT gradient clipping
+
+# Network architecture - Same as baseline
+policy:
+  hidden_sizes: [64, 128]         
+  activation: relu                
+
+# Environment setup
+num_envs: 8
+seed: 42
+
+# Evaluation settings
+eval_freq: 10000                  
+save_freq: 100000                 
+
+# Logging
+logging:
+  wandb: true
+  wandb_project: "robust-quadruped-rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+  verbose: 1
+
+# 🎯 GENTLE CURRICULUM STRATEGY:
+# Phase 1: Master perfect locomotion (10M steps clean)
+# Phase 2: Gentle optional failures (97% normal episodes, 3% single failure)  
+# Phase 3: Moderate optional failures (92% normal, 8% failure episodes)
+# 
+# 🔥 KEY FIXES:
+# 1. min_dropped_joints = 0 (failures are OPTIONAL, not forced!)
+# 2. Ultra-low failure rates (3% → 8% vs old 5% → 15%)
+# 3. Much lower learning rate for gentle adaptation
+# 4. Smaller clip ranges and entropy for stability
+# 5. Starting from proven 0.224 m/s baseline
+# 6. 30M steps for thorough training
+# 
+# 🎯 EXPECTED RESULTS:
+# - Maintains >0.18 m/s locomotion throughout training
+# - Gracefully handles occasional joint failures  
+# - Much more stable than aggressive curriculum
+# - Should achieve robust locomotion without breaking walking

@@ -1,0 +1,54 @@
+# 🎲 NUCLEAR OPTION 3B: Simple Persistent DR (40M steps)
+# Approach: Pure DomainRandomizationWrapper with constant gentle settings
+# Theory: Simplest approach - no curriculum complexity
+
+algorithm: PPO
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+experiment:
+  name: ppo_simple_persistent_40M
+  description: "NUCLEAR ROBUSTNESS: Simple persistent DR with DomainRandomizationWrapper (40M steps)"
+
+# 🎯 SIMPLE PERSISTENT DR (40M TOTAL)
+domain_randomization:
+  use_curriculum: false
+  wrapper_type: DomainRandomizationWrapper
+  
+  # 🔥 SIMPLE CONSTANT SETTINGS
+  joint_dropout_prob: 0.03      # 3% chance - constant throughout
+  max_dropped_joints: 1         # Single joint max
+  min_dropped_joints: 0         # 🔥 OPTIONAL failures!
+  sensor_noise_std: 0.006       # Mild constant noise
+  noise_joints_only: true
+
+# 🧠 PPO Configuration (proven working from baseline)
+ppo:
+  learning_rate: 0.0003          # Standard rate
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+
+# 🏗️ Policy Architecture (match baseline exactly)
+policy:
+  activation: relu
+  hidden_sizes: [64, 128]
+
+# ⏱️ Training Configuration
+total_timesteps: 40000000        # 40M steps total
+checkpoint_freq: 1000000         # Save every 1M steps
+log_interval: 100               # Log every 100 steps
+
+# 💾 Experiment Tracking
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: null
+
+# 🏷️ Experiment metadata
+experiment:
+  tags: ["persistent-dr", "simple", "constant", "40M-steps", "nuclear-option"]
+  notes: "NUCLEAR ROBUSTNESS ATTEMPT 3B: Simple persistent DR with DomainRandomizationWrapper"

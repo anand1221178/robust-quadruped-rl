@@ -66,18 +66,32 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         if use_domain_randomization:
             dr_config = config.get('domain_randomization', {})
             
-            # 🔥 DETECT CURRICULUM CONFIG AND USE ULTIMATE WRAPPER! 🔥
+            # 🔥 CHECK WRAPPER TYPE PREFERENCE FROM CONFIG
+            wrapper_type = dr_config.get('wrapper_type', 'auto')
             has_curriculum = any(key.startswith('phase_') for key in dr_config.keys())
+            use_curriculum = dr_config.get('use_curriculum', True)
             
-            if has_curriculum:
+            # Determine which wrapper to use
+            if wrapper_type == 'CurriculumDRWrapper' or (wrapper_type == 'auto' and has_curriculum and use_curriculum):
                 print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
-                print("📚 Phase-based training detected - using CurriculumDRWrapper")
+                print("📚 Using CurriculumDRWrapper for phase-based training")
                 env = CurriculumDRWrapper(env, dr_config)
-            else:
+            elif wrapper_type == 'DomainRandomizationWrapper' or (wrapper_type == 'auto' and not use_curriculum):
                 print("🎲 Basic Domain Randomization: Joint failure robustness")
                 print(f"  Joint dropout prob: {dr_config.get('joint_dropout_prob', 0.1)}")
                 print(f"  Max dropped joints: {dr_config.get('max_dropped_joints', 2)}")
                 env = DomainRandomizationWrapper(env, dr_config)
+            else:
+                # Default behavior - auto-detect based on phases
+                if has_curriculum:
+                    print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
+                    print("📚 Phase-based training detected - using CurriculumDRWrapper")
+                    env = CurriculumDRWrapper(env, dr_config)
+                else:
+                    print("🎲 Basic Domain Randomization: Joint failure robustness")
+                    print(f"  Joint dropout prob: {dr_config.get('joint_dropout_prob', 0.1)}")
+                    print(f"  Max dropped joints: {dr_config.get('max_dropped_joints', 2)}")
+                    env = DomainRandomizationWrapper(env, dr_config)
             
         env = Monitor(env)
         return env
@@ -127,40 +141,66 @@ def train(config: dict):
     # Create environment
     env = create_env(config, normalize=True, norm_reward=True)
     
-    # Check if using SR2L
-    use_sr2l = config.get('sr2l', {}).get('enabled', False)
+    # 🔥 CHECK FOR PRETRAINED MODEL LOADING
+    pretrained_model_path = config.get('pretrained_model')
+    pretrained_vec_normalize_path = config.get('pretrained_vec_normalize')
     
-    if use_sr2l:
-        print("🔬 Using SR2L algorithm")
-        sr2l_config = config.get('sr2l', {})
-        model = PPO_SR2L(
-            "MlpPolicy", 
-            env,
-            sr2l_config=sr2l_config,
-            verbose=1,
-            tensorboard_log=f"{save_path}/tensorboard/",
-            **config.get('ppo', {})
-        )
+    if pretrained_model_path:
+        print(f"🔄 FINE-TUNING MODE: Loading pretrained model from {pretrained_model_path}")
+        
+        # Load pretrained VecNormalize if specified
+        if pretrained_vec_normalize_path:
+            print(f"📊 Loading pretrained VecNormalize from {pretrained_vec_normalize_path}")
+            env = VecNormalize.load(pretrained_vec_normalize_path, env)
+            env.training = True  # Enable training mode for fine-tuning
+            env.norm_reward = True
+        
+        # Load pretrained model
+        print(f"🧠 Loading pretrained model weights...")
+        model = PPO.load(pretrained_model_path, env=env, tensorboard_log=f"{save_path}/tensorboard/")
+        
+        # Update learning rate for fine-tuning if specified
+        if 'learning_rate' in config.get('ppo', {}):
+            model.learning_rate = config['ppo']['learning_rate']
+            print(f"📉 Updated learning rate to {model.learning_rate} for fine-tuning")
+        
+        print("✅ Pretrained model loaded successfully for fine-tuning!")
+        
     else:
-        print("🏃 Using standard PPO")
-        # Get activation function
-        activation_name = config.get('policy', {}).get('activation', 'relu')
-        activation_fn = nn.ReLU if activation_name == 'relu' else nn.Tanh
+        # Check if using SR2L
+        use_sr2l = config.get('sr2l', {}).get('enabled', False)
         
-        # Get network architecture
-        net_arch = config.get('policy', {}).get('hidden_sizes', [64, 128])
-        
-        model = PPO(
-            "MlpPolicy", 
-            env,
-            verbose=1,
-            tensorboard_log=f"{save_path}/tensorboard/",
-            policy_kwargs=dict(
-                activation_fn=activation_fn,
-                net_arch=[dict(pi=net_arch, vf=net_arch)]
-            ),
-            **config.get('ppo', {})
-        )
+        if use_sr2l:
+            print("🔬 Using SR2L algorithm")
+            sr2l_config = config.get('sr2l', {})
+            model = PPO_SR2L(
+                "MlpPolicy", 
+                env,
+                sr2l_config=sr2l_config,
+                verbose=1,
+                tensorboard_log=f"{save_path}/tensorboard/",
+                **config.get('ppo', {})
+            )
+        else:
+            print("🏃 Using standard PPO")
+            # Get activation function
+            activation_name = config.get('policy', {}).get('activation', 'relu')
+            activation_fn = nn.ReLU if activation_name == 'relu' else nn.Tanh
+            
+            # Get network architecture
+            net_arch = config.get('policy', {}).get('hidden_sizes', [64, 128])
+            
+            model = PPO(
+                "MlpPolicy", 
+                env,
+                verbose=1,
+                tensorboard_log=f"{save_path}/tensorboard/",
+                policy_kwargs=dict(
+                    activation_fn=activation_fn,
+                    net_arch=[dict(pi=net_arch, vf=net_arch)]
+                ),
+                **config.get('ppo', {})
+            )
     
     # Setup callbacks
     callbacks = []

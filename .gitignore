@@ -57,3 +57,6 @@ Thumbs.db
 
 # Archive folder (large files moved during cleanup)
 archive/
+
+# Done folder (contains large model files and evaluation materials)
+done/

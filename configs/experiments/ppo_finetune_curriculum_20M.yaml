@@ -1,0 +1,69 @@
+# 🎯 NUCLEAR OPTION 2A: Fine-tune from Baseline with Curriculum (20M steps)
+# Approach: Start with working 0.224 m/s baseline + gentle curriculum DR
+# Theory: Transfer learning - build robustness on proven walking skill
+
+algorithm: PPO
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+experiment:
+  name: ppo_finetune_curriculum_20M
+  description: "NUCLEAR ROBUSTNESS: Fine-tune from baseline with gentle curriculum DR (20M steps)"
+
+# 🔥 START FROM WORKING BASELINE
+pretrained_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
+pretrained_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
+
+# 🎯 GENTLE 2-PHASE CURRICULUM (20M TOTAL)
+domain_randomization:
+  use_curriculum: true
+  wrapper_type: CurriculumDRWrapper
+  
+  # 🟢 PHASE 1: Gentle adaptation (10M steps)
+  phase_1_steps: 10000000
+  phase_1_config:
+    joint_dropout_prob: 0.01     # 1% chance - ultra-gentle start
+    max_dropped_joints: 1        # Single joint only
+    min_dropped_joints: 0        # 🔥 OPTIONAL failures!
+    sensor_noise_std: 0.003      # Tiny noise
+    noise_joints_only: true
+  
+  # ⚡ PHASE 2: Moderate robustness (10M steps)  
+  phase_2_steps: 10000000
+  phase_2_config:
+    joint_dropout_prob: 0.03     # 3% chance
+    max_dropped_joints: 2        # Up to 2 joints
+    min_dropped_joints: 0        # 🔥 OPTIONAL failures!
+    sensor_noise_std: 0.008      # Mild noise
+    noise_joints_only: true
+
+# 🧠 PPO Configuration (ULTRA-LOW LR for fine-tuning)
+ppo:
+  learning_rate: 0.00005         # 🔥 ULTRA-LOW for gentle fine-tuning
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.1                # Smaller clips for stability
+
+# 🏗️ Policy Architecture (match baseline exactly)
+policy:
+  activation: relu
+  hidden_sizes: [64, 128]
+
+# ⏱️ Training Configuration
+total_timesteps: 20000000        # 20M steps fine-tuning
+checkpoint_freq: 500000          # Save every 500K steps
+log_interval: 100               # Log every 100 steps
+
+# 💾 Experiment Tracking
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: null
+
+# 🏷️ Experiment metadata
+experiment:
+  tags: ["curriculum-dr", "fine-tuning", "from-baseline", "20M-steps", "nuclear-option"]
+  notes: "NUCLEAR ROBUSTNESS ATTEMPT 2A: Fine-tune working baseline with gentle curriculum DR"
