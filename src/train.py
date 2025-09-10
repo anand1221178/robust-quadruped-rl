@@ -40,10 +40,51 @@ warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of da
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file"""
+    """Load configuration from YAML file with Hydra defaults support"""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
+    
+    # Process Hydra defaults if present
+    if 'defaults' in config:
+        base_config = {}
+        
+        # Load each default config
+        for default in config['defaults']:
+            if isinstance(default, str):
+                # Handle simple string defaults like "/train/default"
+                default_path = default.strip('/')
+                default_file = f"configs/{default_path}.yaml"
+            else:
+                # Handle more complex defaults (not implemented for now)
+                continue
+                
+            if os.path.exists(default_file):
+                with open(default_file, 'r') as f:
+                    default_config = yaml.safe_load(f)
+                    # Merge base config with default
+                    base_config = {**base_config, **default_config}
+        
+        # Remove defaults from main config and merge with base
+        main_config = {k: v for k, v in config.items() if k != 'defaults'}
+        
+        # Deep merge base_config with main_config (main_config overrides)
+        final_config = deep_merge(base_config, main_config)
+        return final_config
+    
     return config
+
+
+def deep_merge(base_dict: dict, override_dict: dict) -> dict:
+    """Deep merge two dictionaries, with override_dict taking precedence"""
+    result = base_dict.copy()
+    
+    for key, value in override_dict.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = value
+    
+    return result
 
 
 def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):

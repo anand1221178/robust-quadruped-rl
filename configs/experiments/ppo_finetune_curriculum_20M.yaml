@@ -1,24 +1,24 @@
 # 🎯 NUCLEAR OPTION 2A: Fine-tune from Baseline with Curriculum (20M steps)
-# Approach: Start with working 0.224 m/s baseline + gentle curriculum DR
-# Theory: Transfer learning - build robustness on proven walking skill
+# Hydra config - starts from working baseline + gentle curriculum DR
 
-algorithm: PPO
-env:
-  name: RealAntMujoco-v0
-  use_success_reward: true
+defaults:
+  - /train/default
+  - /env/realant
 
+# Experiment metadata
 experiment:
   name: ppo_finetune_curriculum_20M
   description: "NUCLEAR ROBUSTNESS: Fine-tune from baseline with gentle curriculum DR (20M steps)"
 
-# 🔥 START FROM WORKING BASELINE
+# 🔥 PRETRAINED MODEL LOADING
 pretrained_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
 pretrained_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
 
-# 🎯 GENTLE 2-PHASE CURRICULUM (20M TOTAL)
+# Domain randomization configuration
 domain_randomization:
-  use_curriculum: true
+  enabled: true
   wrapper_type: CurriculumDRWrapper
+  use_curriculum: true
   
   # 🟢 PHASE 1: Gentle adaptation (10M steps)
   phase_1_steps: 10000000
@@ -38,32 +38,18 @@ domain_randomization:
     sensor_noise_std: 0.008      # Mild noise
     noise_joints_only: true
 
-# 🧠 PPO Configuration (ULTRA-LOW LR for fine-tuning)
+# Override PPO for fine-tuning
 ppo:
   learning_rate: 0.00005         # 🔥 ULTRA-LOW for gentle fine-tuning
-  batch_size: 2048
-  n_epochs: 10
-  gamma: 0.99
-  gae_lambda: 0.95
-  clip_range: 0.1                # Smaller clips for stability
+  clip_range: 0.1               # Smaller clips for stability
 
-# 🏗️ Policy Architecture (match baseline exactly)
-policy:
-  activation: relu
-  hidden_sizes: [64, 128]
-
-# ⏱️ Training Configuration
+# Override training parameters
 total_timesteps: 20000000        # 20M steps fine-tuning
-checkpoint_freq: 500000          # Save every 500K steps
-log_interval: 100               # Log every 100 steps
+save_freq: 500000               # Save every 500K steps
 
-# 💾 Experiment Tracking
+# Override logging for this specific experiment
 logging:
   wandb: true
   wandb_project: robust-quadruped-rl
-  wandb_entity: null
-
-# 🏷️ Experiment metadata
-experiment:
-  tags: ["curriculum-dr", "fine-tuning", "from-baseline", "20M-steps", "nuclear-option"]
-  notes: "NUCLEAR ROBUSTNESS ATTEMPT 2A: Fine-tune working baseline with gentle curriculum DR"
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  log_interval: 100
