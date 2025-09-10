@@ -140,7 +140,7 @@ class DomainRandomizationWrapper(gym.Wrapper):
         return obs_copy
 
 
-class CurriculumDRWrapper(DomainRandomizationWrapper):
+class CurriculumDRWrapper(gym.Wrapper):
     """
     🔥 ULTIMATE 3-PHASE CURRICULUM DR - RESEARCH PROPOSAL COMPLIANT 🔥
     Phase 1: Clean training (learn perfect locomotion)
@@ -149,8 +149,8 @@ class CurriculumDRWrapper(DomainRandomizationWrapper):
     """
     
     def __init__(self, env, dr_config: Dict):
-        # Don't call super().__init__ yet - we need to set up curriculum first
-        super(gym.Wrapper, self).__init__(env)
+        # Initialize the wrapper properly
+        super().__init__(env)
         self.dr_config = dr_config
         
         # 🎯 3-PHASE CURRICULUM SETUP (CONFIGURABLE!)
