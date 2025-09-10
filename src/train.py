@@ -18,7 +18,7 @@ import argparse
 # RL imports
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
-from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, CheckpointCallback
+from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, CheckpointCallback, ProgressBarCallback
 from stable_baselines3.common.monitor import Monitor
 
 # SR2L import (if needed)
@@ -30,7 +30,7 @@ from wandb.integration.sb3 import WandbCallback
 
 # Only the wrappers we actually need
 from envs.success_reward_wrapper import SuccessRewardWrapper
-from envs.domain_randomization_wrapper import DomainRandomizationWrapper
+from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
 
 # Import RealAnt environments
 import realant_sim
@@ -62,13 +62,22 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
         
-        # Apply domain randomization
+        # Apply domain randomization (choose between basic and curriculum)
         if use_domain_randomization:
             dr_config = config.get('domain_randomization', {})
-            print("🎲 Domain Randomization: Joint failure robustness")
-            print(f"  Joint dropout prob: {dr_config.get('joint_dropout_prob', 0.1)}")
-            print(f"  Max dropped joints: {dr_config.get('max_dropped_joints', 2)}")
-            env = DomainRandomizationWrapper(env, dr_config)
+            
+            # 🔥 DETECT CURRICULUM CONFIG AND USE ULTIMATE WRAPPER! 🔥
+            has_curriculum = any(key.startswith('phase_') for key in dr_config.keys())
+            
+            if has_curriculum:
+                print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
+                print("📚 Phase-based training detected - using CurriculumDRWrapper")
+                env = CurriculumDRWrapper(env, dr_config)
+            else:
+                print("🎲 Basic Domain Randomization: Joint failure robustness")
+                print(f"  Joint dropout prob: {dr_config.get('joint_dropout_prob', 0.1)}")
+                print(f"  Max dropped joints: {dr_config.get('max_dropped_joints', 2)}")
+                env = DomainRandomizationWrapper(env, dr_config)
             
         env = Monitor(env)
         return env
@@ -155,6 +164,10 @@ def train(config: dict):
     
     # Setup callbacks
     callbacks = []
+    
+    # Progress bar callback - SHOWS ACTUAL TRAINING PROGRESS
+    progress_callback = ProgressBarCallback()
+    callbacks.append(progress_callback)
     
     # Checkpoint callback
     checkpoint_callback = CheckpointCallback(

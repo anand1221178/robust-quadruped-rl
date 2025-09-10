@@ -142,55 +142,199 @@ class DomainRandomizationWrapper(gym.Wrapper):
 
 class CurriculumDRWrapper(DomainRandomizationWrapper):
     """
-    Curriculum-based Domain Randomization
-    Gradually increases difficulty following research proposal phases
+    🔥 ULTIMATE 3-PHASE CURRICULUM DR - RESEARCH PROPOSAL COMPLIANT 🔥
+    Phase 1: Clean training (learn perfect locomotion)
+    Phase 2: Single failures + mild noise  
+    Phase 3: Multiple failures + high noise
     """
     
     def __init__(self, env, dr_config: Dict):
-        super().__init__(env, dr_config)
+        # Don't call super().__init__ yet - we need to set up curriculum first
+        super(gym.Wrapper, self).__init__(env)
+        self.dr_config = dr_config
         
-        # Curriculum settings
-        self.phase_2_steps = dr_config.get('phase_2_steps', 5000000)  # 5M steps
-        self.phase_3_steps = dr_config.get('phase_3_steps', 10000000) # 10M steps
+        # 🎯 3-PHASE CURRICULUM SETUP (CONFIGURABLE!)
+        self.phase_1_steps = dr_config.get('phase_1_steps', 8000000)   # Phase 1: Clean training
+        self.phase_2_steps = dr_config.get('phase_2_steps', 8000000)   # Phase 2: Single failures
+        self.phase_3_steps = dr_config.get('phase_3_steps', 9000000)   # Phase 3: Multiple failures
         self.current_timestep = 0
+        self.current_phase = 1
         
-        # Phase-specific parameters
-        self.phase_2_config = {
-            'joint_dropout_prob': 0.2,    # 20% chance
+        # Action space is 8 joint torques for RealAnt
+        self.num_joints = 8
+        self.dropped_joints = []
+        self.episode_count = 0
+        
+        # 🔥 PHASE CONFIGURATIONS (FROM CONFIG FILE!)
+        self.phase_1_config = dr_config.get('phase_1_config', {
+            'joint_dropout_prob': 0.0,    # NO FAILURES - perfect learning
+            'max_dropped_joints': 0,
+            'min_dropped_joints': 0, 
+            'sensor_noise_std': 0.0,      # NO NOISE - clean signals
+        })
+        
+        self.phase_2_config = dr_config.get('phase_2_config', {
+            'joint_dropout_prob': 0.05,   # 5% single failures
             'max_dropped_joints': 1,      # Single joint only
             'min_dropped_joints': 1,
-            'sensor_noise_std': 0.02,     # Mild noise
-        }
+            'sensor_noise_std': 0.01,     # Mild noise
+        })
         
-        self.phase_3_config = {
-            'joint_dropout_prob': 0.4,    # 40% chance  
-            'max_dropped_joints': 3,      # Up to 3 joints
+        self.phase_3_config = dr_config.get('phase_3_config', {
+            'joint_dropout_prob': 0.15,   # 15% multiple failures  
+            'max_dropped_joints': 2,      # Up to 2 joints
             'min_dropped_joints': 1,
-            'sensor_noise_std': 0.05,     # High noise
-        }
+            'sensor_noise_std': 0.03,     # High noise
+        })
         
+        # Initialize with Phase 1 (clean training)
         self._update_curriculum()
-        print(f"Curriculum DR initialized. Current phase parameters:")
-        print(f"  Phase 2 (0-{self.phase_2_steps}): Single joint + mild noise")
-        print(f"  Phase 3 ({self.phase_2_steps}+): Multiple joints + high noise")
+        
+        print(f"🔥 ULTIMATE 3-PHASE CURRICULUM DR INITIALIZED! 🔥")
+        print(f"📚 Phase 1 (0-{self.phase_1_steps:,} steps): CLEAN TRAINING - Perfect locomotion learning")
+        print(f"⚡ Phase 2 ({self.phase_1_steps:,}-{self.phase_1_steps + self.phase_2_steps:,} steps): Single failures + mild noise")  
+        print(f"🚀 Phase 3 ({self.phase_1_steps + self.phase_2_steps:,}+ steps): Multiple failures + high noise")
+        print(f"🎯 Current Phase: {self.current_phase} - {self._get_phase_description()}")
     
     def step(self, action):
-        """Override to track timesteps for curriculum"""
+        """Override to track timesteps for 3-phase curriculum"""
         self.current_timestep += 1
         self._update_curriculum()
-        return super().step(action)
+        
+        # Apply joint dropout to actions (lock/disable joints)  
+        modified_action = self._apply_joint_dropout(action)
+        
+        # Take environment step with modified actions
+        obs, reward, terminated, truncated, info = self.env.step(modified_action)
+        
+        # Add sensor noise to observations
+        if hasattr(self, 'sensor_noise_std') and self.sensor_noise_std > 0:
+            obs = self._add_sensor_noise(obs)
+        
+        # Add DR info
+        if info is None:
+            info = {}
+        info['original_action'] = action
+        info['modified_action'] = modified_action
+        info['dropped_joints'] = self.dropped_joints.copy()
+        info['curriculum_phase'] = self.current_phase
+        info['curriculum_progress'] = f"{self.current_timestep:,} steps"
+        
+        return obs, reward, terminated, truncated, info
+    
+    def reset(self, **kwargs):
+        """Reset environment and sample new randomization parameters"""
+        obs, info = self.env.reset(**kwargs)
+        
+        # Sample joint dropouts for this episode (based on current phase)
+        self._sample_joint_dropouts()
+        
+        # Apply sensor noise to initial observation
+        if hasattr(self, 'sensor_noise_std') and self.sensor_noise_std > 0:
+            obs = self._add_sensor_noise(obs)
+        
+        self.episode_count += 1
+        
+        # Add DR info to info dict
+        if info is None:
+            info = {}
+        info['dropped_joints'] = self.dropped_joints.copy()
+        info['sensor_noise_std'] = getattr(self, 'sensor_noise_std', 0.0)
+        info['curriculum_phase'] = self.current_phase
+        
+        return obs, info
     
     def _update_curriculum(self):
-        """Update DR parameters based on training progress"""
-        if self.current_timestep < self.phase_2_steps:
-            # Phase 2: Single joint dropout + mild noise
+        """🔥 ULTIMATE 3-PHASE CURRICULUM UPDATE! 🔥"""
+        old_phase = self.current_phase
+        
+        # Determine current phase based on timesteps
+        if self.current_timestep < self.phase_1_steps:
+            # Phase 1: Clean training
+            self.current_phase = 1
+            config = self.phase_1_config
+        elif self.current_timestep < self.phase_1_steps + self.phase_2_steps:
+            # Phase 2: Single failures + mild noise
+            self.current_phase = 2
             config = self.phase_2_config
         else:
-            # Phase 3: Multiple dropouts + high noise
+            # Phase 3: Multiple failures + high noise
+            self.current_phase = 3
             config = self.phase_3_config
         
-        # Update parameters
+        # Update parameters from current phase config
         self.joint_dropout_prob = config['joint_dropout_prob']
         self.max_dropped_joints = config['max_dropped_joints'] 
         self.min_dropped_joints = config['min_dropped_joints']
         self.sensor_noise_std = config['sensor_noise_std']
+        self.noise_joints_only = config.get('noise_joints_only', True)
+        
+        # 🎉 PHASE TRANSITION CELEBRATION!
+        if old_phase != self.current_phase:
+            print(f"\n🚀 PHASE TRANSITION! {old_phase} → {self.current_phase} at {self.current_timestep:,} steps!")
+            print(f"📊 NEW PHASE: {self._get_phase_description()}")
+            print(f"⚙️  Joint dropout: {self.joint_dropout_prob:.1%}")
+            print(f"🔧 Max joints: {self.max_dropped_joints}")  
+            print(f"📡 Sensor noise: {self.sensor_noise_std:.3f}")
+            print("=" * 60)
+    
+    def _get_phase_description(self):
+        """Get description of current phase"""
+        if self.current_phase == 1:
+            return "CLEAN TRAINING - Learning perfect locomotion"
+        elif self.current_phase == 2:
+            return "SINGLE FAILURES - Building basic robustness"
+        else:
+            return "MULTIPLE FAILURES - Ultimate robustness challenge"
+    
+    def _sample_joint_dropouts(self):
+        """Sample which joints to drop for this episode"""
+        self.dropped_joints = []
+        
+        if random.random() < self.joint_dropout_prob:
+            # Decide how many joints to drop
+            if self.max_dropped_joints > 0:
+                num_to_drop = random.randint(self.min_dropped_joints, self.max_dropped_joints)
+                
+                # Randomly select joints to drop
+                available_joints = list(range(self.num_joints))
+                self.dropped_joints = random.sample(available_joints, num_to_drop)
+                
+                phase_desc = self._get_phase_description()
+                print(f"🔥 Episode {self.episode_count}: Phase {self.current_phase} - Dropping joints {self.dropped_joints} ({phase_desc})")
+    
+    def _apply_joint_dropout(self, action):
+        """Apply joint dropout by setting dropped joint actions to 0 (locked)"""
+        if len(self.dropped_joints) == 0:
+            return action
+        
+        modified_action = action.copy()
+        
+        # Lock dropped joints (set torque to 0)
+        for joint_idx in self.dropped_joints:
+            modified_action[joint_idx] = 0.0
+        
+        return modified_action
+    
+    def _add_sensor_noise(self, observation):
+        """Add Gaussian noise to sensor readings"""
+        if self.sensor_noise_std == 0:
+            return observation
+        
+        obs_copy = observation.copy()
+        
+        if self.noise_joints_only:
+            # Add noise only to joint sensors (proprioceptive signals)
+            # Based on RealAnt observation structure:
+            # dims 13-20: joint positions, dims 21-28: joint velocities  
+            joint_obs_indices = list(range(13, 29))  # 16 joint sensor values
+            
+            for idx in joint_obs_indices:
+                if idx < len(obs_copy):
+                    obs_copy[idx] += np.random.normal(0, self.sensor_noise_std)
+        else:
+            # Add noise to all observations
+            noise = np.random.normal(0, self.sensor_noise_std, size=obs_copy.shape)
+            obs_copy += noise
+        
+        return obs_copy
