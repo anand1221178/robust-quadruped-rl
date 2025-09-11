@@ -31,6 +31,7 @@ from wandb.integration.sb3 import WandbCallback
 # Only the wrappers we actually need
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
+from envs.systematic_curriculum_wrapper import SystematicCurriculumWrapper
 
 # Import RealAnt environments
 import realant_sim
@@ -103,8 +104,18 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
         
-        # Apply domain randomization (choose between basic and curriculum)
-        if use_domain_randomization:
+        # Apply systematic curriculum or domain randomization
+        if config.get('systematic_curriculum', {}).get('enabled', False):
+            # 🎯 SYSTEMATIC JOINT FAILURE CURRICULUM: Guaranteed adaptation training
+            print("🎯 SYSTEMATIC CURRICULUM: Guaranteed joint failure robustness! 🎯")
+            curriculum_config = config.get('systematic_curriculum', {})
+            print(f"  Training phases: Single→Dual→Triple joint failures")
+            print(f"  Single joint duration: {curriculum_config.get('single_joint_duration', 3000000):,} steps each")
+            print(f"  Dual combo duration: {curriculum_config.get('dual_combo_duration', 3000000):,} steps each")
+            env = SystematicCurriculumWrapper(env, curriculum_config)
+            
+        elif use_domain_randomization:
+            # Traditional probabilistic domain randomization
             dr_config = config.get('domain_randomization', {})
             
             # 🔥 CHECK WRAPPER TYPE PREFERENCE FROM CONFIG

@@ -1,0 +1,167 @@
+# 🎯 SYSTEMATIC JOINT FAILURE CURRICULUM - RESEARCH BREAKTHROUGH
+# The first principled approach to joint failure robustness training
+
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment metadata
+experiment:
+  name: ppo_systematic_curriculum_54M
+  description: "SYSTEMATIC CURRICULUM: Guaranteed joint failure training with anatomical/diagonal/functional patterns (54M steps)"
+
+# Load pretrained baseline model
+pretrained_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
+pretrained_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
+
+# Systematic curriculum configuration
+systematic_curriculum:
+  enabled: true
+  wrapper_type: SystematicCurriculumWrapper
+  
+  # Phase 1: Single joint mastery (24M steps total)
+  single_joint_duration: 3000000  # 3M steps per joint × 8 joints = 24M
+  
+  # Phase 2: Strategic dual combinations (30M steps total)  
+  dual_combo_duration: 3000000    # 3M steps per combo × 10 combos = 30M
+  
+  # Anatomical combinations (complete limb failures)
+  anatomical_combinations:
+    - ["hip_1", "ankle_1"]     # Front left limb
+    - ["hip_2", "ankle_2"]     # Front right limb
+    - ["hip_3", "ankle_3"]     # Rear left limb
+    - ["hip_4", "ankle_4"]     # Rear right limb
+  
+  # Diagonal combinations (cross-body coordination)
+  diagonal_combinations:
+    - ["hip_1", "hip_4"]       # Front-left + rear-right
+    - ["hip_2", "hip_3"]       # Front-right + rear-left
+  
+  # Functional combinations (same joint type)
+  functional_combinations:
+    - ["hip_1", "hip_2"]       # Front hips
+    - ["hip_3", "hip_4"]       # Rear hips  
+    - ["ankle_1", "ankle_2"]   # Front ankles
+    - ["ankle_3", "ankle_4"]   # Rear ankles
+  
+  # Phase 3: Triple joint challenge (optional - 0M steps for now)
+  triple_combo_duration: 0      # Skip phase 3 for initial experiment
+  critical_triple_combinations: []
+
+# Use standard PPO (not SR2L) for joint failure training
+algorithm: PPO
+
+# Fine-tuning parameters (starting from pretrained baseline)
+ppo:
+  learning_rate: 0.00005       # Ultra-low LR for fine-tuning
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0               # No exploration bonus (we want deterministic adaptation)
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Training parameters
+total_timesteps: 54000000      # 54M steps (24M phase 1 + 30M phase 2)
+save_freq: 1000000            # Save every 1M steps for detailed analysis
+eval_freq: 500000             # Evaluate every 500K steps
+
+# Policy architecture (match baseline)
+policy:
+  activation: relu
+  hidden_sizes: [64, 128]
+
+# Enhanced logging for curriculum tracking
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-systematic
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  log_interval: 100
+  tensorboard: true
+  verbose: 1
+  
+  # Custom W&B metrics for systematic curriculum
+  custom_metrics:
+    # Curriculum progress
+    - "curriculum/current_phase"
+    - "curriculum/current_subphase"  
+    - "curriculum/failed_joints"
+    - "curriculum/pattern_type"
+    - "curriculum/subphase_progress"
+    - "curriculum/completion_percentage"
+    
+    # Performance tracking
+    - "performance/locomotion_speed"
+    - "performance/baseline_retention"
+    - "performance/adaptation_rate"
+    - "performance/stability_metric"
+    
+    # Biomechanical analysis
+    - "biomech/gait_asymmetry"
+    - "biomech/joint_utilization"
+    - "biomech/energy_efficiency"
+    
+    # Joint-specific tracking
+    - "joints/active_joint_count"
+    - "joints/failed_joint_count"
+    - "joints/compensation_pattern"
+
+# Environment configuration (match baseline exactly)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true     # Forward locomotion rewards (same as baseline)
+
+# Multi-environment training
+num_envs: 8                   # Parallel environments for faster training
+
+# Random seed for reproducibility  
+seed: 42
+
+# Evaluation configuration
+evaluation:
+  episodes: 10               # Episodes per evaluation
+  deterministic: true        # Deterministic policy during eval
+  
+  # Test systematic failures during evaluation
+  test_single_joints: true   # Test each joint individually
+  test_dual_combinations: true  # Test key dual combinations
+  test_untrained_combinations: true  # Test generalization
+
+# Checkpoint configuration
+checkpoints:
+  save_best: true           # Save best performing model
+  save_last: true           # Save most recent model
+  save_freq: 1000000        # Save every 1M steps
+  
+  # Phase-specific checkpoints
+  save_phase_transitions: true  # Save model at each phase transition
+  
+# Advanced training options
+training:
+  # Curriculum-specific options
+  curriculum_logging: true     # Log detailed curriculum metrics
+  adaptation_analysis: true    # Analyze adaptation strategies
+  
+  # Performance monitoring
+  performance_threshold: 0.1   # Minimum velocity to continue training
+  patience: 2000000           # Steps to wait for improvement
+  
+  # Fine-tuning specific
+  freeze_value_function: false # Allow value function updates
+  curriculum_warmup: 100000   # Steps to warm up each phase
+
+# Research documentation
+research:
+  hypothesis: "Systematic joint failure training will achieve 60-80% baseline retention for single joints, 40-60% for dual combinations"
+  expected_outcomes:
+    - "Single joint adaptation strategies for all 8 joints"
+    - "Pattern-specific adaptation for anatomical/diagonal/functional failures"  
+    - "Generalization to untrained joint combinations"
+    - "Superior performance vs. probabilistic DR training"
+  success_criteria:
+    - "Phase 1: >60% retention for all single joints"
+    - "Phase 2: >40% retention for all dual combinations"
+    - "Generalization: >30% retention on untested combinations"
+    - "Consistency: <20% standard deviation across trials"

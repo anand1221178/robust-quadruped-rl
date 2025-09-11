@@ -1,0 +1,49 @@
+domain_randomization:
+  enabled: true
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    max_dropped_joints: 0
+    min_dropped_joints: 0
+    noise_joints_only: true
+    sensor_noise_std: 0.0
+  phase_1_steps: 5000000
+  phase_2_config:
+    joint_dropout_prob: 0.03
+    max_dropped_joints: 1
+    min_dropped_joints: 0
+    noise_joints_only: true
+    sensor_noise_std: 0.006
+  phase_2_steps: 35000000
+  use_curriculum: true
+  wrapper_type: CurriculumDRWrapper
+eval_freq: 10000
+experiment:
+  description: 'NUCLEAR ROBUSTNESS: Simple constant DR using CurriculumDRWrapper (40M
+    steps)'
+  name: ppo_simple_curriculum_40M
+logging:
+  log_interval: 100
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 42
+total_timesteps: 40000000
