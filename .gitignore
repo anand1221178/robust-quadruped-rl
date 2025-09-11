@@ -60,3 +60,12 @@ archive/
 
 # Done folder (contains large model files and evaluation materials)
 done/
+
+# Video files (large - keep local only)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# But keep small demo videos in experiments
+!experiments/*/robot_demo.mp4
