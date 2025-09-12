@@ -1,0 +1,26 @@
+[
+  {
+    "scenario": "BASELINE",
+    "distance": 1.0488004158059578,
+    "velocity": 0.023306675906799062,
+    "assessment": "POOR"
+  },
+  {
+    "scenario": "HIP_FAILURE",
+    "distance": 0.20313371519794265,
+    "velocity": 0.004514082559954281,
+    "assessment": "FAILED"
+  },
+  {
+    "scenario": "ANKLE_FAILURE",
+    "distance": 0.03897920493391008,
+    "velocity": 0.0008662045540868906,
+    "assessment": "FAILED"
+  },
+  {
+    "scenario": "DUAL_FAILURE",
+    "distance": 0.8051982712201159,
+    "velocity": 0.017893294916002576,
+    "assessment": "FAILED"
+  }
+]

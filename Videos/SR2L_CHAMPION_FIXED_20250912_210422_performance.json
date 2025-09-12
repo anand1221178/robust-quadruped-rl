@@ -1,0 +1,58 @@
+[
+  {
+    "noise_level": 0.0,
+    "velocity": 0.16548511606033817,
+    "retention_pct": 100.0,
+    "distance": 7.446830222715218,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.005,
+    "velocity": 0.18261929839743588,
+    "retention_pct": 110.35391142418534,
+    "distance": 8.217868427884614,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.01,
+    "velocity": 0.18355352704059685,
+    "retention_pct": 110.91845080114075,
+    "distance": 8.259908716826859,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.02,
+    "velocity": 0.1928255679395688,
+    "retention_pct": 116.52139632259248,
+    "distance": 8.677150557280596,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.03,
+    "velocity": 0.1848497032141199,
+    "retention_pct": 111.70170926231282,
+    "distance": 8.318236644635395,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.05,
+    "velocity": 0.1879271726347196,
+    "retention_pct": 113.56137464725151,
+    "distance": 8.456722768562383,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.07,
+    "velocity": 0.17883981232780632,
+    "retention_pct": 108.07002864390465,
+    "distance": 8.047791554751285,
+    "frames_recorded": 900
+  },
+  {
+    "noise_level": 0.1,
+    "velocity": 0.18496294187955384,
+    "retention_pct": 111.77013757062828,
+    "distance": 8.323332384579922,
+    "frames_recorded": 900
+  }
+]

@@ -247,11 +247,6 @@ systematic_curriculum:
 - Demonstrable generalization to untrained combinations
 - Superior performance vs. probabilistic training
 
-#### **Publication Ready**:
-- Comprehensive performance analysis across all failure modes
-- Statistical validation of systematic vs. probabilistic approaches
-- Biomechanical interpretation of adaptation strategies
-- Practical demonstration of fault-tolerant locomotion
 
 ---
 **Total Training Time**: ~54M steps (40-45 cluster hours)  

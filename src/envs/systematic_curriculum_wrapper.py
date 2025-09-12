@@ -28,7 +28,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         
         # Training progress tracking
         self.total_timesteps = 0
-        self.current_phase = 1
+        self.current_phase = 0  # Start with Phase 0: Normal walking
         self.current_subphase = 0
         self.subphase_steps = 0
         
@@ -48,6 +48,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         self._update_curriculum_phase()
         
         print(f"🎯 Systematic Curriculum Initialized")
+        print(f"   Phase 0: Normal walking foundation")
         print(f"   Phase 1: {len(self.phase_1_schedule)} single joints")
         print(f"   Phase 2: {len(self.phase_2_schedule)} dual combinations") 
         print(f"   Phase 3: {len(self.phase_3_schedule)} triple combinations")
@@ -56,6 +57,9 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     def _setup_curriculum(self):
         """Setup the systematic curriculum schedule"""
         config = self.curriculum_config
+        
+        # Phase 0: Normal walking foundation (NEW!)
+        self.phase_0_duration = config.get('normal_walking_duration', 10000000)  # 10M steps
         
         # Phase 1: Single joint mastery
         single_joint_duration = config.get('single_joint_duration', 3000000)
@@ -143,7 +147,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     
     def _calculate_total_steps(self):
         """Calculate total training steps across all phases"""
-        total = 0
+        total = self.phase_0_duration  # Add Phase 0: Normal walking
         for phase in self.phase_1_schedule:
             total += phase['duration']
         for phase in self.phase_2_schedule:
@@ -155,15 +159,22 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     def _update_curriculum_phase(self):
         """Update current curriculum phase based on training progress"""
         # Calculate phase boundaries
-        phase_1_end = sum(p['duration'] for p in self.phase_1_schedule)
+        phase_0_end = self.phase_0_duration
+        phase_1_end = phase_0_end + sum(p['duration'] for p in self.phase_1_schedule)
         phase_2_end = phase_1_end + sum(p['duration'] for p in self.phase_2_schedule)
         phase_3_end = phase_2_end + sum(p['duration'] for p in self.phase_3_schedule)
         
         # Determine current phase
-        if self.total_timesteps < phase_1_end:
+        if self.total_timesteps < phase_0_end:
+            # Phase 0: Normal walking foundation
+            self.current_phase = 0
+            self.failed_joints = []  # No joint failures in Phase 0
+            self.failed_joint_names = []
+            return
+        elif self.total_timesteps < phase_1_end:
             self.current_phase = 1
             schedule = self.phase_1_schedule
-            phase_start = 0
+            phase_start = phase_0_end
         elif self.total_timesteps < phase_2_end:
             self.current_phase = 2
             schedule = self.phase_2_schedule

@@ -395,6 +395,16 @@ def main():
             'name': 'BASELINE (No Failures)',
             'dr_config': None
         },
+        'low': {
+            'name': 'LOW FAILURES (2% joint dropout)',
+            'dr_config': {
+                'joint_dropout_prob': 0.02,
+                'max_dropped_joints': 1,
+                'min_dropped_joints': 0,
+                'sensor_noise_std': 0.0,
+                'noise_joints_only': True
+            }
+        },
         'moderate': {
             'name': 'MODERATE FAILURES (5% joint dropout)',
             'dr_config': {
@@ -404,8 +414,37 @@ def main():
                 'sensor_noise_std': 0.0,
                 'noise_joints_only': True
             }
+        },
+        'high': {
+            'name': 'HIGH FAILURES (10% joint dropout)',
+            'dr_config': {
+                'joint_dropout_prob': 0.10,
+                'max_dropped_joints': 2,
+                'min_dropped_joints': 0,
+                'sensor_noise_std': 0.0,
+                'noise_joints_only': True
+            }
+        },
+        'noise': {
+            'name': 'SENSOR NOISE (1% noise, no failures)',
+            'dr_config': {
+                'joint_dropout_prob': 0.0,
+                'max_dropped_joints': 0,
+                'min_dropped_joints': 0,
+                'sensor_noise_std': 0.01,
+                'noise_joints_only': True
+            }
+        },
+        'combined': {
+            'name': 'COMBINED (5% failures + 0.5% noise)',
+            'dr_config': {
+                'joint_dropout_prob': 0.05,
+                'max_dropped_joints': 1,
+                'min_dropped_joints': 0,
+                'sensor_noise_std': 0.005,
+                'noise_joints_only': True
+            }
         }
-        # Add other test configs as needed
     }
     
     # Run specific test or default to moderate
