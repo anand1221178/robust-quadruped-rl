@@ -28,7 +28,13 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         
         # Training progress tracking
         self.total_timesteps = 0
-        self.current_phase = 0  # Start with Phase 0: Normal walking
+        # V2 FIX: Start at Phase 1 if Phase 0 duration is 0 (handled by PhaseSwitchCallback)
+        phase_0_duration = curriculum_config.get('normal_walking_duration', 10000000)
+        if phase_0_duration == 0:
+            self.current_phase = 1  # Skip Phase 0, start joint failure training
+            print("🎯 V2 MODE: Starting at Phase 1 (Phase 0 handled by PhaseSwitchCallback)")
+        else:
+            self.current_phase = 0  # V1 MODE: Start with Phase 0
         self.current_subphase = 0
         self.subphase_steps = 0
         
@@ -158,37 +164,61 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     
     def _update_curriculum_phase(self):
         """Update current curriculum phase based on training progress"""
-        # Calculate phase boundaries
-        phase_0_end = self.phase_0_duration
-        phase_1_end = phase_0_end + sum(p['duration'] for p in self.phase_1_schedule)
-        phase_2_end = phase_1_end + sum(p['duration'] for p in self.phase_2_schedule)
-        phase_3_end = phase_2_end + sum(p['duration'] for p in self.phase_3_schedule)
-        
-        # Determine current phase
-        if self.total_timesteps < phase_0_end:
-            # Phase 0: Normal walking foundation
-            self.current_phase = 0
-            self.failed_joints = []  # No joint failures in Phase 0
-            self.failed_joint_names = []
-            return
-        elif self.total_timesteps < phase_1_end:
-            self.current_phase = 1
-            schedule = self.phase_1_schedule
-            phase_start = phase_0_end
-        elif self.total_timesteps < phase_2_end:
-            self.current_phase = 2
-            schedule = self.phase_2_schedule
-            phase_start = phase_1_end
-        elif self.total_timesteps < phase_3_end:
-            self.current_phase = 3
-            schedule = self.phase_3_schedule
-            phase_start = phase_2_end
+        # V2 FIX: Handle case where Phase 0 is skipped (duration = 0)
+        if self.phase_0_duration == 0:
+            # V2 Mode: Phase 0 handled externally, start from Phase 1
+            phase_1_end = sum(p['duration'] for p in self.phase_1_schedule)
+            phase_2_end = phase_1_end + sum(p['duration'] for p in self.phase_2_schedule)
+            phase_3_end = phase_2_end + sum(p['duration'] for p in self.phase_3_schedule)
+
+            if self.total_timesteps < phase_1_end:
+                phase_start = 0
+                schedule = self.phase_1_schedule
+                self.current_phase = 1
+            elif self.total_timesteps < phase_2_end:
+                phase_start = phase_1_end
+                schedule = self.phase_2_schedule
+                self.current_phase = 2
+            elif self.total_timesteps < phase_3_end:
+                phase_start = phase_2_end
+                schedule = self.phase_3_schedule
+                self.current_phase = 3
+            else:
+                self.current_phase = 4  # Complete
+                self.failed_joints = []
+                self.failed_joint_names = []
+                return
         else:
-            # Training complete
-            self.current_phase = 4
-            self.failed_joints = []
-            self.failed_joint_names = []
-            return
+            # V1 Mode: Original logic with Phase 0
+            phase_0_end = self.phase_0_duration
+            phase_1_end = phase_0_end + sum(p['duration'] for p in self.phase_1_schedule)
+            phase_2_end = phase_1_end + sum(p['duration'] for p in self.phase_2_schedule)
+            phase_3_end = phase_2_end + sum(p['duration'] for p in self.phase_3_schedule)
+
+            if self.total_timesteps < phase_0_end:
+                # Phase 0: Normal walking foundation
+                self.current_phase = 0
+                self.failed_joints = []  # No joint failures in Phase 0
+                self.failed_joint_names = []
+                return
+            elif self.total_timesteps < phase_1_end:
+                self.current_phase = 1
+                schedule = self.phase_1_schedule
+                phase_start = phase_0_end
+            elif self.total_timesteps < phase_2_end:
+                self.current_phase = 2
+                schedule = self.phase_2_schedule
+                phase_start = phase_1_end
+            elif self.total_timesteps < phase_3_end:
+                self.current_phase = 3
+                schedule = self.phase_3_schedule
+                phase_start = phase_2_end
+            else:
+                # Training complete
+                self.current_phase = 4
+                self.failed_joints = []
+                self.failed_joint_names = []
+                return
         
         # Determine current subphase within the phase
         phase_progress = self.total_timesteps - phase_start
@@ -232,7 +262,10 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         # Add curriculum info to info dict
         if info is None:
             info = {}
-        
+
+        # Note: Robot position metrics now handled by RobotPositionCallback
+        # (removed duplicate tracking to avoid confusion)
+
         info.update({
             'systematic_curriculum': True,
             'curriculum_phase': self.current_phase,

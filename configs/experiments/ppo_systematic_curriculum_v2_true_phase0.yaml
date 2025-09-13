@@ -1,0 +1,162 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# Systematic Curriculum V2 - True Phase 0 Configuration
+# Key innovation: Environment switching at 10M steps for guaranteed compatibility
+
+algorithm: PPO
+experiment:
+  name: ppo_systematic_curriculum_v2_true_phase0
+  description: |
+    CLEAN V2 SYSTEMATIC CURRICULUM - TRAIN FROM SCRATCH
+    - Phase 0 (0-10M): Normal walking in curriculum environment (learn locomotion)
+    - Phase 1 (10M-34M): Single joint failure training (8 joints × 3M each)
+    - Phase 2 (34M-64M): Dual joint failure combinations (10 combos × 3M each)
+    - Key fix: Train from scratch to avoid pretrained model conflicts
+
+# Phase Switching Configuration (V2 Feature) - DISABLED FOR CLEAN TRAINING
+phase_switching:
+  enabled: false  # CLEAN V2: No phase switching needed when training from scratch
+  phase_0_duration: 10000000  # Not used when disabled
+  freeze_vecnorm_after_phase0: true  # Not used when disabled
+
+# Environment Configuration
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+# Number of parallel environments
+num_envs: 8
+
+# Use VecNormalize
+use_vec_normalize: true
+
+# CLEAN V2: Train from scratch (no pretrained model to avoid NaN issues)
+# pretrained_model: done/ppo_baseline_ueqbjf2x/best_model/best_model.zip
+# pretrained_vec_normalize: done/ppo_baseline_ueqbjf2x/vec_normalize.pkl
+
+# PPO Hyperparameters (from scratch training)
+ppo:
+  learning_rate: 3.0e-04  # Standard learning rate for from-scratch training
+  n_steps: 2048
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Policy Network Configuration
+policy:
+  type: MlpPolicy
+  activation: relu
+  hidden_sizes:
+    - 64
+    - 128
+
+# Systematic Curriculum Configuration (activated at 10M steps)
+systematic_curriculum:
+  enabled: true  # Will be activated after Phase 0
+
+  # CLEAN V2: Proper 10M Phase 0 in SystematicCurriculumWrapper (no phase switching)
+  normal_walking_duration: 10000000  # 10M steps normal walking to learn locomotion
+
+  # Phase 1: Single joint mastery (10M-34M steps)
+  single_joint_duration: 3000000  # 3M steps per joint × 8 joints = 24M total
+
+  # Phase 2: Dual combinations (34M-64M steps)
+  dual_combo_duration: 3000000    # 3M steps per combination × 10 combos = 30M total
+
+  # Anatomical combinations (complete limb failures)
+  anatomical_combinations:
+    - [hip_1, ankle_1]      # Front left leg
+    - [hip_2, ankle_2]      # Front right leg
+    - [hip_3, ankle_3]      # Rear left leg
+    - [hip_4, ankle_4]      # Rear right leg
+
+  # Diagonal combinations (cross-body coordination)
+  diagonal_combinations:
+    - [hip_1, hip_4]        # Front left + rear right
+    - [hip_2, hip_3]        # Front right + rear left
+
+  # Functional combinations (same joint types)
+  functional_combinations:
+    - [hip_1, hip_2]        # Both front hips
+    - [hip_3, hip_4]        # Both rear hips
+    - [ankle_1, ankle_2]    # Both front ankles
+    - [ankle_3, ankle_4]    # Both rear ankles
+
+  # Phase 3: Triple combinations (not implemented in V2 yet)
+  triple_combo_duration: 0
+  critical_triple_combinations: []
+
+# Total Training Steps
+total_timesteps: 64000000  # 64M steps total: 10M baseline + 54M curriculum
+
+# Checkpointing Configuration
+checkpoints:
+  save_freq: 1000000  # Save every 1M steps
+  save_best: true
+  save_last: true
+  save_phase_transitions: true  # Special saves at phase boundaries
+
+# Logging Configuration
+logging:
+  verbose: 1
+  log_interval: 100
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl-v2
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+
+  # Custom metrics to track
+  custom_metrics:
+    - curriculum/current_phase
+    - curriculum/failed_joints
+    - curriculum/pattern_type
+    - robot/x_position         # Track actual robot position
+    - robot/height            # Track robot height
+    - robot/velocity_ms       # Track instantaneous velocity
+    - robot/total_distance    # Track total distance traveled
+    - performance/locomotion_speed
+    - performance/baseline_retention
+    - performance/adaptation_rate
+
+# Evaluation Configuration
+eval_freq: 500000  # Evaluate every 500k steps
+evaluation:
+  episodes: 10
+  deterministic: true
+  render: false
+
+# Random Seed for Reproducibility
+seed: 42
+
+# Research Configuration
+research:
+  hypothesis: |
+    True Phase 0 approach will maintain baseline performance (0.224 m/s) during
+    Phase 0, then gracefully degrade to ~0.18-0.20 m/s during single joint
+    failures and ~0.15-0.18 m/s during dual joint failures.
+
+  expected_outcomes:
+    - "Phase 0: Maintain >0.22 m/s (baseline preservation)"
+    - "Phase 1: Achieve 0.18-0.20 m/s (single joint adaptation)"
+    - "Phase 2: Achieve 0.15-0.18 m/s (dual joint mastery)"
+    - "Overall: Demonstrate systematic > probabilistic robustness"
+
+  success_criteria:
+    - "Phase 0: >90% baseline retention (>0.20 m/s)"
+    - "Phase 1: >70% retention for single joints"
+    - "Phase 2: >50% retention for dual combinations"
+    - "No catastrophic forgetting (maintain >0.05 m/s throughout)"
+
+# V2 Specific Improvements
+v2_improvements:
+  - "Environment switching at 10M steps eliminates observation mismatch"
+  - "VecNormalize freezing prevents stat drift during curriculum"
+  - "True baseline preservation during Phase 0"
+  - "Guaranteed compatibility between training phases"

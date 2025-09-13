@@ -104,9 +104,19 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
         
+        # Check if using phase switching (V2 approach)
+        use_phase_switching = config.get('phase_switching', {}).get('enabled', False)
+
         # Apply systematic curriculum or domain randomization
-        if config.get('systematic_curriculum', {}).get('enabled', False):
-            # 🎯 SYSTEMATIC JOINT FAILURE CURRICULUM: Guaranteed adaptation training
+        if use_phase_switching:
+            # V2: True Phase 0 - Don't apply curriculum wrapper yet
+            print("🚀 SYSTEMATIC CURRICULUM V2: True Phase 0 enabled!")
+            print(f"  Phase 0: Pure baseline environment (no curriculum wrapper)")
+            print(f"  Curriculum will activate via callback at phase transition")
+            # Skip applying SystematicCurriculumWrapper here
+
+        elif config.get('systematic_curriculum', {}).get('enabled', False):
+            # V1: Original approach - apply curriculum from start
             print("🎯 SYSTEMATIC CURRICULUM: Guaranteed joint failure robustness! 🎯")
             curriculum_config = config.get('systematic_curriculum', {})
             print(f"  Training phases: Single→Dual→Triple joint failures")
@@ -256,10 +266,28 @@ def train(config: dict):
     
     # Setup callbacks
     callbacks = []
-    
+
     # Progress bar callback - SHOWS ACTUAL TRAINING PROGRESS
     progress_callback = ProgressBarCallback()
     callbacks.append(progress_callback)
+
+    # Robot position tracking callback (continuous W&B logging)
+    from callbacks.robot_position_callback import RobotPositionCallback
+    robot_callback = RobotPositionCallback(verbose=1)
+    callbacks.append(robot_callback)
+    print("✅ Robot position callback added (continuous W&B tracking)")
+
+    # Phase switching callback for V2 (if enabled)
+    if config.get('phase_switching', {}).get('enabled', False):
+        from callbacks.phase_switch_callback import PhaseSwitchCallback
+        phase_0_duration = config.get('phase_switching', {}).get('phase_0_duration', 10000000)
+        phase_callback = PhaseSwitchCallback(
+            phase_0_duration=phase_0_duration,
+            config=config,
+            verbose=1
+        )
+        callbacks.append(phase_callback)
+        print(f"✅ Phase switching callback added (transition at {phase_0_duration:,} steps)")
     
     # Checkpoint callback
     checkpoint_callback = CheckpointCallback(
