@@ -49,7 +49,9 @@ class RobotPositionCallback(BaseCallback):
                 # Log curriculum metrics if systematic curriculum is active
                 if curriculum_wrapper is not None:
                     self.logger.record("curriculum/current_phase", curriculum_wrapper.current_phase)
-                    self.logger.record("curriculum/subphase", curriculum_wrapper.current_subphase + 1)
+                    # Fix subphase logging to handle -1 initialization properly
+                    subphase_num = max(0, curriculum_wrapper.current_subphase + 1)
+                    self.logger.record("curriculum/subphase", subphase_num)
                     self.logger.record("curriculum/failed_joint_count", len(curriculum_wrapper.failed_joints))
                     self.logger.record("curriculum/subphase_progress", curriculum_wrapper.subphase_steps)
 

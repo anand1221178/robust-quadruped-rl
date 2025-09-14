@@ -35,7 +35,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
             print("🎯 V2 MODE: Starting at Phase 1 (Phase 0 handled by PhaseSwitchCallback)")
         else:
             self.current_phase = 0  # V1 MODE: Start with Phase 0
-        self.current_subphase = 0
+        self.current_subphase = -1  # Initialize to -1 to force first subphase transition
         self.subphase_steps = 0
         
         # Joint failure state
@@ -223,7 +223,19 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         # Determine current subphase within the phase
         phase_progress = self.total_timesteps - phase_start
         cumulative_duration = 0
-        
+
+        # DEBUG: Add detailed logging for Clean V2 debugging
+        if len(schedule) == 0:
+            print(f"🚨 BUG: Schedule is empty for phase {self.current_phase}!")
+            return
+
+        # DEBUG: Print progress info every 10k steps for first subphase
+        if phase_progress % 10000 < 10 and phase_progress > 0:
+            print(f"🔍 DEBUG: Phase {self.current_phase} progress: {phase_progress:,} steps")
+            print(f"   Schedule length: {len(schedule)} subphases")
+            print(f"   Current subphase: {self.current_subphase}")
+            print(f"   First subphase duration: {schedule[0]['duration']:,} steps")
+
         for i, subphase in enumerate(schedule):
             if phase_progress < cumulative_duration + subphase['duration']:
                 # We're in this subphase
@@ -233,14 +245,14 @@ class SystematicCurriculumWrapper(gym.Wrapper):
                     self.subphase_steps = 0
                     self.failed_joints = subphase['failed_joints'].copy()
                     self.failed_joint_names = subphase['failed_joint_names'].copy()
-                    
+
                     print(f"\\n🎯 CURRICULUM TRANSITION")
                     print(f"   Phase {self.current_phase}, Subphase {i+1}/{len(schedule)}")
                     print(f"   {subphase['description']}")
                     print(f"   Failed joints: {self.failed_joint_names}")
                     print(f"   Pattern type: {subphase['pattern_type']}")
                     print(f"   Duration: {subphase['duration']:,} steps")
-                
+
                 break
             cumulative_duration += subphase['duration']
     

@@ -1,0 +1,90 @@
+[
+  {
+    "noise_level": 0.0,
+    "training_multiplier": 0.0,
+    "avg_velocity": 0.1743630161885251,
+    "std_velocity": 0.0052097338474441125,
+    "avg_distance": 4.359075404713127,
+    "retention_pct": 100.0
+  },
+  {
+    "noise_level": 0.01,
+    "training_multiplier": 1.0,
+    "avg_velocity": 0.18709990020145953,
+    "std_velocity": 0.007354587256047859,
+    "avg_distance": 4.677497505036489,
+    "retention_pct": 107.30480826229976
+  },
+  {
+    "noise_level": 0.05,
+    "training_multiplier": 5.0,
+    "avg_velocity": 0.18377207622217392,
+    "std_velocity": 0.0026350084580015055,
+    "avg_distance": 4.594301905554348,
+    "retention_pct": 105.39624757550395
+  },
+  {
+    "noise_level": 0.1,
+    "training_multiplier": 10.0,
+    "avg_velocity": 0.16481455311457058,
+    "std_velocity": 0.010151630677938749,
+    "avg_distance": 4.120363827864264,
+    "retention_pct": 94.52380253411623
+  },
+  {
+    "noise_level": 0.2,
+    "training_multiplier": 20.0,
+    "avg_velocity": 0.09943287386651974,
+    "std_velocity": 0.06650760293033639,
+    "avg_distance": 2.485821846662993,
+    "retention_pct": 57.02635572615395
+  },
+  {
+    "noise_level": 0.3,
+    "training_multiplier": 30.0,
+    "avg_velocity": 0.156370802270591,
+    "std_velocity": 0.009009086272424825,
+    "avg_distance": 3.909270056764774,
+    "retention_pct": 89.68117533681539
+  },
+  {
+    "noise_level": 0.5,
+    "training_multiplier": 50.0,
+    "avg_velocity": 0.14347942925903326,
+    "std_velocity": 0.005306839859126653,
+    "avg_distance": 3.5869857314758313,
+    "retention_pct": 82.28776514389965
+  },
+  {
+    "noise_level": 0.7,
+    "training_multiplier": 70.0,
+    "avg_velocity": 0.08058948728960046,
+    "std_velocity": 0.04960906995837348,
+    "avg_distance": 2.0147371822400113,
+    "retention_pct": 46.21936982465671
+  },
+  {
+    "noise_level": 1.0,
+    "training_multiplier": 100.0,
+    "avg_velocity": 0.09051238057742879,
+    "std_velocity": 0.00999305240936058,
+    "avg_distance": 2.2628095144357196,
+    "retention_pct": 51.91030905290421
+  },
+  {
+    "noise_level": 1.5,
+    "training_multiplier": 150.0,
+    "avg_velocity": 0.04482633135472275,
+    "std_velocity": 0.02092067439118296,
+    "avg_distance": 1.120658283868069,
+    "retention_pct": 25.708623499753834
+  },
+  {
+    "noise_level": 2.0,
+    "training_multiplier": 200.0,
+    "avg_velocity": 0.049543598446875246,
+    "std_velocity": 0.007581690275531688,
+    "avg_distance": 1.2385899611718811,
+    "retention_pct": 28.414052205490425
+  }
+]
