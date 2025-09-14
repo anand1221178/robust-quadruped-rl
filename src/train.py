@@ -159,10 +159,23 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         return env
     
     env = DummyVecEnv([make_env])
-    
+
+    # 🔥 V3/V4 FIX: Read VecNormalize config from config file
     if normalize:
-        env = VecNormalize(env, norm_obs=True, norm_reward=norm_reward, clip_obs=10.)
-    
+        vec_norm_config = config.get('vec_normalize', {})
+
+        # Use config values or sensible defaults
+        norm_obs = vec_norm_config.get('norm_obs', True)
+        norm_reward_config = vec_norm_config.get('norm_reward', norm_reward)  # Config overrides parameter
+        clip_obs = vec_norm_config.get('clip_obs', 10.0)
+
+        print(f"🔧 VecNormalize Config:")
+        print(f"  norm_obs: {norm_obs}")
+        print(f"  norm_reward: {norm_reward_config} {'🔥 FIXED for V3/V4!' if not norm_reward_config else ''}")
+        print(f"  clip_obs: {clip_obs}")
+
+        env = VecNormalize(env, norm_obs=norm_obs, norm_reward=norm_reward_config, clip_obs=clip_obs)
+
     return env
 
 

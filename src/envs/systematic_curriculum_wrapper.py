@@ -37,6 +37,22 @@ class SystematicCurriculumWrapper(gym.Wrapper):
             self.current_phase = 0  # V1 MODE: Start with Phase 0
         self.current_subphase = -1  # Initialize to -1 to force first subphase transition
         self.subphase_steps = 0
+
+        # V3 INTERLEAVING SUPPORT
+        self.interleave_mode = curriculum_config.get('interleave_mode', None)
+        self.normal_episode_ratio = curriculum_config.get('normal_episode_ratio', 1.0)
+        self.failure_episode_ratio = curriculum_config.get('failure_episode_ratio', 0.0)
+        self.episode_count = 0
+        self.current_episode_type = 'normal'  # 'normal' or 'failure'
+
+        # V3 mode detection
+        self.is_v3_interleaved = self.interleave_mode == 'episode' and self.failure_episode_ratio > 0
+        if self.is_v3_interleaved:
+            print(f"🔄 V3 INTERLEAVED MODE ENABLED!")
+            print(f"   Normal episodes: {self.normal_episode_ratio:.1%}")
+            print(f"   Failure episodes: {self.failure_episode_ratio:.1%}")
+            print(f"   Interleave method: {self.interleave_mode}")
+            print(f"   🎯 Benefits: Prevents skill forgetting + builds robustness")
         
         # Joint failure state
         self.failed_joints = []  # Current failed joints (indices)
@@ -278,33 +294,59 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         # Note: Robot position metrics now handled by RobotPositionCallback
         # (removed duplicate tracking to avoid confusion)
 
+        # V3: Use episode-specific failed joints for info tracking
+        active_failed_joints = getattr(self, 'episode_failed_joints', self.failed_joints)
+        active_failed_joint_names = getattr(self, 'episode_failed_joint_names', self.failed_joint_names)
+
         info.update({
             'systematic_curriculum': True,
             'curriculum_phase': self.current_phase,
             'curriculum_subphase': self.current_subphase + 1,
-            'failed_joints': self.failed_joints.copy(),
-            'failed_joint_names': self.failed_joint_names.copy(),
+            'failed_joints': active_failed_joints.copy(),
+            'failed_joint_names': active_failed_joint_names.copy(),
             'pattern_type': self._get_current_pattern_type(),
             'subphase_progress': self.subphase_steps,
             'total_timesteps': self.total_timesteps,
             'original_action': action,
-            'modified_action': modified_action
+            'modified_action': modified_action,
+            'episode_type': getattr(self, 'current_episode_type', 'systematic'),  # V3: episode type
+            'episode_count': getattr(self, 'episode_count', 0)  # V3: episode count
         })
         
         return obs, reward, terminated, truncated, info
     
+    def _determine_episode_type(self):
+        """V3: Determine whether this episode should have failures or be normal"""
+        if not self.is_v3_interleaved or self.current_phase == 0:
+            return 'systematic'
+
+        # Use episode count to determine type (weighted random based on ratios)
+        import random
+        random.seed(self.episode_count)  # Reproducible based on episode number
+
+        total_ratio = self.normal_episode_ratio + self.failure_episode_ratio
+        normal_prob = self.normal_episode_ratio / total_ratio
+
+        if random.random() < normal_prob:
+            return 'normal'
+        else:
+            return 'failure'
+
     def _apply_joint_failures(self, action):
         """Apply joint failures by setting failed joint actions to 0"""
-        if len(self.failed_joints) == 0:
+        # V3: Use episode-specific failed joints instead of phase failed joints
+        active_failed_joints = getattr(self, 'episode_failed_joints', self.failed_joints)
+
+        if len(active_failed_joints) == 0:
             return action
         
         modified_action = action.copy()
-        
+
         # Lock failed joints (set torque to 0)
-        for joint_idx in self.failed_joints:
+        for joint_idx in active_failed_joints:
             if joint_idx < len(modified_action):
                 modified_action[joint_idx] = 0.0
-        
+
         return modified_action
     
     def _get_current_pattern_type(self):
@@ -321,24 +363,46 @@ class SystematicCurriculumWrapper(gym.Wrapper):
             return 'complete'
     
     def reset(self, **kwargs):
-        """Reset environment and maintain current curriculum state"""
+        """Reset environment and determine episode type for V3 interleaving"""
         obs, info = self.env.reset(**kwargs)
-        
+
+        # V3 INTERLEAVING: Determine episode type for this episode
+        if self.is_v3_interleaved and self.current_phase > 0:
+            self.episode_count += 1
+            self.current_episode_type = self._determine_episode_type()
+
+            # V3: Override joint failures based on episode type
+            if self.current_episode_type == 'normal':
+                # Normal episode: no joint failures (preserve skills)
+                self.episode_failed_joints = []
+                self.episode_failed_joint_names = []
+            else:
+                # Failure episode: use systematic curriculum failures
+                self.episode_failed_joints = self.failed_joints.copy()
+                self.episode_failed_joint_names = self.failed_joint_names.copy()
+        else:
+            # V4 mode or Phase 0: use systematic curriculum as-is
+            self.episode_failed_joints = self.failed_joints.copy()
+            self.episode_failed_joint_names = self.failed_joint_names.copy()
+            self.current_episode_type = 'systematic'
+
         # Add curriculum info to reset info
         if info is None:
             info = {}
-            
+
         info.update({
             'systematic_curriculum': True,
             'curriculum_phase': self.current_phase,
             'curriculum_subphase': self.current_subphase + 1,
-            'failed_joints': self.failed_joints.copy(),
-            'failed_joint_names': self.failed_joint_names.copy(),
+            'failed_joints': self.episode_failed_joints.copy(),
+            'failed_joint_names': self.episode_failed_joint_names.copy(),
             'pattern_type': self._get_current_pattern_type(),
             'subphase_progress': self.subphase_steps,
-            'total_timesteps': self.total_timesteps
+            'total_timesteps': self.total_timesteps,
+            'episode_type': self.current_episode_type,  # V3: track episode type
+            'episode_count': self.episode_count  # V3: track episode number
         })
-        
+
         return obs, info
     
     def get_curriculum_status(self):
