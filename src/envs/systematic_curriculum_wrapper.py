@@ -309,7 +309,9 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     
     def _get_current_pattern_type(self):
         """Get the pattern type for the current subphase"""
-        if self.current_phase == 1:
+        if self.current_phase == 0:
+            return 'normal'  # Phase 0: Normal walking foundation
+        elif self.current_phase == 1:
             return self.phase_1_schedule[self.current_subphase]['pattern_type']
         elif self.current_phase == 2:
             return self.phase_2_schedule[self.current_subphase]['pattern_type']
@@ -341,16 +343,31 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     
     def get_curriculum_status(self):
         """Get detailed curriculum status for logging"""
-        if self.current_phase <= 3:
+        if self.current_phase == 0:
+            # Phase 0: Normal walking foundation
+            return {
+                'phase': 0,
+                'subphase': 0,
+                'total_subphases': 0,
+                'failed_joints': [],
+                'failed_joint_names': [],
+                'pattern_type': 'normal',
+                'description': 'Phase 0: Normal walking foundation',
+                'subphase_progress': self.total_timesteps,
+                'subphase_duration': self.phase_0_duration,
+                'total_progress': self.total_timesteps,
+                'completion_percentage': (self.total_timesteps / self._calculate_total_steps()) * 100
+            }
+        elif self.current_phase <= 3:
             if self.current_phase == 1:
                 schedule = self.phase_1_schedule
             elif self.current_phase == 2:
                 schedule = self.phase_2_schedule
             else:
                 schedule = self.phase_3_schedule
-                
+
             current_subphase_info = schedule[self.current_subphase]
-            
+
             return {
                 'phase': self.current_phase,
                 'subphase': self.current_subphase + 1,
