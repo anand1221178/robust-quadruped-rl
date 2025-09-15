@@ -176,6 +176,15 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
 
         env = VecNormalize(env, norm_obs=norm_obs, norm_reward=norm_reward_config, clip_obs=clip_obs)
 
+        # V5: Connect VecNormalize to SystematicCurriculumWrapper for smart reward stats reset
+        if hasattr(env.venv.envs[0], 'env') and hasattr(env.venv.envs[0].env, 'set_vecnormalize_env'):
+            # Navigate through DummyVecEnv -> Monitor -> SystematicCurriculumWrapper
+            wrapper_env = env.venv.envs[0].env  # Monitor wrapper
+            if hasattr(wrapper_env, 'env') and hasattr(wrapper_env.env, 'set_vecnormalize_env'):
+                curriculum_wrapper = wrapper_env.env  # SystematicCurriculumWrapper
+                curriculum_wrapper.set_vecnormalize_env(env)
+                print(f"🔗 V5: VecNormalize connected to SystematicCurriculumWrapper")
+
     return env
 
 

@@ -12,19 +12,31 @@ import warnings
 class SystematicCurriculumWrapper(gym.Wrapper):
     """
     Systematic curriculum wrapper for guaranteed joint failure training.
-    
+
     Instead of probabilistic failures, this wrapper implements a systematic
     curriculum that guarantees specific joint failures during training phases.
-    
+
     Phases:
     1. Single Joint Mastery: Each joint fails individually for N steps
-    2. Dual Joint Combinations: Specific joint pairs fail for N steps  
+    2. Dual Joint Combinations: Specific joint pairs fail for N steps
     3. Triple Joint Challenge: Critical 3-joint combinations
+
+    V5 SMART VECNORMALIZE SUPPORT:
+    - Optionally resets VecNormalize reward statistics at phase transitions
+    - Prevents reward normalization corruption between phases
+    - Maintains stable PPO learning throughout curriculum
     """
-    
+
     def __init__(self, env, curriculum_config: Dict):
         super().__init__(env)
         self.curriculum_config = curriculum_config
+
+        # V5: Smart VecNormalize reward stats reset
+        self.reset_reward_stats_on_phase_transition = curriculum_config.get(
+            'reset_reward_stats_on_phase_transition', False
+        )
+        self.vec_normalize_env = None  # Will be set when VecNormalize is detected
+        self.last_phase = None  # Track phase changes for reset triggering (None = uninitialized)
         
         # Training progress tracking
         self.total_timesteps = 0
@@ -68,11 +80,19 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         
         # Update current failure mode
         self._update_curriculum_phase()
-        
+
+        # V5: Initialize VecNormalize detection
+        if self.reset_reward_stats_on_phase_transition:
+            self._detect_vecnormalize()
+            if self.vec_normalize_env:
+                print(f"🔥 V5 SMART VECNORMALIZE: Reward stats reset enabled at phase transitions!")
+            else:
+                print(f"⚠️  V5 WARNING: VecNormalize not detected - reward stats reset disabled")
+
         print(f"🎯 Systematic Curriculum Initialized")
         print(f"   Phase 0: Normal walking foundation")
         print(f"   Phase 1: {len(self.phase_1_schedule)} single joints")
-        print(f"   Phase 2: {len(self.phase_2_schedule)} dual combinations") 
+        print(f"   Phase 2: {len(self.phase_2_schedule)} dual combinations")
         print(f"   Phase 3: {len(self.phase_3_schedule)} triple combinations")
         print(f"   Total training steps: {self._calculate_total_steps():,}")
     
@@ -177,6 +197,60 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         for phase in self.phase_3_schedule:
             total += phase['duration']
         return total
+
+    def _detect_vecnormalize(self):
+        """V5: Detect VecNormalize wrapper in the environment stack"""
+        # VecNormalize is applied AFTER SystematicCurriculumWrapper in the training script
+        # So we can't detect it during __init__. It will be set manually via set_vecnormalize_env()
+        self.vec_normalize_env = None
+        print(f"🔍 V5: VecNormalize detection deferred to manual connection")
+
+    def _reset_reward_stats(self):
+        """V5: Reset VecNormalize reward statistics to prevent corruption"""
+        if not self.vec_normalize_env:
+            return
+
+        try:
+            # Reset reward running mean and std
+            if hasattr(self.vec_normalize_env, 'ret_rms'):
+                # Check if we're dealing with RunningMeanStd from stable-baselines3
+                rms = self.vec_normalize_env.ret_rms
+
+                # Reset the running mean and variance for rewards
+                # Handle both torch tensors and numpy arrays
+                if hasattr(rms.mean, 'fill_'):
+                    # PyTorch tensor
+                    rms.mean.fill_(0.0)
+                    rms.var.fill_(1.0)
+                else:
+                    # Numpy array/scalar
+                    if hasattr(rms, 'mean'):
+                        rms.mean = 0.0
+                    if hasattr(rms, 'var'):
+                        rms.var = 1.0
+
+                # Reset count to small value to avoid division by zero
+                rms.count = 1e-4
+
+                print(f"🔄 V5 REWARD STATS RESET: VecNormalize reward statistics reset at phase transition")
+                mean_val = rms.mean.item() if hasattr(rms.mean, 'item') else rms.mean
+                var_val = rms.var.item() if hasattr(rms.var, 'item') else rms.var
+                print(f"   New reward mean: {mean_val:.3f}")
+                print(f"   New reward std: {var_val**0.5:.3f}")
+
+            else:
+                print(f"⚠️  V5 WARNING: VecNormalize ret_rms not found - cannot reset reward stats")
+
+        except Exception as e:
+            print(f"❌ V5 ERROR: Failed to reset VecNormalize reward stats: {e}")
+            # Disable further reset attempts
+            self.reset_reward_stats_on_phase_transition = False
+
+    def set_vecnormalize_env(self, vec_env):
+        """V5: Manually set VecNormalize environment reference for reward stats reset"""
+        self.vec_normalize_env = vec_env
+        if vec_env and self.reset_reward_stats_on_phase_transition:
+            print(f"✅ V5: VecNormalize environment manually set - reward stats reset ready!")
     
     def _update_curriculum_phase(self):
         """Update current curriculum phase based on training progress"""
@@ -203,6 +277,15 @@ class SystematicCurriculumWrapper(gym.Wrapper):
                 self.current_phase = 4  # Complete
                 self.failed_joints = []
                 self.failed_joint_names = []
+
+                # V5: Handle phase tracking for V2 completion early return
+                phase_changed = (self.last_phase is not None and self.last_phase != self.current_phase)
+                if self.reset_reward_stats_on_phase_transition:
+                    print(f"🔍 V5 DEBUG (V2 Complete): last_phase={self.last_phase}, current_phase={self.current_phase}, phase_changed={phase_changed}")
+                if self.reset_reward_stats_on_phase_transition and phase_changed:
+                    print(f"🔄 V5: Phase transition detected! {self.last_phase} → {self.current_phase}")
+                    self._reset_reward_stats()
+                self.last_phase = self.current_phase
                 return
         else:
             # V1 Mode: Original logic with Phase 0
@@ -216,6 +299,13 @@ class SystematicCurriculumWrapper(gym.Wrapper):
                 self.current_phase = 0
                 self.failed_joints = []  # No joint failures in Phase 0
                 self.failed_joint_names = []
+
+                # V5: Handle phase tracking for Phase 0 early return
+                phase_changed = (self.last_phase is not None and self.last_phase != self.current_phase)
+                if self.reset_reward_stats_on_phase_transition and phase_changed:
+                    print(f"🔄 V5: Phase transition detected! {self.last_phase} → {self.current_phase}")
+                    self._reset_reward_stats()
+                self.last_phase = self.current_phase
                 return
             elif self.total_timesteps < phase_1_end:
                 self.current_phase = 1
@@ -234,6 +324,15 @@ class SystematicCurriculumWrapper(gym.Wrapper):
                 self.current_phase = 4
                 self.failed_joints = []
                 self.failed_joint_names = []
+
+                # V5: Handle phase tracking for completion early return
+                phase_changed = (self.last_phase is not None and self.last_phase != self.current_phase)
+                if self.reset_reward_stats_on_phase_transition:
+                    print(f"🔍 V5 DEBUG (Complete): last_phase={self.last_phase}, current_phase={self.current_phase}, phase_changed={phase_changed}")
+                if self.reset_reward_stats_on_phase_transition and phase_changed:
+                    print(f"🔄 V5: Phase transition detected! {self.last_phase} → {self.current_phase}")
+                    self._reset_reward_stats()
+                self.last_phase = self.current_phase
                 return
         
         # Determine current subphase within the phase
@@ -271,6 +370,21 @@ class SystematicCurriculumWrapper(gym.Wrapper):
 
                 break
             cumulative_duration += subphase['duration']
+
+        # V5: Check for phase transitions and reset reward stats if enabled
+        # Need to check BEFORE updating last_phase
+        phase_changed = (self.last_phase is not None and self.last_phase != self.current_phase)
+
+        # Debug logging can be enabled for troubleshooting
+        # if self.reset_reward_stats_on_phase_transition:
+        #     print(f"🔍 V5 DEBUG: last_phase={self.last_phase}, current_phase={self.current_phase}, phase_changed={phase_changed}")
+
+        if self.reset_reward_stats_on_phase_transition and phase_changed:
+            print(f"🔄 V5: Phase transition detected! {self.last_phase} → {self.current_phase}")
+            self._reset_reward_stats()
+
+        # Update last phase tracker (after checking for transitions)
+        self.last_phase = self.current_phase
     
     def step(self, action):
         """Apply systematic joint failures and track progress"""
