@@ -141,6 +141,46 @@ normalized = [-5.6, -4.1, -5.1, -3.1, -5.4]  # ALL CATASTROPHICALLY NEGATIVE!
 3. **Parallel Validation**: V3 & V4 test different hypotheses simultaneously
 4. **Local Testing**: V5 implementation fully validated before cluster deployment
 
+### **V5 Implementation Details** 🔧:
+
+**Technical Components Added**:
+
+1. **Enhanced SystematicCurriculumWrapper**:
+```python
+def _reset_reward_stats(self):
+    """V5: Reset VecNormalize reward statistics to prevent corruption"""
+    if self.vec_normalize_env and hasattr(self.vec_normalize_env, 'ret_rms'):
+        rms = self.vec_normalize_env.ret_rms
+        rms.mean = 0.0  # Reset running mean
+        rms.var = 1.0   # Reset running variance
+        rms.count = 1e-4  # Small epsilon to avoid division by zero
+```
+
+2. **Phase Transition Detection**:
+```python
+# V5: Check for phase transitions and reset reward stats if enabled
+phase_changed = (self.last_phase is not None and self.last_phase != self.current_phase)
+if self.reset_reward_stats_on_phase_transition and phase_changed:
+    print(f"🔄 V5: Phase transition detected! {self.last_phase} → {self.current_phase}")
+    self._reset_reward_stats()
+```
+
+3. **VecNormalize Integration in train.py**:
+```python
+# V5: Connect VecNormalize to SystematicCurriculumWrapper for smart reward stats reset
+if hasattr(env.venv.envs[0], 'env') and hasattr(env.venv.envs[0].env, 'set_vecnormalize_env'):
+    wrapper_env = env.venv.envs[0].env  # Monitor wrapper
+    if hasattr(wrapper_env, 'env') and hasattr(wrapper_env.env, 'set_vecnormalize_env'):
+        curriculum_wrapper = wrapper_env.env  # SystematicCurriculumWrapper
+        curriculum_wrapper.set_vecnormalize_env(env)
+```
+
+**Key Implementation Challenges Solved**:
+- **Environment hierarchy navigation**: VecNormalize → DummyVecEnv → Monitor → SystematicCurriculumWrapper
+- **Phase tracking across early returns**: Fixed multiple return paths in curriculum logic
+- **Numpy/tensor compatibility**: Handles both numpy arrays and PyTorch tensors safely
+- **Automated connection**: VecNormalize automatically connected during environment setup
+
 ### **V5 Local Test Results** ✅:
 ```
 🎉 V5 IMPLEMENTATION TEST: ✅ SUCCESS!
@@ -149,6 +189,12 @@ normalized = [-5.6, -4.1, -5.1, -3.1, -5.4]  # ALL CATASTROPHICALLY NEGATIVE!
    ✅ Reward stats reset working (mean=-47.3 → 0.000, var=602.8 → 1.000)
    ✅ Systematic curriculum phases working
 ```
+
+**Test Validation Process**:
+1. **Built reward statistics** during 50 Phase 0 steps (mean=-47.3, var=602.8)
+2. **Forced phase transition** (Phase 0 → Phase 1)
+3. **Verified reset functionality** - statistics properly reset to (mean=0.0, var=1.0)
+4. **Confirmed clean operation** - no errors, smooth transitions, proper logging
 
 ### **Research Contributions**:
 1. **First identification of VecNormalize + curriculum incompatibility**

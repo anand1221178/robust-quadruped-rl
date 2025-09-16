@@ -32,6 +32,8 @@ from wandb.integration.sb3 import WandbCallback
 from envs.success_reward_wrapper import SuccessRewardWrapper
 from envs.domain_randomization_wrapper import DomainRandomizationWrapper, CurriculumDRWrapper
 from envs.systematic_curriculum_wrapper import SystematicCurriculumWrapper
+from envs.specialist_training_wrapper import SpecialistTrainingWrapper
+from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
 
 # Import RealAnt environments
 import realant_sim
@@ -95,14 +97,52 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
     # Simple options
     use_success_reward = config.get('env', {}).get('use_success_reward', False)
     use_domain_randomization = config.get('env', {}).get('use_domain_randomization', False)
-    
+    use_specialist_wrapper = config.get('env', {}).get('use_specialist_wrapper', False)
+    use_v7_acdr = config.get('env', {}).get('use_v7_acdr', False)
+
     def make_env():
         env = gym.make(env_name)
-        
+
         # Apply reward wrapper
         if use_success_reward:
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
+
+        # V7: ACDR Hard2Easy Curriculum (Research-validated approach)
+        if use_v7_acdr:
+            acdr_config = config.get('v7_acdr', {})
+            curriculum_type = acdr_config.get('curriculum_type', 'hard2easy')
+
+            print(f"🔥 V7 ACDR CURRICULUM: {curriculum_type.upper()}")
+            if curriculum_type == 'hard2easy':
+                print("   ✅ Using PROVEN hard2easy approach from ACDR paper")
+                print("   Starting with k=0 (dead joints) → k=1.5 (mild failures)")
+            else:
+                print("   ⚠️ WARNING: Easy2hard shown to fail in research!")
+                print("   Starting with k=1.5 (mild failures) → k=0 (dead joints)")
+
+            env = V7ACDRWrapper(
+                env,
+                curriculum_type=curriculum_type,
+                initial_L=acdr_config.get('initial_L', 0.0),
+                initial_U=acdr_config.get('initial_U', 0.0),
+                target_L=acdr_config.get('target_L', 1.0),
+                target_U=acdr_config.get('target_U', 1.5),
+                update_step=acdr_config.get('update_step', 0.01),
+                performance_window=acdr_config.get('performance_window', 100),
+                performance_threshold=acdr_config.get('performance_threshold', None),
+                verbose=acdr_config.get('verbose', True)
+            )
+            return Monitor(env)  # Early return for V7 ACDR
+
+        # V6: Specialist training wrapper
+        if use_specialist_wrapper:
+            specialist_type = config.get('env', {}).get('specialist_type', 'normal')
+            training_phase = config.get('env', {}).get('training_phase', 'baseline')
+            print(f"🎯 V6 SPECIALIST TRAINING: {specialist_type}")
+            print(f"   Training Phase: {training_phase}")
+            env = SpecialistTrainingWrapper(env, specialist_type, training_phase)
+            return Monitor(env)  # Early return for specialist training
         
         # Check if using phase switching (V2 approach)
         use_phase_switching = config.get('phase_switching', {}).get('enabled', False)

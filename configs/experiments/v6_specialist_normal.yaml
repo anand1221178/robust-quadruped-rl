@@ -1,0 +1,52 @@
+# V6 Specialist Training - Normal Walking Expert
+# This specialist masters perfect locomotion without any joint failures
+# Expected Performance: 0.22+ m/s baseline
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: v6_specialist_normal
+  description: "V6 Ensemble - Normal walking specialist (no failures)"
+
+# Environment configuration
+env:
+  use_success_reward: true
+  use_specialist_wrapper: true
+  specialist_type: normal
+  training_phase: baseline  # Pure locomotion training
+
+# PPO hyperparameters - optimized for perfect walking
+ppo:
+  learning_rate: 0.0003
+  n_epochs: 10
+  batch_size: 2048
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Policy network
+policy:
+  hidden_sizes: [64, 128]
+  activation: relu
+
+# Training configuration
+total_timesteps: 10_000_000  # 10M steps for perfect locomotion
+num_envs: 8
+eval_freq: 10000
+save_freq: 500000
+
+# Logging
+logging:
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  log_interval: 100
+  verbose: 1
+
+seed: 42
