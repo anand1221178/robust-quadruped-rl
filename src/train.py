@@ -131,6 +131,17 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
                 update_step=acdr_config.get('update_step', 0.01),
                 performance_window=acdr_config.get('performance_window', 100),
                 performance_threshold=acdr_config.get('performance_threshold', None),
+                # V7.2 Dual-Phase Parameters
+                phase_1_target=acdr_config.get('phase_1_target', None),
+                phase_2_minimum=acdr_config.get('phase_2_minimum', None),
+                # V7.3 Multi-Objective Parameters
+                speed_weight=acdr_config.get('speed_weight', 0.7),
+                robustness_weight=acdr_config.get('robustness_weight', 0.3),
+                adaptive_weights=acdr_config.get('adaptive_weights', False),
+                rewind_threshold=acdr_config.get('rewind_threshold', None),
+                rewind_steps=acdr_config.get('rewind_steps', 2),
+                consolidation_period=acdr_config.get('consolidation_period', 1000000),
+                adaptive_curriculum=acdr_config.get('adaptive_curriculum', False),
                 verbose=acdr_config.get('verbose', True)
             )
             return Monitor(env)  # Early return for V7 ACDR

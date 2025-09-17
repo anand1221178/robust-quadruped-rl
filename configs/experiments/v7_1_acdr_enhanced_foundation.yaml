@@ -1,0 +1,80 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.1 ACDR Enhanced Foundation - Ultra-Conservative Curriculum
+# Focus: Preserve baseline performance while building robustness
+experiment:
+  name: v7_1_acdr_enhanced_foundation
+  description: "V7.1 ACDR - Enhanced foundation with ultra-conservative curriculum for speed preservation"
+
+# Environment configuration
+env:
+  use_success_reward: true
+  use_v7_acdr: true
+
+# V7.1 ENHANCED ACDR Parameters - Ultra-Conservative Approach
+v7_acdr:
+  curriculum_type: hard2easy
+  # ENHANCED: Start much closer to normal operation (80-95% joint strength)
+  initial_L: 0.8          # Much higher starting point - robot moves normally
+  initial_U: 0.95         # Nearly perfect joint operation at start
+  # ENHANCED: Less extreme end targets (30-50% joint strength)
+  target_L: 0.3           # Moderate failures (not complete breakage)
+  target_U: 0.5           # Still challenging but not impossible
+  # ENHANCED: Ultra-slow curriculum progression to preserve skills
+  update_step: 0.005      # 4x slower than fixed version (was 0.02)
+  # ENHANCED: Much longer adaptation periods for skill consolidation
+  performance_window: 200 # 4x longer than fixed version (was 50)
+  # ENHANCED: Higher performance threshold requirement
+  performance_threshold: 0.18  # Must maintain near-baseline before progression
+  verbose: true
+
+# Training parameters - Longer training for foundation building
+total_timesteps: 25000000  # 25M steps (25% more than fixed)
+save_freq: 500000
+
+# PPO hyperparameters - Optimized for stable learning
+ppo:
+  learning_rate: 0.0001   # Lower LR for more stable learning
+  batch_size: 1024        # Larger batches for stability
+  clip_range: 0.15        # More conservative clipping
+  n_epochs: 6             # More epochs for better learning
+  gamma: 0.995            # Higher gamma for long-term planning
+  gae_lambda: 0.97        # Higher lambda for better advantage estimation
+  ent_coef: 0.005         # Lower entropy for more focused learning
+  vf_coef: 0.5
+  max_grad_norm: 0.3      # Tighter gradient clipping
+
+# Policy network - Slightly larger for better capacity
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]  # Larger network
+
+# Environment settings
+num_envs: 8
+seed: 42
+
+# Reward configuration - Enhanced for speed preservation
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.2       # Slightly higher speed emphasis
+
+# Logging
+logging:
+  verbose: 1
+  log_interval: 100
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - v7.1
+    - acdr
+    - enhanced-foundation
+    - ultra-conservative
+    - speed-preservation
+
+# Evaluation
+eval_freq: 10000

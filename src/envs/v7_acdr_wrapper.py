@@ -42,6 +42,17 @@ class V7ACDRWrapper(gym.Wrapper):
                  update_step: float = 0.01,
                  performance_window: int = 100,
                  performance_threshold: float = None,
+                 # V7.2 Dual-Phase Parameters
+                 phase_1_target: float = None,
+                 phase_2_minimum: float = None,
+                 # V7.3 Multi-Objective Parameters
+                 speed_weight: float = 0.7,
+                 robustness_weight: float = 0.3,
+                 adaptive_weights: bool = False,
+                 rewind_threshold: float = None,
+                 rewind_steps: int = 2,
+                 consolidation_period: int = 1000000,
+                 adaptive_curriculum: bool = False,
                  verbose: bool = True):
         """
         Initialize V7 ACDR Wrapper with hard2easy curriculum.
@@ -81,6 +92,25 @@ class V7ACDRWrapper(gym.Wrapper):
         self.current_failed_leg = None
         self.current_k = None
         self.curriculum_updates = 0
+
+        # V7.2 Dual-Phase tracking
+        self.phase_1_target = phase_1_target
+        self.phase_2_minimum = phase_2_minimum
+        self.current_phase = 1 if phase_1_target is not None else None
+
+        # V7.3 Multi-Objective parameters
+        self.speed_weight = speed_weight
+        self.robustness_weight = robustness_weight
+        self.adaptive_weights = adaptive_weights
+        self.rewind_threshold = rewind_threshold
+        self.rewind_steps = rewind_steps
+        self.consolidation_period = consolidation_period
+        self.adaptive_curriculum = adaptive_curriculum
+
+        # Curriculum rewind tracking
+        self.curriculum_history = [(self.L, self.U)]
+        self.consolidation_steps = 0
+        self.in_consolidation = False
 
         # Joint configuration (8 joints: 4 legs × 2 joints/leg)
         self.num_legs = 4
@@ -176,6 +206,22 @@ class V7ACDRWrapper(gym.Wrapper):
             # Calculate average performance
             avg_performance = np.mean(self.performance_buffer)
 
+            # V7.3: Check for rewind condition
+            if self.adaptive_curriculum and self.rewind_threshold is not None:
+                if avg_performance < self.rewind_threshold and not self.in_consolidation:
+                    self._rewind_curriculum()
+                    return
+
+            # Handle consolidation period after rewind
+            if self.in_consolidation:
+                self.consolidation_steps += 1
+                if self.consolidation_steps >= self.consolidation_period:
+                    self.in_consolidation = False
+                    self.consolidation_steps = 0
+                    if self.verbose:
+                        print("✅ CONSOLIDATION COMPLETE - Resuming curriculum progression")
+                return
+
             # Initialize threshold if not set
             if self.performance_threshold is None:
                 self.performance_threshold = avg_performance
@@ -187,17 +233,22 @@ class V7ACDRWrapper(gym.Wrapper):
                 if self.curriculum_type == 'hard2easy':
                     # Hard2Easy: Increase k (make it easier) as performance improves
                     if self.U < self.target_U:
+                        old_L, old_U = self.L, self.U
                         self.L = min(self.L + self.update_step, self.target_L)
                         self.U = min(self.U + self.update_step, self.target_U)
                         self.curriculum_updates += 1
+
+                        # Store curriculum history for potential rewind (V7.3)
+                        self.curriculum_history.append((self.L, self.U))
 
                         # Update threshold (adaptive)
                         self.performance_threshold = avg_performance
 
                         if self.verbose:
-                            print(f"📈 CURRICULUM UPDATE {self.curriculum_updates}:")
+                            phase_info = f" [Phase {self.current_phase}]" if self.current_phase else ""
+                            print(f"📈 CURRICULUM UPDATE {self.curriculum_updates}{phase_info}:")
                             print(f"   Performance: {avg_performance:.2f} > {self.performance_threshold:.2f}")
-                            print(f"   New Interval: [{self.L:.2f}, {self.U:.2f}]")
+                            print(f"   New Interval: [{self.L:.2f}, {self.U:.2f}] (was [{old_L:.2f}, {old_U:.2f}])")
                             print(f"   Progress: {(self.U / self.target_U) * 100:.1f}% to target")
 
                 elif self.curriculum_type == 'easy2hard':
@@ -216,6 +267,23 @@ class V7ACDRWrapper(gym.Wrapper):
 
                 # Clear buffer after update
                 self.performance_buffer = []
+
+    def _rewind_curriculum(self):
+        """V7.3: Rewind curriculum when performance drops too low."""
+        if len(self.curriculum_history) >= self.rewind_steps + 1:
+            # Rewind to earlier curriculum state
+            rewind_idx = -(self.rewind_steps + 1)
+            self.L, self.U = self.curriculum_history[rewind_idx]
+
+            # Enter consolidation period
+            self.in_consolidation = True
+            self.consolidation_steps = 0
+
+            if self.verbose:
+                print(f"🔄 CURRICULUM REWIND:")
+                print(f"   Performance too low - rewinding {self.rewind_steps} steps")
+                print(f"   New Interval: [{self.L:.2f}, {self.U:.2f}]")
+                print(f"   Entering consolidation for {self.consolidation_period:,} steps")
 
     def get_curriculum_info(self) -> Dict[str, Any]:
         """Get current curriculum status."""
