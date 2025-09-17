@@ -158,12 +158,12 @@ def compare_curricula():
     print("🔥 V7 ACDR COMPARISON: HARD2EASY vs EASY2HARD")
     print("="*80)
 
-    # Model paths
-    hard2easy_path = "experiments/v7_acdr_hard2easy/final_model.zip"
-    hard2easy_vec = "experiments/v7_acdr_hard2easy/vec_normalize.pkl"
+    # Model paths (updated with actual completed experiment IDs)
+    hard2easy_path = "experiments/v7_acdr_hard2easy_x6wyc4no/final_model.zip"
+    hard2easy_vec = "experiments/v7_acdr_hard2easy_x6wyc4no/vec_normalize.pkl"
 
-    easy2hard_path = "experiments/v7_acdr_easy2hard/final_model.zip"
-    easy2hard_vec = "experiments/v7_acdr_easy2hard/vec_normalize.pkl"
+    easy2hard_path = "experiments/v7_acdr_easy2hard_30u79e3j/final_model.zip"
+    easy2hard_vec = "experiments/v7_acdr_easy2hard_30u79e3j/vec_normalize.pkl"
 
     # Test both models
     hard2easy_results = test_v7_acdr_model(

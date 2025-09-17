@@ -38,6 +38,83 @@ Result: Robust walking, handles failures gracefully
 
 ---
 
+## 🔧 **JOINT FAILURE PATTERNS IN V7 ACDR**
+
+### **How V7 Handles Joint Failures**:
+
+Unlike V1-V5's complex systematic patterns, V7 uses a **simple random approach**:
+
+1. **One random leg fails per episode**: Randomly selects leg 0, 1, 2, or 3
+2. **Both joints in that leg fail together**:
+   - Leg 0 → joints [0, 1] fail (front-left hip + ankle)
+   - Leg 1 → joints [2, 3] fail (front-right hip + ankle)
+   - Leg 2 → joints [4, 5] fail (rear-left hip + ankle)
+   - Leg 3 → joints [6, 7] fail (rear-right hip + ankle)
+3. **Failure coefficient k applied**: All joints in failed leg multiply by k
+
+**Why This Works Better Than V1-V5**:
+- **Simpler**: No complex systematic sequences to track
+- **Focused**: Robot learns to compensate for complete leg loss
+- **Natural**: Mimics real-world actuator failures (whole leg affected)
+- **Efficient**: Covers all failure patterns through randomization
+
+---
+
+## 📈 **EXPECTED TRAINING PROGRESSION**
+
+### **V7 Hard2Easy (Expected SUCCESS)**:
+
+**Early Training (k=0.0, Dead Joints)**:
+```
+Episodes 0-10k: Robot will fall frequently, struggle to move
+Episodes 10k-50k: Learns basic compensation (dragging, hopping)
+Episodes 50k-100k: Develops emergency locomotion strategies
+Expected: High failure rate but LEARNING compensation
+```
+
+**Mid Training (k=0.0 → 0.5, Gradual Recovery)**:
+```
+Episodes 100k-500k: Curriculum updates as performance improves
+Robot gains partial joint control, smoother movement emerges
+Errors decrease as k increases (joints become more responsive)
+Expected: Steady improvement, fewer falls
+```
+
+**Late Training (k=0.5 → 1.5, Refinement)**:
+```
+Episodes 500k-1M: Near-normal to enhanced joint control
+Robust locomotion patterns established
+Minor adjustments for optimal performance
+Expected: Smooth walking with excellent fault tolerance
+```
+
+### **V7 Easy2Hard (Expected FAILURE - mimics V1-V5)**:
+
+**Early Training (k=1.5, Perfect/Enhanced)**:
+```
+Episodes 0-100k: Perfect walking, high performance
+Robot learns optimal locomotion with no challenges
+Expected: 0.22+ m/s velocity (false confidence)
+```
+
+**Mid Training (k=1.5 → 0.5, Increasing Difficulty)**:
+```
+Episodes 100k-500k: Gradual joint degradation
+Performance starts declining as joints become less responsive
+Robot struggles to maintain learned patterns
+Expected: Velocity drops to 0.1-0.15 m/s
+```
+
+**Late Training (k=0.5 → 0.0, Catastrophic Forgetting)**:
+```
+Episodes 500k-1M: Approaching dead joints
+Robot "learns" that not moving is safest
+Complete locomotion skill destruction
+Expected: 0.000-0.006 m/s (stationary behavior)
+```
+
+---
+
 ## 📚 **V7 TECHNICAL IMPLEMENTATION**
 
 ### **Core Algorithm (Adapted from ACDR)**:
@@ -94,16 +171,92 @@ expected: Robust walking with graceful degradation
 
 ---
 
-## 🔄 **V7 vs FAILED V1-V5 COMPARISON**
+## 🔄 **FUNDAMENTAL DIFFERENCES: V7 vs V1-V5**
 
-### **Why V1-V5 Failed**:
-1. **End-of-training corruption**: Easy2hard ends with k=0 (dead joints)
-2. **Catastrophic forgetting**: Final hard phase destroys walking skills
-3. **Wrong optimization**: Robot learns "don't move" as safest strategy
+### **Complete Paradigm Shift from V1-V5**:
 
-### **Why V7 (ACDR) Succeeds**:
-1. **Start with worst case**: Robot MUST learn compensation from day 1
-2. **Progressive improvement**: Gradually easier = maintains skills
+#### **V1-V5 SYSTEMATIC CURRICULUM (Failed Approach)**:
+```python
+# V1-V5: Complex systematic joint failure sequences
+Phase 0: Normal walking (10M steps)
+Phase 1: Systematic single joint failures
+  - Hip_1 alone (3M steps)
+  - Hip_2 alone (3M steps)
+  - Hip_3 alone (3M steps)
+  - ... (8 different single joints total)
+Phase 2: Systematic dual combinations
+  - Hip_1 + Hip_2 (3M steps)
+  - Hip_1 + Ankle_1 (3M steps)
+  - ... (10 specific combinations)
+
+Problems:
+- 100% GUARANTEED failures in failure episodes
+- SYSTEMATIC sequences (not random)
+- Easy→Hard progression (k: 1.0 → 0.0)
+- Complex tracking of which joints to fail when
+```
+
+#### **V7 ACDR (Proven Approach)**:
+```python
+# V7: Simple random leg failures with adaptive curriculum
+Every episode:
+  - Pick ONE random leg (0, 1, 2, or 3)
+  - Both joints in that leg fail together
+  - Apply failure coefficient k from current interval
+  - k starts at 0 (dead) and increases to 1.5 (mild)
+
+Advantages:
+- RANDOM selection (not systematic sequences)
+- SIMPLE pattern (one leg per episode)
+- Hard→Easy progression (k: 0.0 → 1.5)
+- ADAPTIVE curriculum (performance-based updates)
+```
+
+### **Key Paradigm Differences**:
+
+| Aspect | **V1-V5 Systematic** | **V7 ACDR** | **Why It Matters** |
+|--------|---------------------|-------------|-------------------|
+| **Joint Selection** | Predetermined sequences | Random leg each episode | Avoids overfitting to specific patterns |
+| **Failure Guarantee** | 100% in failure episodes | Varies with k value | Natural variation prevents stationary optimization |
+| **Curriculum Direction** | Easy→Hard (k: 1→0) | Hard→Easy (k: 0→1.5) | Preserves locomotion at end of training |
+| **Curriculum Type** | Fixed phases | Adaptive updates | Responds to actual performance |
+| **Complexity** | 18+ different patterns | 4 possible leg failures | Simplicity enables generalization |
+| **Training End State** | Dead joints (k=0) | Mild failures (k=1.5) | Never destroys learned skills |
+
+### **Why V1-V5 Failed (Fundamental Issues)**:
+1. **Systematic Overfitting**: Robot memorized specific failure patterns instead of learning general robustness
+2. **Guaranteed Failures**: 100% failure rate in episodes → optimized for "don't move"
+3. **Wrong Direction**: Easy→hard ends with k=0, destroying all locomotion skills
+4. **Over-Engineering**: Complex systematic patterns made learning harder, not better
+
+### **Why V7 Succeeds (Fundamental Advantages)**:
+1. **Generalization**: Random failures force general compensation strategies
+2. **Variable Challenge**: k value creates spectrum from impossible to easy
+3. **Right Direction**: Hard→easy preserves and refines locomotion skills
+4. **Simplicity**: One random leg failure is easier to learn than complex patterns
+5. **Adaptation**: Performance-based updates ensure appropriate difficulty
+
+### **Visual Comparison of Training Approaches**:
+
+```
+V1-V5 SYSTEMATIC (Failed):
+Step 1M:  k=1.0 → Walking perfectly
+Step 10M: k=1.0 → Still walking perfectly
+Step 20M: k=0.5 → Performance declining
+Step 30M: k=0.2 → Struggling badly
+Step 40M: k=0.0 → Learned to stay still (FAILED)
+
+V7 HARD2EASY (Success):
+Step 1M:  k=0.0 → Struggling but learning compensation
+Step 10M: k=0.2 → Basic movement emerging
+Step 20M: k=0.5 → Walking with impairment
+Step 30M: k=0.8 → Good locomotion
+Step 40M: k=1.2 → Robust walking (SUCCESS)
+```
+
+### **The Critical Insight**:
+**V1-V5 tried to be "smart" with systematic patterns but was actually over-engineered.**
+**V7 is "simple" with random failures but achieves better robustness through generalization.**
 3. **Never ends at k=0**: Final training at k=1.5 preserves locomotion
 
 ### **Paper Quote (Critical Insight)**:

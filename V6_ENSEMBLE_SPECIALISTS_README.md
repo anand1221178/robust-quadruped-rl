@@ -148,6 +148,23 @@ Four specialist configs in `configs/experiments/`:
 - `v6_specialist_ankle.yaml` - Ankle failures (5M steps)
 - `v6_specialist_multi.yaml` - Complex failures (7.5M steps)
 
+### **Joint Failure Patterns in V6**:
+
+**Hip Specialist**:
+- Trains on hip joint failures: joints [0, 1, 2, 3]
+- 50% of episodes have 1-2 hip joints fail
+- Covers: front-left hip, front-right hip, rear-left hip, rear-right hip
+
+**Ankle Specialist**:
+- Trains on ankle joint failures: joints [4, 5, 6, 7]
+- 50% of episodes have 1-2 ankle joints fail
+- Covers: all four ankle joints
+
+**Multi-Joint Specialist**:
+- Trains on complex combinations: any of joints [0-7]
+- 70% of episodes have up to 3 joints fail
+- Covers: cross-body failures, diagonal patterns, severe damage
+
 ### **3. Key Design Principles**
 
 **Separation of Concerns**:
@@ -171,10 +188,16 @@ Four specialist configs in `configs/experiments/`:
 
 ### **Step 1: Train Normal Specialist**
 ```bash
-# Train perfect walking specialist (10M steps)
+# Option A: Use existing baseline model (FASTER)
+# You can use: done/ppo_baseline_ueqbjf2x/best_model.zip
+# This already achieves 0.224 m/s - perfectly suitable!
+
+# Option B: Train new normal specialist (what you're doing)
 sbatch scripts/train_ppo_cluster.sh v6_specialist_normal
-# Expected: 0.22+ m/s baseline performance
+# Expected: 0.22+ m/s baseline performance (identical to existing)
 ```
+
+**NOTE**: V6's normal specialist is functionally identical to our existing baseline - both train on perfect walking with no failures using SuccessRewardWrapper.
 
 ### **Step 2: Train Failure Specialists (in parallel)**
 ```bash
