@@ -99,11 +99,11 @@ training:
 logging:
   wandb: true
   wandb_project: "V8_Enhanced_ACDR"
-  wandb_entity: "robust_quadruped_rl"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
 
 wandb:
   enabled: true
-  entity: robust_quadruped_rl
+  entity: anandpatel1221178-university-of-the-witswatersrand
   project: "V8_Enhanced_ACDR"
   tags: ["v8", "enhanced", "acdr", "adaptation", "60M_steps"]
 
