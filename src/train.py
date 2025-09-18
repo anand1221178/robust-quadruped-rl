@@ -34,12 +34,74 @@ from envs.domain_randomization_wrapper import DomainRandomizationWrapper, Curric
 from envs.systematic_curriculum_wrapper import SystematicCurriculumWrapper
 from envs.specialist_training_wrapper import SpecialistTrainingWrapper
 from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
+from envs.v8_enhanced_acdr_wrapper import V8EnhancedACDRWrapper
 
 # Import RealAnt environments
 import realant_sim
 
 # Suppress warnings
 warnings.filterwarnings("ignore", message=".*The environment Ant-v4 is out of date.*")
+
+
+class V8ACDRWandbCallback(BaseCallback):
+    """Custom callback to log V8 Enhanced ACDR metrics to W&B"""
+
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+        self.v8_wrapper = None
+
+    def _on_training_start(self) -> None:
+        """Find the V8 wrapper in the environment stack"""
+        env = self.training_env
+        # Look through environment stack for V8 wrapper
+        current_env = env
+        while hasattr(current_env, 'envs'):
+            current_env = current_env.envs[0]
+        while hasattr(current_env, 'env'):
+            if isinstance(current_env, V8EnhancedACDRWrapper):
+                self.v8_wrapper = current_env
+                print("✅ V8 Enhanced ACDR wrapper found for logging")
+                break
+            current_env = current_env.env
+
+    def _on_step(self) -> bool:
+        """Log V8 ACDR metrics every step"""
+        if self.v8_wrapper is not None and self.num_timesteps % 1000 == 0:  # Log every 1000 steps
+            try:
+                # Get curriculum status
+                status = self.v8_wrapper.get_curriculum_status()
+
+                # Log to W&B
+                wandb.log({
+                    'v8_acdr/current_phase': status['current_phase'],
+                    'v8_acdr/phase_progress': status['phase_progress'],
+                    'v8_acdr/total_progress': status['total_progress'],
+                    'v8_acdr/current_k_value': status['current_k_value'],
+                    'v8_acdr/num_current_failures': len(status['current_failures']),
+                    'v8_acdr/episode_length': status['episode_length'],
+                    'v8_acdr/current_failures': str(status['current_failures']),
+                    'v8_acdr/phase_description': status['phase_description']
+                }, step=self.num_timesteps)
+
+                # Also check for ankle specialization
+                if hasattr(self.v8_wrapper, 'config'):
+                    ankle_config = self.v8_wrapper.config.get('ankle_specialization', {})
+                    if ankle_config.get('enabled', False):
+                        # Check if current failures include ankles
+                        ankle_joints = [1, 3, 5, 7]  # Ankle joint indices
+                        ankle_failures = [j for j in status['current_failures'] if j in ankle_joints]
+
+                        wandb.log({
+                            'v8_acdr/ankle_specialization_active': len(ankle_failures) > 0,
+                            'v8_acdr/ankle_failures_count': len(ankle_failures),
+                            'v8_acdr/ankle_focus_ratio': ankle_config.get('phase_1_ankle_focus', 0.0)
+                        }, step=self.num_timesteps)
+
+            except Exception as e:
+                if self.verbose:
+                    print(f"Warning: V8 ACDR logging failed: {e}")
+
+        return True
 
 
 def load_config(config_path: str) -> dict:
@@ -185,7 +247,12 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
             use_curriculum = dr_config.get('use_curriculum', True)
             
             # Determine which wrapper to use
-            if wrapper_type == 'CurriculumDRWrapper' or (wrapper_type == 'auto' and has_curriculum and use_curriculum):
+            if wrapper_type == 'V8EnhancedACDRWrapper':
+                print("🚀 V8 ENHANCED ACDR: Adaptation-Focused Learning! 🚀")
+                print("🎯 Extended episodes, ankle specialization, dynamic failures")
+                v8_config = config.get('env', {}).get('v8_enhanced_acdr', {})
+                env = V8EnhancedACDRWrapper(env, v8_config)
+            elif wrapper_type == 'CurriculumDRWrapper' or (wrapper_type == 'auto' and has_curriculum and use_curriculum):
                 print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
                 print("📚 Using CurriculumDRWrapper for phase-based training")
                 env = CurriculumDRWrapper(env, dr_config)
@@ -377,6 +444,13 @@ def train(config: dict):
             model_save_path=f"{save_path}/models/"
         )
         callbacks.append(wandb_callback)
+
+        # Add V8 Enhanced ACDR logging callback if using V8 wrapper
+        wrapper_type = config.get('env', {}).get('wrapper_type', 'auto')
+        if wrapper_type == 'V8EnhancedACDRWrapper':
+            v8_callback = V8ACDRWandbCallback(verbose=1)
+            callbacks.append(v8_callback)
+            print("✅ V8 Enhanced ACDR W&B logging callback added")
     
     # Start training
     print(f"\n🚀 Starting training for {config.get('total_timesteps', 10000000):,} timesteps...")

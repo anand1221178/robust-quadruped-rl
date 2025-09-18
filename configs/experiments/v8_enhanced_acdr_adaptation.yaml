@@ -96,6 +96,11 @@ training:
   min_improvement: 0.01                # Small improvements still valuable
 
 # Monitoring and logging
+logging:
+  wandb: true
+  wandb_project: "V8_Enhanced_ACDR"
+  wandb_entity: "robust_quadruped_rl"
+
 wandb:
   enabled: true
   entity: robust_quadruped_rl
