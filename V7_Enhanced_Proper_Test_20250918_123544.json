@@ -1,0 +1,361 @@
+{
+  "timestamp": "20250918_123544",
+  "baseline_speeds": {
+    "V7.1 Enhanced Foundation": 0.1419988399645624,
+    "V7.2 Dual-Phase Training": 0.08705619776223515,
+    "V7.3 Multi-Objective Optimization": 0.13961751848935539
+  },
+  "results": {
+    "V7.1 Enhanced Foundation": [
+      {
+        "scenario": "Normal Operation",
+        "failed_joints": [],
+        "k_value": 1.0,
+        "final_distance": 1.064991299734218,
+        "final_velocity": 0.1419988399645624,
+        "retention_pct": 100.0,
+        "total_reward": 1413.284423828125,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 0 Failed",
+        "failed_joints": [
+          0
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.795978554710248,
+        "final_velocity": 0.1061304739613664,
+        "retention_pct": 74.74038096920553,
+        "total_reward": 1028.056640625,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 1 Failed",
+        "failed_joints": [
+          1
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.05342631996261511,
+        "final_velocity": 0.007123509328348682,
+        "retention_pct": 5.016596846936527,
+        "total_reward": -98.70648956298828,
+        "steps": 150,
+        "success": false
+      },
+      {
+        "scenario": "Hip Joint 2 Failed",
+        "failed_joints": [
+          2
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.5666488510781754,
+        "final_velocity": 0.07555318014375673,
+        "retention_pct": 53.2068995511597,
+        "total_reward": 589.7316284179688,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 3 Failed",
+        "failed_joints": [
+          3
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.41624354570298366,
+        "final_velocity": 0.05549913942706449,
+        "retention_pct": 39.08422029427494,
+        "total_reward": 312.80352783203125,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 4 Failed",
+        "failed_joints": [
+          4
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.2326241500693227,
+        "final_velocity": 0.03101655334257636,
+        "retention_pct": 21.842821638766154,
+        "total_reward": 95.02837371826172,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 5 Failed",
+        "failed_joints": [
+          5
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.3949639222398579,
+        "final_velocity": 0.05266185629864772,
+        "retention_pct": 37.086117261091815,
+        "total_reward": 572.6419067382812,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 6 Failed",
+        "failed_joints": [
+          6
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.28692926465186946,
+        "final_velocity": 0.03825723528691593,
+        "retention_pct": 26.941935086556697,
+        "total_reward": 250.23138427734375,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 7 Failed",
+        "failed_joints": [
+          7
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.06970439045772271,
+        "final_velocity": 0.009293918727696361,
+        "retention_pct": 6.54506665689366,
+        "total_reward": -6.627985000610352,
+        "steps": 150,
+        "success": false
+      }
+    ],
+    "V7.2 Dual-Phase Training": [
+      {
+        "scenario": "Normal Operation",
+        "failed_joints": [],
+        "k_value": 1.0,
+        "final_distance": 0.6529214832167637,
+        "final_velocity": 0.08705619776223515,
+        "retention_pct": 100.0,
+        "total_reward": 740.28759765625,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 0 Failed",
+        "failed_joints": [
+          0
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.6943999326617585,
+        "final_velocity": 0.09258665768823446,
+        "retention_pct": 106.35274692458303,
+        "total_reward": 828.1189575195312,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 1 Failed",
+        "failed_joints": [
+          1
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.35147100172805523,
+        "final_velocity": 0.04686280023040736,
+        "retention_pct": 53.83051573007749,
+        "total_reward": 579.8515625,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 2 Failed",
+        "failed_joints": [
+          2
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.5798989532149318,
+        "final_velocity": 0.07731986042865757,
+        "retention_pct": 88.81603196113718,
+        "total_reward": 568.6116333007812,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 3 Failed",
+        "failed_joints": [
+          3
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.3098415483831741,
+        "final_velocity": 0.041312206451089885,
+        "retention_pct": 47.454641384546036,
+        "total_reward": 157.16314697265625,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 4 Failed",
+        "failed_joints": [
+          4
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.34114875370077546,
+        "final_velocity": 0.04548650049343673,
+        "retention_pct": 52.24958321481932,
+        "total_reward": 281.5061950683594,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 5 Failed",
+        "failed_joints": [
+          5
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.30764665977726896,
+        "final_velocity": 0.04101955463696919,
+        "retention_pct": 47.11847713473585,
+        "total_reward": 135.26739501953125,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 6 Failed",
+        "failed_joints": [
+          6
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.3831261007365161,
+        "final_velocity": 0.05108348009820215,
+        "retention_pct": 58.678740183116616,
+        "total_reward": 191.28135681152344,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 7 Failed",
+        "failed_joints": [
+          7
+        ],
+        "k_value": 0.0,
+        "final_distance": -0.23437423242808272,
+        "final_velocity": -0.031249897657077697,
+        "retention_pct": -35.89623537479356,
+        "total_reward": -412.8172607421875,
+        "steps": 150,
+        "success": false
+      }
+    ],
+    "V7.3 Multi-Objective Optimization": [
+      {
+        "scenario": "Normal Operation",
+        "failed_joints": [],
+        "k_value": 1.0,
+        "final_distance": 1.0471313886701654,
+        "final_velocity": 0.13961751848935539,
+        "retention_pct": 100.0,
+        "total_reward": 1473.85302734375,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 0 Failed",
+        "failed_joints": [
+          0
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.7685809484878194,
+        "final_velocity": 0.10247745979837593,
+        "retention_pct": 73.39871164247124,
+        "total_reward": 944.7694702148438,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 1 Failed",
+        "failed_joints": [
+          1
+        ],
+        "k_value": 0.0,
+        "final_distance": -0.08000422821104398,
+        "final_velocity": -0.010667230428139197,
+        "retention_pct": -7.640323752747748,
+        "total_reward": 203.1725311279297,
+        "steps": 150,
+        "success": false
+      },
+      {
+        "scenario": "Hip Joint 2 Failed",
+        "failed_joints": [
+          2
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.41371685081521864,
+        "final_velocity": 0.05516224677536249,
+        "retention_pct": 39.50954534374433,
+        "total_reward": 235.33425903320312,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 3 Failed",
+        "failed_joints": [
+          3
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.32287179352432616,
+        "final_velocity": 0.043049572469910154,
+        "retention_pct": 30.833933259737968,
+        "total_reward": 163.0485382080078,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 4 Failed",
+        "failed_joints": [
+          4
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.2929287025315473,
+        "final_velocity": 0.039057160337539636,
+        "retention_pct": 27.97439802693342,
+        "total_reward": 225.6596221923828,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 5 Failed",
+        "failed_joints": [
+          5
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.1908203912976694,
+        "final_velocity": 0.025442718839689252,
+        "retention_pct": 18.22315645986004,
+        "total_reward": 331.212158203125,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Hip Joint 6 Failed",
+        "failed_joints": [
+          6
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.21699192078141155,
+        "final_velocity": 0.028932256104188207,
+        "retention_pct": 20.72251134186577,
+        "total_reward": 189.8579864501953,
+        "steps": 150,
+        "success": true
+      },
+      {
+        "scenario": "Ankle Joint 7 Failed",
+        "failed_joints": [
+          7
+        ],
+        "k_value": 0.0,
+        "final_distance": 0.28132041547052616,
+        "final_velocity": 0.03750938872940349,
+        "retention_pct": 26.86581822628745,
+        "total_reward": 238.8186798095703,
+        "steps": 150,
+        "success": true
+      }
+    ]
+  }
+}

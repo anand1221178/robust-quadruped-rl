@@ -2,6 +2,7 @@
 """
 🏆 DR CHAMPIONSHIP EDITION - JOINT FAILURE ROBUSTNESS 🏆
 REAL joint failure testing with forced failures and epic visualizations
+FIXED: Proper top-down camera implementation
 """
 import sys
 sys.path.append('src')
@@ -74,6 +75,58 @@ class DRChampionRecorder:
             'ankle_4': 'Rear Right Ankle'
         }
     
+    def setup_topdown_camera(self, env):
+        """Properly configure top-down camera view"""
+        try:
+            # Direct MuJoCo model access - most reliable method
+            if hasattr(env.envs[0], 'unwrapped'):
+                unwrapped = env.envs[0].unwrapped
+                if hasattr(unwrapped, 'model') and hasattr(unwrapped, 'data'):
+                    model = unwrapped.model
+                    data = unwrapped.data
+                    
+                    # Set camera position directly above the ant looking straight down
+                    # Position: X=0 (centered), Y=-8 (back), Z=8 (height)
+                    model.cam_pos[0] = [0, -8, 8]
+                    
+                    # Quaternion for looking straight down with proper orientation
+                    # This quaternion represents a rotation to look down from above
+                    model.cam_quat[0] = [0.7071, 0.7071, 0, 0]  # 90 degrees around X-axis
+                    
+                    print("  ✅ Top-down camera configured via MuJoCo model")
+                    return True
+                    
+            # Alternative: Access the MuJoCo renderer if available
+            if hasattr(env.envs[0], 'mujoco_renderer'):
+                renderer = env.envs[0].mujoco_renderer
+                if hasattr(renderer, 'viewer'):
+                    viewer = renderer.viewer
+                    
+                    # Set camera to look straight down
+                    viewer.cam.lookat[0] = 0.0  # X position
+                    viewer.cam.lookat[1] = 0.0  # Y position  
+                    viewer.cam.lookat[2] = 0.0  # Z position (ground level)
+                    
+                    viewer.cam.distance = 8.0   # Height above ground
+                    viewer.cam.elevation = -90  # Look straight down
+                    viewer.cam.azimuth = 90    # Rotation angle
+                    
+                    print("  ✅ Top-down camera set via viewer")
+                    return True
+                    
+        except Exception as e:
+            print(f"  ⚠️ Camera setup attempt failed: {e}")
+            
+        return False
+    
+    def get_topdown_frame(self, env):
+        """Get frame with explicit top-down camera parameters"""
+        # Just use standard render since we've set the camera position
+        frame = env.envs[0].render()
+        if frame is not None:
+            frame = cv2.resize(frame, self.frame_size)
+        return frame
+    
     def force_joint_failure(self, env, joint_names):
         """FORCE specific joints to fail by locking their actions"""
         if not joint_names:
@@ -139,7 +192,7 @@ class DRChampionRecorder:
         font = cv2.FONT_HERSHEY_SIMPLEX
         
         # Championship title
-        title = "DR: JOINT FAILURE ROBUSTNESS CHAMPION"
+        title = "DR CHAMPIONSHIP: TOP-DOWN JOINT FAILURE TEST"
         cv2.putText(frame, title, (50, 50), font, 1.2, self.colors['champion'], 3)
         
         # Current challenge level
@@ -257,7 +310,7 @@ class DRChampionRecorder:
     def record_dr_championship(self, model_path, vec_path, output_path):
         """Record the complete DR championship demonstration"""
         print("=" * 80)
-        print("DR CHAMPIONSHIP EDITION - JOINT FAILURE ROBUSTNESS")
+        print("DR CHAMPIONSHIP EDITION - TOP-DOWN JOINT FAILURE ROBUSTNESS")
         print("=" * 80)
         
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -290,11 +343,18 @@ class DRChampionRecorder:
             model = PPO.load(model_path)
             print("  Model loaded")
             
+            # Setup top-down camera
+            self.setup_topdown_camera(env)
+            
             # Get joint indices for failure injection
             failed_joint_indices = self.force_joint_failure(env, failure_level['joints'])
             
             # Record episode with current failure level
             obs = env.reset()
+            
+            # Additional camera setup after reset
+            self.setup_topdown_camera(env)
+            
             positions = []
             rewards = []
             frames_this_level = 0
@@ -321,23 +381,26 @@ class DRChampionRecorder:
                 positions.append(x_pos)
                 rewards.append(reward[0])
                 
-                # Render and create overlay
-                frame = env.envs[0].render()
+                # Get frame with top-down view
+                frame = self.get_topdown_frame(env)
+                
                 if frame is not None:
-                    frame = cv2.resize(frame, self.frame_size)
-                    
-                    # Calculate current metrics (net forward displacement method)
+                    # Calculate current metrics
                     if len(positions) >= 2:
-                        current_distance = positions[-1] - positions[0]  # Net forward displacement
-                        time_elapsed = len(positions) * 0.05  # 20Hz timestep (0.05s per step)
+                        current_distance = positions[-1] - positions[0]
+                        time_elapsed = len(positions) * 0.05
                         current_velocity = current_distance / time_elapsed
                     else:
                         current_distance = 0
                         current_velocity = 0
                     
-                    # Don't set baseline during rendering - wait for final calculation
+                    # Calculate retention
+                    if level_idx == 0 and self.baseline_performance is None:
+                        # First run, no baseline yet
+                        retention_pct = 100.0
+                    else:
+                        retention_pct = (current_velocity / self.baseline_performance) * 100 if self.baseline_performance and self.baseline_performance > 0 else 0
                     
-                    retention_pct = (current_velocity / self.baseline_performance) * 100 if self.baseline_performance and self.baseline_performance > 0 else 0
                     episode_progress = frames_this_level / self.frames_per_level
                     
                     # Apply DR overlay
@@ -358,16 +421,16 @@ class DRChampionRecorder:
             if len(positions) >= 2:
                 initial_x = positions[0]
                 final_x = positions[-1]
-                final_distance = final_x - initial_x  # Net forward displacement
-                time_taken = len(positions) * 0.05  # 20Hz timestep
+                final_distance = final_x - initial_x
+                time_taken = len(positions) * 0.05
                 final_velocity = final_distance / time_taken
                 
-                # Set baseline from first (no-failure) run ONLY
+                # Set baseline from first (no-failure) run
                 if self.baseline_performance is None and failure_level['name'] == 'NO FAILURES':
                     self.baseline_performance = final_velocity
                     print(f"  ✅ Baseline performance set: {self.baseline_performance:.3f} m/s")
                 
-                retention = (final_velocity / self.baseline_performance) * 100 if self.baseline_performance > 0 else 0
+                retention = (final_velocity / self.baseline_performance) * 100 if self.baseline_performance and self.baseline_performance > 0 else 0
                 
                 performance_data.append({
                     'failure_mode': failure_level['name'],
@@ -398,11 +461,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
     
-    model_path = "done/ppo_simple_persistent_40M_k6nyd9zh/final_model.zip"
-    vec_path = "done/ppo_simple_persistent_40M_k6nyd9zh/vec_normalize.pkl"
+    model_path = "experiments/v7_3_acdr_multi_objective_jui50qpd/final_model.zip"
+    vec_path = "experiments/v7_3_acdr_multi_objective_jui50qpd/vec_normalize.pkl"
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = f"videos/DR_CHAMPION_EDITION_{timestamp}.mp4"
+    output_path = f"videos/DR_CHAMPION_TOPDOWN_{timestamp}.mp4"
     
     os.makedirs("videos", exist_ok=True)
     

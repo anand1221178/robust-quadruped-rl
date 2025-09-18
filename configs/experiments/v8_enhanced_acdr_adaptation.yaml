@@ -1,0 +1,158 @@
+# V8 Enhanced ACDR - Adaptation-Focused Joint Failure Robustness
+# Building on V7 ACDR success with enhanced adaptation learning capabilities
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: v8_enhanced_acdr_adaptation
+  description: "V8 Enhanced ACDR: Adaptation-focused curriculum for sophisticated joint failure compensation"
+  tags: ["v8", "acdr", "adaptation", "joint_failure", "curriculum", "enhanced"]
+
+# Extended training for sophisticated adaptation learning
+total_timesteps: 60_000_000  # 60M steps for comprehensive curriculum
+
+ppo:
+  learning_rate: 0.0003
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+policy:
+  activation: tanh  # Proven stable for robustness training
+  hidden_sizes: [64, 128]
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  wrapper_type: "V8EnhancedACDRWrapper"
+
+  # V8 Enhanced ACDR Configuration
+  v8_enhanced_acdr:
+    total_timesteps: 60_000_000
+
+    # Three-phase progressive curriculum
+    curriculum_phases:
+      phase_1:
+        name: "Single Joint Mastery"
+        duration_steps: 20_000_000       # 20M steps for single joint mastery
+        joint_patterns: ["single_joint"]
+        k_range: [0.8, 0.4]             # Hard→Easy: Severe→Moderate failures
+        episode_length: 1000             # Extended episodes for adaptation
+        failure_probability: 0.8         # High probability for consistent training
+
+      phase_2:
+        name: "Dual Joint Compensation"
+        duration_steps: 20_000_000       # 20M steps for complex patterns
+        joint_patterns: ["dual_adjacent", "dual_diagonal"]
+        k_range: [0.6, 0.2]             # Moderate→Severe failures
+        episode_length: 1200             # Even longer for complex adaptation
+        failure_probability: 0.7         # Slightly lower for learning consolidation
+
+      phase_3:
+        name: "Sequential Dynamic Adaptation"
+        duration_steps: 20_000_000       # 20M steps for dynamic learning
+        joint_patterns: ["sequential_failure"]
+        k_range: [0.8, 0.0]             # Complete failures possible
+        episode_length: 1500             # Maximum time for dynamic adaptation
+        failure_probability: 0.6         # Balanced with normal locomotion
+
+    # Ankle specialization (addresses poor V7 ankle performance)
+    ankle_specialization:
+      enabled: true
+      phase_1_ankle_focus: 0.4          # 40% of phase 1 focuses on ankles
+      ankle_reward_multiplier: 2.0      # Double rewards for ankle adaptation
+      ankle_adaptation_bonus: 50.0      # Extra bonus for ankle velocity improvement
+
+    # Adaptation-focused reward design
+    adaptation_rewards:
+      base_forward: 100.0               # Standard forward motion reward
+      adaptation_bonus: 50.0            # Bonus for velocity improvement over episode
+      stability_bonus: 25.0             # Bonus for maintaining balance with failures
+      efficiency_bonus: 25.0            # Bonus for energy-efficient movement
+      gait_discovery_bonus: 75.0        # Large bonus for discovering new patterns
+
+    # Dynamic failure injection for real-time adaptation
+    failure_injection:
+      dynamic_failures: true            # Inject failures mid-episode
+      adaptation_grace_period: 200      # Steps to adapt after failure injection
+      failure_announcement: true        # Signal to robot that failure occurred
+
+# Training infrastructure
+training:
+  max_episode_steps: 1500              # Match longest curriculum episodes
+  save_freq: 1_000_000                 # Save every 1M steps for 60 checkpoints
+  eval_freq: 2_000_000                 # Evaluate every 2M steps
+  eval_episodes: 10
+
+  # Extended for sophisticated learning
+  patience: 10_000_000                 # Allow long plateaus during adaptation learning
+  min_improvement: 0.01                # Small improvements still valuable
+
+# Monitoring and logging
+wandb:
+  enabled: true
+  entity: robust_quadruped_rl
+  project: "V8_Enhanced_ACDR"
+  tags: ["v8", "enhanced", "acdr", "adaptation", "60M_steps"]
+
+  # Enhanced monitoring for adaptation learning
+  log_frequency: 1000
+  custom_metrics:
+    - "curriculum_phase"
+    - "current_k_value"
+    - "joint_failure_pattern"
+    - "adaptation_reward_bonus"
+    - "ankle_specialization_active"
+    - "sequential_failure_count"
+    - "episode_velocity_improvement"
+
+# Resources for extended training
+cluster:
+  time_limit: "72:00:00"               # 72 hours for 60M steps
+  memory: "32GB"                       # Extra memory for longer episodes
+  cpus: 16
+  gpu: true
+
+# Data management
+checkpointing:
+  save_best: true
+  save_last: 5                         # Keep last 5 checkpoints
+  save_periodic: 20                    # Save every 20M steps for analysis
+
+# Success criteria for V8 Enhanced ACDR
+success_criteria:
+  target_baseline_velocity: 0.18       # Maintain good baseline performance
+  target_joint_failure_retention: 0.6  # 60% average retention across all joints
+  target_ankle_retention: 0.5          # 50% retention for critical ankle joints
+  target_adaptation_improvement: 0.3    # 30% velocity improvement over episode with failures
+
+# Research documentation
+research_notes: |
+  V8 Enhanced ACDR Goals:
+
+  1. Build on V7 ACDR success (77% joint failure success rate)
+  2. Address poor ankle adaptation (19.9-33.9% retention → target 50%+)
+  3. Learn sophisticated gait modification, not just survival
+  4. Demonstrate time-dependent adaptation improvement
+  5. Handle dynamic failure injection for real-world applicability
+
+  Key Innovations:
+  - Extended episodes (1000-1500 steps) for adaptation discovery
+  - Ankle-specific specialization phases
+  - Progressive complexity (single → dual → sequential failures)
+  - Adaptation-focused reward design
+  - Dynamic failure injection mid-episode
+
+  Expected Outcomes:
+  - Baseline: 0.18+ m/s (maintain locomotion quality)
+  - Single joint failures: 60%+ retention (vs V7's 19.9-83.5% range)
+  - Ankle failures: 50%+ retention (major improvement from V7's 19.9-33.9%)
+  - Dual failures: 40%+ retention (new capability)
+  - Sequential failures: 30%+ retention (dynamic adaptation proof)
