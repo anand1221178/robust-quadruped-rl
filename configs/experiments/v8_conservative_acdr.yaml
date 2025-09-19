@@ -31,6 +31,7 @@ policy:
 env:
   name: RealAntMujoco-v0
   use_success_reward: true
+  use_domain_randomization: true
   wrapper_type: "V8EnhancedACDRWrapper"
 
   # V8 Conservative Configuration - Dialed back for stability
