@@ -240,9 +240,9 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         elif use_domain_randomization:
             # Traditional probabilistic domain randomization
             dr_config = config.get('domain_randomization', {})
-            
-            # 🔥 CHECK WRAPPER TYPE PREFERENCE FROM CONFIG
-            wrapper_type = dr_config.get('wrapper_type', 'auto')
+
+            # 🔥 CHECK WRAPPER TYPE PREFERENCE FROM CONFIG (V8 fix: check env section first)
+            wrapper_type = config.get('env', {}).get('wrapper_type', dr_config.get('wrapper_type', 'auto'))
             has_curriculum = any(key.startswith('phase_') for key in dr_config.keys())
             use_curriculum = dr_config.get('use_curriculum', True)
             
