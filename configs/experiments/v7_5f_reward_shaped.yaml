@@ -12,16 +12,16 @@ env:
   use_success_reward: true
   use_v7_acdr: true
 
-# Standard ACDR but with special rewards
+# EXTREME ACDR - Goes to complete failure fast
 v7_acdr:
   curriculum_type: hard2easy
-  initial_L: 0.7    # Start moderately hard
-  initial_U: 0.85
-  target_L: 0.0     # Go all the way to dead joints
-  target_U: 0.2
-  update_step: 0.007
+  initial_L: 0.4    # Start VERY hard
+  initial_U: 0.6
+  target_L: 0.0     # Complete dead joints
+  target_U: 0.0     # ALL joints can go to zero
+  update_step: 0.012  # FAST progression
   performance_window: 150
-  performance_threshold: 0.12  # Lower threshold, rely on reward shaping
+  performance_threshold: 0.08  # Very low threshold
   verbose: true
 
 total_timesteps: 30000000  # 30M steps

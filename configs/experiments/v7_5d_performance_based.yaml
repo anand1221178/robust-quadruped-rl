@@ -12,30 +12,17 @@ env:
   use_success_reward: true
   use_v7_acdr: true
 
-# Performance-Based ACDR - Revolutionary approach
+# Just use standard V7 ACDR with aggressive settings
 v7_acdr:
-  curriculum_type: "performance_adaptive"  # NEW TYPE!
-  # Starting conditions
-  initial_L: 0.9
-  initial_U: 1.0
-  # Target conditions (only reached if robot proves capable)
-  target_L: 0.0   # Can go all the way to dead joints
-  target_U: 0.3
-  
-  # Performance-based progression
-  performance_mode: true
-  velocity_threshold: 0.15  # Must maintain 0.15 m/s to progress
-  progression_rules:
-    excellent: -0.02  # >0.18 m/s: Make it harder fast
-    good: -0.01       # >0.15 m/s: Make it harder slowly  
-    poor: +0.01       # <0.10 m/s: Make it easier
-    terrible: +0.02   # <0.05 m/s: Make it much easier
-  
-  # Evaluation windows
-  performance_window: 100  # Evaluate every 100 episodes
-  min_k: 0.0   # Can reach complete failure if robot is ready
-  max_k: 1.0   # Can return to normal if robot struggles
-  
+  curriculum_type: hard2easy  # Standard type
+  # VERY aggressive progression
+  initial_L: 0.5    # Start harder than usual
+  initial_U: 0.7
+  target_L: 0.0     # Go to complete failure
+  target_U: 0.1     # Almost dead joints
+  update_step: 0.01 # Fast progression
+  performance_window: 100
+  performance_threshold: 0.10  # Low threshold, push through
   verbose: true
 
 total_timesteps: 35000000  # 35M steps of adaptive training
