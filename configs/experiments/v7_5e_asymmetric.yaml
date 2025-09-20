@@ -1,0 +1,74 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5E - ASYMMETRIC CURRICULUM
+# Different progression rates for hip vs ankle joints
+experiment:
+  name: v7_5e_asymmetric
+  description: "V7.5E - Asymmetric curriculum: Ankles train harder than hips"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+
+# Asymmetric Domain Randomization
+domain_randomization:
+  enabled: true
+  wrapper_type: "DomainRandomizationWrapper"
+  joint_failure_mode: "asymmetric"
+  
+  # Different treatment for different joint types
+  hip_joints: [0, 2, 4, 6]    # Hip joints indices
+  ankle_joints: [1, 3, 5, 7]  # Ankle joints indices
+  
+  # Hip joints: Moderate failures (they handle it better)
+  hip_failure_config:
+    failure_prob: 0.4
+    k_start: 0.7    # Start at 70% strength
+    k_end: 0.3      # End at 30% strength
+    curriculum_steps: 15000000  # Progress over 15M steps
+  
+  # Ankle joints: Aggressive failures (they need more practice)
+  ankle_failure_config:
+    failure_prob: 0.5  # More frequent ankle failures
+    k_start: 0.5       # Start at 50% strength
+    k_end: 0.0         # End at COMPLETE failure
+    curriculum_steps: 20000000  # Slower progression for ankles
+  
+  sensor_noise_std: 0.0
+
+total_timesteps: 35000000  # 35M steps
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.00011
+  batch_size: 1664
+  n_epochs: 9
+  gamma: 0.993
+  gae_lambda: 0.96
+  clip_range: 0.18
+  ent_coef: 0.008
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.1
+  # Extra rewards for ankle compensation (since they're harder)
+  ankle_compensation_bonus: 1.5  # 50% more reward for walking with failed ankles
+  hip_compensation_bonus: 1.0    # Normal reward for hip failures
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.5e", "asymmetric", "ankle-focus", "joint-specific"]

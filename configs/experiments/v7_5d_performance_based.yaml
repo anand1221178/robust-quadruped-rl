@@ -1,0 +1,73 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5D - PERFORMANCE-BASED CURRICULUM
+# Difficulty adjusts based on robot's actual performance
+experiment:
+  name: v7_5d_performance_based
+  description: "V7.5D - Self-adjusting curriculum based on performance metrics"
+
+env:
+  use_success_reward: true
+  use_v7_acdr: true
+
+# Performance-Based ACDR - Revolutionary approach
+v7_acdr:
+  curriculum_type: "performance_adaptive"  # NEW TYPE!
+  # Starting conditions
+  initial_L: 0.9
+  initial_U: 1.0
+  # Target conditions (only reached if robot proves capable)
+  target_L: 0.0   # Can go all the way to dead joints
+  target_U: 0.3
+  
+  # Performance-based progression
+  performance_mode: true
+  velocity_threshold: 0.15  # Must maintain 0.15 m/s to progress
+  progression_rules:
+    excellent: -0.02  # >0.18 m/s: Make it harder fast
+    good: -0.01       # >0.15 m/s: Make it harder slowly  
+    poor: +0.01       # <0.10 m/s: Make it easier
+    terrible: +0.02   # <0.05 m/s: Make it much easier
+  
+  # Evaluation windows
+  performance_window: 100  # Evaluate every 100 episodes
+  min_k: 0.0   # Can reach complete failure if robot is ready
+  max_k: 1.0   # Can return to normal if robot struggles
+  
+  verbose: true
+
+total_timesteps: 35000000  # 35M steps of adaptive training
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.00009  # Stable for adaptive curriculum
+  batch_size: 1792
+  n_epochs: 7
+  gamma: 0.994
+  gae_lambda: 0.965
+  clip_range: 0.17
+  ent_coef: 0.007
+  vf_coef: 0.5
+  max_grad_norm: 0.35
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.2
+  # Adaptive reward based on current difficulty
+  difficulty_scaled_bonus: true  # More reward for walking at lower k values
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.5d", "performance-based", "adaptive-curriculum", "self-adjusting"]

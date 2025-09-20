@@ -1,0 +1,67 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5C - PROGRESSIVE JOINT MASTERY
+# Master one joint failure at a time before moving to the next
+experiment:
+  name: v7_5c_progressive_mastery
+  description: "V7.5C - Progressive mastery: Train 4M steps per specific joint failure"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+  
+# Progressive Mastery Configuration
+domain_randomization:
+  enabled: true
+  wrapper_type: "DomainRandomizationWrapper"
+  # Progressive mode - focus on specific joints in sequence
+  joint_failure_mode: "progressive_mastery"
+  progression_schedule:
+    # 4M steps per joint (32M total for 8 joints)
+    0_4M: [0]       # Master front-left hip
+    4_8M: [1]       # Master front-left ankle  
+    8_12M: [2]      # Master front-right hip
+    12_16M: [3]     # Master front-right ankle
+    16_20M: [4]     # Master rear-left hip
+    20_24M: [5]     # Master rear-left ankle
+    24_28M: [6]     # Master rear-right hip
+    28_32M: [7]     # Master rear-right ankle
+  joint_failure_prob: 0.6  # 60% failure rate when training that joint
+  failure_k_value: 0.1     # Train with severe failures (90% strength loss)
+  sensor_noise_std: 0.0
+
+total_timesteps: 32000000  # 32M steps (4M per joint)
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.1
+  # Bonus for mastering current joint
+  mastery_bonus: 50.0  # Extra reward when walking well with failed joint
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.5c", "progressive-mastery", "joint-specialization"]
