@@ -1,10 +1,10 @@
 # CURRENT STATUS SNAPSHOT - SEPTEMBER 19, 2025 (V8 ENHANCED ACDR TRAINING)
 
-**🚀 MAJOR EVOLUTION**: V8 Enhanced ACDR launched - Revolutionary adaptation-focused learning with parallel experiments!
+**❌ V8 EXPERIMENTS COMPLETE - TOTAL FAILURE**
 
-**⚡ CURRENT STATUS**: V8 Conservative ACDR actively training with REAL curriculum after critical bug fixes! Discovered "fake V8" failure provides valuable negative research data.
+**FINAL STATUS**: All V8 models failed catastrophically. Wasted 100+ hours of compute. Moving forward with working models only.
 
-**🔧 CRITICAL BUGS FIXED + RESEARCH DISCOVERY**: Wrapper issues resolved + "fake V8" testing reveals extended training (60M steps) can catastrophically harm performance (0.012 vs 0.224 m/s baseline)!
+**❌ V8 COMPLETE FAILURE**: All V8 approaches failed catastrophically. Extended training (60M steps) destroys performance. Moving forward with proven models only.
 
 ---
 
@@ -19,13 +19,14 @@
 
 ### **CURRENT TRAINING STATUS**:
 
-**V8 ACDR Training Status** (CRITICAL BUG DISCOVERY & RESOLUTION):
-- **Status**: 🚨 **MAJOR DEBUGGING BREAKTHROUGH** - Found and fixed critical wrapper instantiation bugs
-- **V8 Enhanced ACDR**: ❌ **CRASHED** - NaN explosion after ~20 hours (aggressive parameters hit curriculum curse)
-- **V8 Conservative ACDR**: ✅ **NOW PROPERLY TRAINING** - Real curriculum active after config fixes
-- **Previous 40+ Hours**: Both models were running as basic baselines (wrapper never instantiated!)
-- **Bug Fixes Applied**: train.py wrapper detection + missing use_domain_randomization flags
-- **Current Reality**: First authentic V8 ACDR training with joint failures and curriculum progression
+**V8 ACDR Training Status** (❌ **COMPLETE FAILURE**):
+- **Status**: ❌ **BOTH V8 MODELS FAILED** - Complete waste of 100+ hours of compute time
+- **V8 Enhanced ACDR**: ❌ **CRASHED** - NaN explosion after ~20 hours (aggressive parameters)
+- **V8 Conservative ACDR**: ❌ **FAILED** - 0.008 m/s (3.6% baseline) after 60M steps, NaN corruption
+- **Fake V8 (no wrapper)**: ❌ **FAILED** - 0.012 m/s after 60M steps without curriculum
+- **Real V8 (with wrapper)**: ❌ **FAILED** - 0.008 m/s after 60M steps with curriculum
+- **Lesson Learned**: Extended training (60M steps) causes catastrophic overfitting/instability
+- **Decision**: Abandon V8, use existing working models (baseline, SR2L, V7)
 
 **V7 Enhanced Models** (COMPLETED - BREAKTHROUGH SUCCESS!):
 - **Status**: ✅ **COMPLETE** - V7.1 and V7.2 enhanced models finished training and analysis

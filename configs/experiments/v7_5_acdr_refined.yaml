@@ -1,0 +1,87 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5 ACDR Refined - The Goldilocks Model
+# Between V7 (works) and V8 (too complex/aggressive)
+experiment:
+  name: v7_5_acdr_refined
+  description: "V7.5 ACDR - Sweet spot between V7 Enhanced and failed V8, using SIMPLE V7 wrapper"
+
+# Environment configuration - KEEP IT SIMPLE LIKE V7
+env:
+  use_success_reward: true
+  use_v7_acdr: true  # USE V7's SIMPLE WRAPPER, NOT V8's COMPLEX ONE!
+
+# V7.5 REFINED ACDR Parameters - Better than V7, simpler than V8
+v7_acdr:
+  curriculum_type: hard2easy
+  # Start like V7.2 but progress deeper
+  initial_L: 0.85         # Start with 85% joint strength (vs V7's 0.9)
+  initial_U: 0.95         # Up to 95% strength
+  # End more robust than V7 but not extreme like V8
+  target_L: 0.25          # 25% joint strength (vs V7's 0.3-0.4)
+  target_U: 0.4           # Up to 40% strength
+  # Slightly faster progression than V7.1 but stable
+  update_step: 0.006      # Between V7.1's 0.005 and V7.2's 0.008
+  performance_window: 175 # Between V7.1's 200 and V7.2's 150
+  # Require solid performance before progression
+  performance_threshold: 0.175  # Slightly lower than V7's 0.18-0.19
+  verbose: true
+
+# Training parameters - Extended but not crazy like V8
+total_timesteps: 35000000  # 35M (vs V7's 25-30M, V8's 60M)
+save_freq: 1000000         # Save every 1M steps
+
+# PPO hyperparameters - Refined for stability
+ppo:
+  learning_rate: 0.00008  # Lower than V7 (0.0001-0.00015) for stability
+  batch_size: 1536        # Larger batches for stable learning
+  clip_range: 0.15        # Conservative clipping
+  n_epochs: 8             # More epochs than V7 (5-6)
+  gamma: 0.994            # Between V7's values
+  gae_lambda: 0.965       # Balanced GAE
+  ent_coef: 0.006         # Moderate exploration
+  vf_coef: 0.5
+  max_grad_norm: 0.35     # Moderate gradient clipping
+
+# Policy network - Keep it simple
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]  # Same as V7.1, proven to work
+
+# Environment settings
+num_envs: 8
+seed: 42
+
+# Reward configuration - SIMPLE like V7, not complex like V8
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.15      # Between V7's 1.2-1.3
+  # NO complex adaptation rewards, NO ankle specialization!
+
+# Logging
+logging:
+  verbose: 1
+  log_interval: 100
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - v7.5
+    - acdr
+    - refined
+    - goldilocks
+    - simple-wrapper
+
+# Evaluation
+eval_freq: 10000
+
+# Cluster settings for training
+cluster:
+  time_limit: "30:00:00"  # 30 hours should be enough
+  memory: "16GB"          # Don't need V8's 32GB
+  cpus: 16
+  gpu: true

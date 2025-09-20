@@ -460,9 +460,9 @@ class DRChampionRecorder:
 
 def main():
     """Create the DR Championship Edition video"""
-    
-    model_path = "experiments/v7_3_acdr_multi_objective_jui50qpd/final_model.zip"
-    vec_path = "experiments/v7_3_acdr_multi_objective_jui50qpd/vec_normalize.pkl"
+
+    model_path = "experiments/v8_conservative_acdr_m3phnf7x/final_model.zip"
+    vec_path = "experiments/v8_conservative_acdr_m3phnf7x/vec_normalize.pkl"
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = f"videos/DR_CHAMPION_TOPDOWN_{timestamp}.mp4"
