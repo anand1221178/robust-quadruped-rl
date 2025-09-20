@@ -34,6 +34,7 @@ from envs.domain_randomization_wrapper import DomainRandomizationWrapper, Curric
 from envs.systematic_curriculum_wrapper import SystematicCurriculumWrapper
 from envs.specialist_training_wrapper import SpecialistTrainingWrapper
 from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
+from envs.v7_acdr_wrapper_fixed import V7ACDRWrapperFixed
 from envs.v8_enhanced_acdr_wrapper import V8EnhancedACDRWrapper
 
 # Import RealAnt environments
@@ -161,6 +162,7 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
     use_domain_randomization = config.get('env', {}).get('use_domain_randomization', False)
     use_specialist_wrapper = config.get('env', {}).get('use_specialist_wrapper', False)
     use_v7_acdr = config.get('env', {}).get('use_v7_acdr', False)
+    use_v7_acdr_fixed = config.get('env', {}).get('use_v7_acdr_fixed', False)
 
     def make_env():
         env = gym.make(env_name)
@@ -169,6 +171,16 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         if use_success_reward:
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
+
+        # V7_FIXED: The new, corrected ACDR wrapper
+        if use_v7_acdr_fixed:
+            acdr_config = config.get('v7_acdr', {})
+            print(f"🔥🔥🔥 V7 ACDR FIXED: Using CORRECTED wrapper with raw rewards!")
+            env = V7ACDRWrapperFixed(
+                env,
+                **acdr_config
+            )
+            return Monitor(env)
 
         # V7: ACDR Hard2Easy Curriculum (Research-validated approach)
         if use_v7_acdr:

@@ -1,78 +1,77 @@
+# V7 ACDR Hard2Easy Curriculum - FIXED
+# This version uses the corrected V7ACDRWrapperFixed that bases its curriculum
+# on raw, un-normalized rewards, which should prevent catastrophic forgetting.
+
 defaults:
   - /train/default
   - /env/realant
 
-# V7 ACDR Hard2Easy - FIXED VERSION
-# Addresses identified issues with original implementation
 experiment:
   name: v7_acdr_hard2easy_fixed
-  description: "V7 ACDR - Fixed Hard2easy curriculum with sensible parameters"
+  description: "V7 ACDR - FIXED Hard2easy curriculum using raw rewards"
 
 # Environment configuration
 env:
   use_success_reward: true
-  use_v7_acdr: true
+  use_v7_acdr_fixed: true  # USE THE FIXED WRAPPER
 
-# V7 ACDR FIXED Parameters
+# V7 ACDR Specific Parameters (from paper)
 v7_acdr:
-  curriculum_type: hard2easy
-  # FIXED: Start challenging but not impossible (60-80% joint strength)
-  initial_L: 0.6          # Hard but robot can still move
-  initial_U: 0.8          # Range of moderate impairments
-  # FIXED: Realistic end targets (0-20% joint strength)
-  target_L: 0.0           # Complete failures at end
-  target_U: 0.2           # Severe impairments
-  # FIXED: Faster curriculum progression
-  update_step: 0.02       # 2x faster than original (0.01)
-  # FIXED: Shorter adaptation window
-  performance_window: 50  # Half of original (100)
-  performance_threshold: null
-  verbose: true
+  curriculum_type: hard2easy  # CRITICAL: Not easy2hard!
 
-# Training parameters
-total_timesteps: 20000000  # 20M steps (shorter than original)
+  # Start with COMPLETE FAILURES (opposite of V1-V5!)
+  initial_L: 0.0  # k=0 means joint completely dead
+  initial_U: 0.0  # Start with worst case scenario
+
+  # End with MILD FAILURES (preserves locomotion)
+  target_L: 1.0   # k=1.0 means normal operation
+  target_U: 1.5   # k=1.5 means slightly enhanced torque
+
+  # Adaptive parameters
+  update_step: 0.01  # ΔL = ΔU = 0.01 from paper
+  performance_window: 100  # m=100 episodes to average
+  performance_threshold: null  # Adaptive (starts as first avg)
+
+  verbose: true  # Print curriculum updates
+
+# PPO Hyperparameters (EXACT from ACDR paper Table I)
+ppo:
+  learning_rate: 0.00022  # From paper
+  n_epochs: 4  # epochs from paper
+  batch_size: 512  # minibatch_size × num_envs (4 × 128)
+  gamma: 0.99  # Discount from paper
+  gae_lambda: 0.95  # GAE parameter from paper
+  clip_range: 0.2  # Clipping parameter ε from paper
+  ent_coef: 0.01  # Entropy coefficient from paper
+  vf_coef: 0.5  # VF coefficient from paper
+  max_grad_norm: 0.5  # Standard
+
+# Policy Network (from paper: 64-64 with tanh)
+policy:
+  hidden_sizes: [64, 64]  # Two hidden layers of 64 neurons
+  activation: tanh  # Paper uses tanh activation
+
+# Training Configuration
+total_timesteps: 25000000  # 25M steps for thorough training
+num_envs: 8  # Parallel environments
+eval_freq: 10000
 save_freq: 500000
 
-# PPO hyperparameters (optimized for curriculum learning)
-ppo:
-  learning_rate: 0.00022
-  batch_size: 512
-  clip_range: 0.2
-  n_epochs: 4
-  gamma: 0.99
-  gae_lambda: 0.95
-  ent_coef: 0.01
-  vf_coef: 0.5
-  max_grad_norm: 0.5
-
-# Policy network
-policy:
-  activation: tanh
-  hidden_sizes: [64, 64]
-
-# Environment settings
-num_envs: 8
-seed: 42
-
-# Reward configuration
+# Reward Function Modification (from paper Section III.D)
+# Paper adds survival bonus: s=1 if not falling, s=0 if falling
+# This encourages active walking rather than conservative standing
 reward_config:
-  use_modified_reward: true
-  survival_bonus: 1.0
+  use_modified_reward: true  # Use paper's modified reward
+  survival_bonus: 1.0  # Added when not falling
 
 # Logging
 logging:
-  verbose: 1
-  log_interval: 100
   tensorboard: true
   wandb: true
   wandb_project: robust-quadruped-rl
   wandb_entity: anandpatel1221178-university-of-the-witswatersrand
-  wandb_tags:
-    - v7
-    - acdr
-    - hard2easy
-    - fixed
-    - curriculum-dr
+  wandb_tags: ["v7", "acdr", "hard2easy", "FIXED", "raw-reward-fix"]
+  log_interval: 100
+  verbose: 1
 
-# Evaluation
-eval_freq: 10000
+seed: 42

@@ -1,14 +1,34 @@
-# CURRENT STATUS SNAPSHOT - SEPTEMBER 19, 2025 (V8 ENHANCED ACDR TRAINING)
+# CURRENT STATUS SNAPSHOT - SEPTEMBER 20, 2025 (V7.5 MEGA EXPERIMENT)
 
-**❌ V8 EXPERIMENTS COMPLETE - TOTAL FAILURE**
+**🚀 6 PARALLEL EXPERIMENTS RUNNING - THE NUCLEAR ARSENAL**
 
-**FINAL STATUS**: All V8 models failed catastrophically. Wasted 100+ hours of compute. Moving forward with working models only.
+**CURRENT STATUS**: After V8's catastrophic failure, launched 6 refined V7.5 variants testing different approaches to dead joint robustness. All models successfully training!
 
-**❌ V8 COMPLETE FAILURE**: All V8 approaches failed catastrophically. Extended training (60M steps) destroys performance. Moving forward with proven models only.
+**🎯 OBJECTIVE**: Find the best approach for showcase - robot must walk with joint failed from episode start.
 
 ---
 
 ## 🎯 **WHERE WE ARE RIGHT NOW**
+
+### **V7.5 PARALLEL EXPERIMENTS LAUNCHED** 🚀
+
+**6 Models Testing Different Hypotheses** (All currently training):
+
+| Model | Strategy | Training Duration | Expected Outcome |
+|-------|----------|------------------|------------------|
+| **V7.5** | Safe incremental (k: 0.85→0.25) | 35M steps (~24h) | Baseline improvement |
+| **V7.5B** | 70% dead joint episodes | 30M steps (~20h) | **Best for showcase** |
+| **V7.5C** | 3-phase progressive curriculum | 32M steps (~22h) | Structured learning |
+| **V7.5D** | Aggressive ACDR (k: 0.5→0.0) | 35M steps (~24h) | Complete failure handling |
+| **V7.5E** | Always dual failures | 35M steps (~24h) | Extreme robustness |
+| **V7.5F** | Ultra-aggressive (k: 0.4→0.0) | 30M steps (~20h) | Fastest to dead joints |
+
+**Key Innovation**: Testing multiple approaches simultaneously to find optimal dead joint compensation strategy.
+
+**Next Steps**:
+1. Monitor training progress via W&B
+2. Identify best performer (~24 hours)
+3. Create V7.6 refined champion based on winner
 
 ### **V7 ENHANCED MODELS COMPLETED** 🏆
 - **Major Achievement**: V7.1 and V7.2 enhanced models demonstrate sophisticated joint-specific robustness
@@ -17,7 +37,21 @@
 - **Status**: ✅ **V7 ENHANCED RESEARCH COMPLETE** - All models organized in `done/acdr/`
 - **Research Impact**: Breakthrough understanding of quadruped joint failure adaptation strategies
 
-### **CURRENT TRAINING STATUS**:
+### **WHAT EACH V7.5 MODEL IS TESTING**:
+
+**Critical Research Questions Being Answered**:
+1. **V7.5B**: Does training with 70% dead joints create better compensation?
+2. **V7.5C**: Does progressive difficulty (clean→single→dual) help or hurt?
+3. **V7.5D/F**: How aggressive can we make the curriculum before it breaks?
+4. **V7.5E**: Can the robot handle 2 simultaneous failures?
+5. **V7.5**: Is incremental improvement from V7 sufficient?
+
+**Why This Matters For The Showcase**:
+- User requirement: Start episode with dead joint → robot must walk
+- Current V7 models: Only 20-60% success rate per joint
+- Goal: Achieve 70%+ success rate across all joints
+
+### **PREVIOUS TRAINING RESULTS**:
 
 **V8 ACDR Training Status** (❌ **COMPLETE FAILURE**):
 - **Status**: ❌ **BOTH V8 MODELS FAILED** - Complete waste of 100+ hours of compute time
@@ -414,37 +448,35 @@ Three models actively training on RTX 3090 - monitor W&B for progress.
 
 ## 🏆 **BOTTOM LINE**
 
-**STATUS**: 🔧 **V8 CRITICAL DEBUGGING COMPLETE** - Real V8 training now active after major bug fixes!
-**DISCOVERY**: Previous 40+ hours were wasted on fake V8 training - models ran as basic baselines only
-**BREAKTHROUGH**: Fixed wrapper instantiation bugs - V8 Conservative now properly training with curriculum
-**LESSON**: V8 Enhanced hit same NaN explosion curse as V1-V5, V8 Conservative survives with gentler parameters
-**FOUNDATION**: Building on V7's proven robustness with ACTUAL V8 adaptation features now working
+**STATUS**: 🚀 **V7.5 MEGA EXPERIMENT RUNNING** - 6 parallel models testing different dead joint approaches!
+**STRATEGY**: After V8's complete failure, returned to proven V7 foundation with targeted refinements
+**INNOVATION**: Testing binary death, progressive mastery, aggressive curricula, dual failures simultaneously
+**TIMELINE**: Results in ~20-24 hours, then create V7.6 champion based on best performer
+**GOAL**: Achieve reliable walking with dead joint from episode start for showcase
 
-### **🎯 V8 TRAINING STATUS - SEPTEMBER 19, 2025**:
-1. ❌ **V8 Enhanced**: CRASHED - NaN explosion from aggressive curriculum parameters (lesson learned)
-2. ✅ **V8 Conservative**: PROPERLY TRAINING - Real curriculum with joint failures active after fixes
-3. 🔧 **Major Bugs Fixed**: train.py wrapper detection + missing config flags resolved
-4. 🚨 **Time Wasted**: 40+ hours of fake baseline training before discovering wrapper never instantiated
-5. ✅ **Authentic V8**: First real V8 ACDR training with curriculum progression and joint failures
-6. ✅ **V7 Foundation**: All previous ACDR research provides comparison baseline
+### **🎯 V7.5 EXPERIMENT STATUS - SEPTEMBER 20, 2025**:
+1. ✅ **V7.5**: Standard ACDR refinement - conservative baseline
+2. ✅ **V7.5B**: 70% dead joint training - likely best for showcase
+3. ✅ **V7.5C**: Progressive curriculum - structured learning approach
+4. ✅ **V7.5D**: Aggressive ACDR to k=0 - complete failure handling
+5. ✅ **V7.5E**: Always dual failures - extreme robustness test
+6. ✅ **V7.5F**: Ultra-aggressive to k=0 - fastest progression
 
-### **🔬 V8 BUG DISCOVERIES & LESSONS**:
-- **Config Structure Matters**: Wrapper type must be in correct config section with proper flags
-- **Curriculum Curse Continues**: Extended episodes + high failure rates = NaN explosions
-- **Conservative Approach Works**: Gentler parameters avoid instability while maintaining curriculum
-- **Always Verify Logs**: "Success Reward Wrapper" only = wrapper not instantiated
-- **Real vs Fake Training**: 40+ hours baseline ≠ curriculum training (major time waste)
+### **🔬 KEY LESSONS FROM V8 FAILURE**:
+- **Simplicity Wins**: V8's complex wrapper with 18+ parameters failed
+- **Extended Training Hurts**: 60M steps causes overfitting/NaN (V8 failed at 0.008 m/s)
+- **Proven Foundation**: V7 wrapper works, just needs parameter tuning
+- **Parallel Testing**: Multiple hypotheses better than one complex approach
+- **Iterative Refinement**: Find what works, then make it better (V7.5 → V7.6)
 
-**This represents a critical debugging breakthrough - V8 Conservative is the first authentic V8 ACDR training!**
-
-### **⏳ CURRENT MONITORING**:
-1. **V8 Conservative Progress** - Monitor curriculum phase transitions and joint failure application
-2. **Performance vs Baseline** - Compare real V8 against 43.6M step fake baseline training
-3. **NaN Prevention** - Watch for numerical stability with Conservative's gentler parameters
-4. **Research Documentation** - Document complete V8 debugging saga for future reference
+### **⏳ NEXT 48 HOURS**:
+1. **Monitor V7.5 Training** - Watch W&B for performance metrics
+2. **Identify Winner** - Which approach handles dead joints best?
+3. **Create V7.6 Champion** - Enhanced version of best performer
+4. **Final Testing** - Verify showcase performance achieved
 
 ---
 
-*Snapshot Date: September 19, 2025*
-*V8 CRITICAL DEBUGGING COMPLETE: Major wrapper instantiation bugs fixed after 40+ hours of fake training discovered!*
-*V8 Conservative now properly training with REAL curriculum - first authentic V8 ACDR with joint failures active!*
+*Snapshot Date: September 20, 2025*
+*V7.5 MEGA EXPERIMENT: 6 parallel models testing different approaches to dead joint robustness*
+*After V8's catastrophic failure, returning to proven V7 foundation with targeted refinements for showcase success!*
