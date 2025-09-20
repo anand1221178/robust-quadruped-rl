@@ -1,0 +1,69 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5F - REWARD SHAPING
+# FIXED version using the corrected V7ACDRWrapperFixed
+experiment:
+  name: v7_5f_reward_shaped_fixed
+  description: "FIXED V7.5F - Reward shaping with huge bonuses for compensated locomotion"
+
+env:
+  use_success_reward: true
+  use_v7_acdr_fixed: true # USE THE CORRECTED WRAPPER
+
+# EXTREME ACDR - Goes to complete failure fast
+v7_acdr:
+  curriculum_type: hard2easy
+  initial_L: 0.4
+  initial_U: 0.6
+  target_L: 0.0
+  target_U: 0.0
+  update_step: 0.012
+  performance_window: 150
+  performance_threshold: 0.08
+  verbose: true
+
+total_timesteps: 30000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.00013
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+# AGGRESSIVE REWARD SHAPING
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.0
+  failure_compensation_rewards:
+    enabled: true
+    velocity_threshold: 0.05
+    compensation_multipliers:
+      k_1.0: 1.0
+      k_0.5: 2.0
+      k_0.2: 3.0
+      k_0.0: 5.0
+  showcase_mode: true
+  dead_joint_walking_bonus: 500.0
+  min_showcase_velocity: 0.08
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.5f-fixed", "reward-shaped", "raw-reward-fix"]

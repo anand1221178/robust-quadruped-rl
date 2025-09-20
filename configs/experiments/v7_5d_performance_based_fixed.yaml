@@ -1,0 +1,58 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.5D - PERFORMANCE-BASED CURRICULUM
+# FIXED version using the corrected V7ACDRWrapperFixed
+experiment:
+  name: v7_5d_performance_based_fixed
+  description: "FIXED V7.5D - Self-adjusting curriculum based on raw reward performance"
+
+env:
+  use_success_reward: true
+  use_v7_acdr_fixed: true # USE THE CORRECTED WRAPPER
+
+# Just use standard V7 ACDR with aggressive settings
+v7_acdr:
+  curriculum_type: hard2easy
+  initial_L: 0.5
+  initial_U: 0.7
+  target_L: 0.0
+  target_U: 0.1
+  update_step: 0.01
+  performance_window: 100
+  performance_threshold: 0.10
+  verbose: true
+
+total_timesteps: 35000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.00009
+  batch_size: 1792
+  n_epochs: 7
+  gamma: 0.994
+  gae_lambda: 0.965
+  clip_range: 0.17
+  ent_coef: 0.007
+  vf_coef: 0.5
+  max_grad_norm: 0.35
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.2
+  difficulty_scaled_bonus: true
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.5d-fixed", "performance-based", "raw-reward-fix"]
