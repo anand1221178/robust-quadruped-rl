@@ -15,8 +15,8 @@ class BackwardPenaltyWrapper(gym.Wrapper):
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        # SuccessRewardWrapper should put velocity in the info dict
-        velocity = info.get('velocity', 0.0)
+        # SuccessRewardWrapper puts current_velocity in the info dict
+        velocity = info.get('current_velocity', 0.0)
 
         # If velocity is negative, the reward from SuccessRewardWrapper will also be negative.
         # We make it even more negative to create a harsh penalty.
