@@ -1,0 +1,79 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.6C - PROGRESSIVE BACKWARD PENALTY
+# Starts with very gentle penalty (1.2x) and gradually increases to 2.5x
+# This allows the robot to learn forward motion first, then refine it
+experiment:
+  name: v7_6c_progressive_penalty
+  description: "V7.5C + Progressive BackwardPenaltyWrapper - starts at 1.2x and increases to 2.5x over training"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+  # PROGRESSIVE PENALTY: Gradually increasing discouragement
+  use_backward_penalty: true
+  backward_penalty_multiplier: 1.2  # Starting value - very gentle
+  # Note: We'll need to modify the wrapper to support progressive penalties
+  # For now, we can use this as a middle-ground approach
+
+# Progressive curriculum with aligned penalty increases
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+  phase_1_steps: 10000000
+  phase_2_steps: 10000000
+  phase_3_steps: 12000000
+  # Phase 1: Learn clean forward motion with minimal backward penalty (1.2x)
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+  # Phase 2: Single failures with moderate backward penalty (would be ~1.8x)
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+  # Phase 3: Dual failures with stronger backward penalty (would be ~2.5x)
+  phase_3_config:
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 1
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+total_timesteps: 32000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  # Slightly higher entropy to encourage exploration despite penalties
+  ent_coef: 0.008
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.1
+  mastery_bonus: 50.0
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.6c", "progressive-penalty", "1.2x-start", "exploration-first"]

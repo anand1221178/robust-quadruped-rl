@@ -1,0 +1,52 @@
+env:
+  use_success_reward: true
+  use_v7_acdr_fixed: true
+eval_freq: 10000
+experiment:
+  description: FIXED V7.5 ACDR - Sweet spot between V7 and V8, using raw rewards
+  name: v7_5_acdr_refined_fixed
+logging:
+  log_interval: 100
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+  wandb_tags:
+  - v7.5-fixed
+  - acdr
+  - refined
+  - raw-reward-fix
+num_envs: 8
+policy:
+  activation: tanh
+  hidden_sizes:
+  - 128
+  - 128
+ppo:
+  batch_size: 1536
+  clip_range: 0.15
+  ent_coef: 0.006
+  gae_lambda: 0.965
+  gamma: 0.994
+  learning_rate: 8.0e-05
+  max_grad_norm: 0.35
+  n_epochs: 8
+  vf_coef: 0.5
+reward_config:
+  speed_weight: 1.15
+  survival_bonus: 1.0
+  use_modified_reward: true
+save_freq: 1000000
+seed: 42
+total_timesteps: 35000000
+v7_acdr:
+  curriculum_type: hard2easy
+  initial_L: 0.85
+  initial_U: 0.95
+  performance_threshold: 0.175
+  performance_window: 175
+  target_L: 0.25
+  target_U: 0.4
+  update_step: 0.006
+  verbose: true

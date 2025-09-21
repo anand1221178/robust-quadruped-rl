@@ -176,7 +176,12 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         # V7.6: Apply backward penalty if configured
         if config.get('env', {}).get('use_backward_penalty', False):
             penalty_mult = config.get('env', {}).get('backward_penalty_multiplier', 5.0)
-            env = BackwardPenaltyWrapper(env, penalty_multiplier=penalty_mult)
+            stationary_penalty = config.get('env', {}).get('stationary_penalty', 0.0)
+            stationary_threshold = config.get('env', {}).get('stationary_threshold', 0.05)
+            env = BackwardPenaltyWrapper(env,
+                                        penalty_multiplier=penalty_mult,
+                                        stationary_penalty=stationary_penalty,
+                                        stationary_threshold=stationary_threshold)
 
         # V7_FIXED: The new, corrected ACDR wrapper
         if use_v7_acdr_fixed:
