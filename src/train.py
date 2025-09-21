@@ -36,6 +36,7 @@ from envs.specialist_training_wrapper import SpecialistTrainingWrapper
 from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
 from envs.v7_acdr_wrapper_fixed import V7ACDRWrapperFixed
 from envs.v8_enhanced_acdr_wrapper import V8EnhancedACDRWrapper
+from envs.backward_penalty_wrapper import BackwardPenaltyWrapper
 
 # Import RealAnt environments
 import realant_sim
@@ -171,6 +172,11 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
         if use_success_reward:
             print("✅ Success Reward Wrapper: Forward locomotion training")
             env = SuccessRewardWrapper(env)
+
+        # V7.6: Apply backward penalty if configured
+        if config.get('env', {}).get('use_backward_penalty', False):
+            penalty_mult = config.get('env', {}).get('backward_penalty_multiplier', 5.0)
+            env = BackwardPenaltyWrapper(env, penalty_multiplier=penalty_mult)
 
         # V7_FIXED: The new, corrected ACDR wrapper
         if use_v7_acdr_fixed:
