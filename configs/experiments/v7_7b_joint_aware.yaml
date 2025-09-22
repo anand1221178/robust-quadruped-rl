@@ -1,0 +1,77 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.7B JOINT-AWARE - Different penalties for hips vs ankles
+# Ankles get harsh 5x, Hips get gentler 3x (they don't walk backward anyway)
+experiment:
+  name: v7_7b_joint_aware
+  description: "Joint-specific penalties: 5x ankles, 3x hips for targeted optimization"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+  # Joint-specific backward penalties
+  use_backward_penalty: true
+  use_joint_specific_penalties: true
+  hip_backward_penalty: 3.0     # Gentler for hips
+  ankle_backward_penalty: 5.0    # Keep harsh for ankles (they walk backward)
+  # Standard stationary penalty
+  stationary_penalty: -0.2
+  stationary_threshold: 0.05
+
+# Same proven progressive curriculum
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+  phase_1_steps: 10000000
+  phase_2_steps: 10000000
+  phase_3_steps: 12000000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+  phase_3_config:
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 1
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+total_timesteps: 32000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.006  # Slightly higher for hip exploration
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 1.0
+  speed_weight: 1.1
+  mastery_bonus: 50.0
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.7b", "joint-aware", "hip-3x", "ankle-5x"]
