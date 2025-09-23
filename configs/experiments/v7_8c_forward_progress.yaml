@@ -1,0 +1,91 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.8C FORWARD PROGRESS GUARANTEE - Ultra Speed + strong anti-backward system
+# Heavily penalizes backward motion while rewarding ANY forward progress
+experiment:
+  name: v7_8c_forward_progress
+  description: "Ultra Speed + 10x backward penalty + forward progress bonus"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+  # ENHANCED backward penalty system
+  use_backward_penalty: true
+  backward_penalty_multiplier: 10.0  # Double the current penalty!
+  backward_velocity_threshold: -0.005  # Trigger earlier than default
+  # ULTRA SPEED BASE (from V7.7e)
+  use_ultra_speed_mode: true
+  speed_bonus_threshold: 0.10
+  speed_bonus_multiplier: 3.0
+  velocity_retention_bonus: true
+  target_velocity: 0.15
+  # NEW: Forward progress guarantee
+  use_forward_progress_bonus: true
+  forward_progress_config:
+    min_velocity: 0.01  # Any forward motion gets bonus
+    base_multiplier: 1.5  # 1.5x reward for staying positive
+    scale_with_speed: true  # Higher speed = higher bonus
+    max_multiplier: 2.5  # Cap at 2.5x for very fast forward motion
+  # Anti-stagnation system
+  use_anti_stagnation: true
+  stagnation_penalty: 2.0  # Penalty for near-zero velocity
+  stagnation_threshold: 0.005  # Velocity below this = stagnant
+
+# Same progressive curriculum as Ultra Speed
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+  phase_1_steps: 10000000
+  phase_2_steps: 10000000
+  phase_3_steps: 12000000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+  phase_3_config:
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 1
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+total_timesteps: 32000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 0.3  # Lower survival bonus, focus on movement
+  speed_weight: 2.0  # Higher speed weight
+  mastery_bonus: 100.0
+  forward_bias: 1.5  # Extra multiplier for forward direction
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.8c", "forward-progress", "anti-backward", "ultra-speed-base"]

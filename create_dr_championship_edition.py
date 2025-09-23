@@ -461,11 +461,26 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    model_path = "experiments/v7_6c_motion_penalty_kkkiwp9g/final_model.zip"
-    vec_path = "experiments/v7_6c_motion_penalty_kkkiwp9g/vec_normalize.pkl"
+    # V7.7 MODEL TESTING - Just change these paths for each model!
+    # Current model: V7.7f Combined Ultimate
+    model_name = "v7_7f_combined_ultimate_uhbvlz02"  # Change this for each test
+
+    model_path = f"experiments/{model_name}/final_model.zip"
+    vec_path = f"experiments/{model_name}/vec_normalize.pkl"
+
+    # Available V7.7 models to test:
+    # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures
+    # v7_7b_joint_aware_z92bswuk        - Joint-specific penalties (hips > ankles)
+    # v7_7c_ankle4_specialist_b8qotdf1  - Ankle-4 specialist (rear right ankle focus)
+    # v7_7d_progressive_mastery_2iwcmhoh - Progressive difficulty with ultra-dense rewards
+    # v7_7e_ultra_speed_jtfwl2qf        - Multi-tier speed bonuses (0.10, 0.12, 0.15 m/s)
+    # v7_7f_combined_ultimate_uhbvlz02  - Everything combined for ultimate robustness
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = f"videos/DR_CHAMPION_TOPDOWN_{timestamp}.mp4"
+    # Extract clean model name for the output filename
+    clean_model_name = model_name.split('_')[:-1]  # Remove run ID
+    clean_model_name = '_'.join(clean_model_name) if clean_model_name else model_name
+    output_path = f"videos/{clean_model_name}_CHAMPION_{timestamp}.mp4"
     
     os.makedirs("videos", exist_ok=True)
     
