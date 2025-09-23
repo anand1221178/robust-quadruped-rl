@@ -27,7 +27,7 @@ class DRChampionRecorder:
         self.baseline_performance = None  # Will be calculated from no-failure performance
         
         # Test duration per level
-        self.frames_per_level = 900  # 15 seconds per level at 60fps
+        self.frames_per_level = 1800  # 30 seconds per level at 60fps (EXTENDED for rotation!)
         
         # Joint failure test levels (FORCED failures!)
         self.failure_levels = [
@@ -363,27 +363,37 @@ class DRChampionRecorder:
             if failed_joint_indices:
                 print(f"  Forcing failure on joints: {failure_level['joints']} (indices: {failed_joint_indices})")
             
-            for step in range(1000):  # Max steps per failure level
+            # Track if we need to continue across episode boundaries
+            episode_resets = 0
+            continuous_positions = []  # Track positions across resets
+
+            for step in range(2000):  # Extended max steps for rotation test
                 if frames_this_level >= self.frames_per_level:
                     break
-                
+
                 # Get action from model
                 action, _ = model.predict(obs, deterministic=True)
-                
+
                 # FORCE joint failure by locking specific joints
                 if failed_joint_indices:
                     action = self.apply_joint_failure(action, failed_joint_indices)
-                
+
                 obs, reward, done, info = env.step(action)
-                
+
                 # Track metrics
                 x_pos = env.envs[0].unwrapped.data.qpos[0]
+
+                # Handle position tracking across resets
+                if episode_resets > 0 and len(positions) > 0:
+                    # Add offset from previous episode
+                    x_pos += continuous_positions[-1]
+
                 positions.append(x_pos)
                 rewards.append(reward[0])
-                
+
                 # Get frame with top-down view
                 frame = self.get_topdown_frame(env)
-                
+
                 if frame is not None:
                     # Calculate current metrics
                     if len(positions) >= 2:
@@ -393,37 +403,53 @@ class DRChampionRecorder:
                     else:
                         current_distance = 0
                         current_velocity = 0
-                    
+
                     # Calculate retention
                     if level_idx == 0 and self.baseline_performance is None:
                         # First run, no baseline yet
                         retention_pct = 100.0
                     else:
                         retention_pct = (current_velocity / self.baseline_performance) * 100 if self.baseline_performance and self.baseline_performance > 0 else 0
-                    
+
                     episode_progress = frames_this_level / self.frames_per_level
-                    
+
                     # Apply DR overlay
                     frame = self.create_dr_overlay(
                         frame, failure_level, current_velocity, episode_progress,
                         current_distance, retention_pct, failure_level['joints']
                     )
-                    
+
                     video_writer.write(frame)
                     frames_this_level += 1
                     total_frames += 1
-                
-                if done[0]:
-                    print(f"    Episode ended early at step {step}")
-                    break
+
+                # Handle episode reset but continue recording
+                if done[0] and frames_this_level < self.frames_per_level:
+                    print(f"    Episode {episode_resets + 1} ended at step {step}, continuing...")
+                    # Save continuous position for offset
+                    if len(positions) > 0:
+                        continuous_positions.append(positions[-1])
+
+                    # Reset environment but keep recording
+                    obs = env.reset()
+                    # Re-setup camera after reset
+                    self.setup_topdown_camera(env)
+                    episode_resets += 1
+
+                    # Don't break, continue recording!
             
             # Store performance data
             if len(positions) >= 2:
                 initial_x = positions[0]
+                # Use last valid position
                 final_x = positions[-1]
                 final_distance = final_x - initial_x
-                time_taken = len(positions) * 0.05
-                final_velocity = final_distance / time_taken
+
+                # Use actual frames recorded for time calculation
+                time_taken = frames_this_level / self.fps
+                final_velocity = final_distance / time_taken if time_taken > 0 else 0
+
+                print(f"    Total distance traveled: {final_distance:.2f}m over {time_taken:.1f}s")
                 
                 # Set baseline from first (no-failure) run
                 if self.baseline_performance is None and failure_level['name'] == 'NO FAILURES':
@@ -461,12 +487,12 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.7 MODEL TESTING - Just change these paths for each model!
-    # Current model: V7.7f Combined Ultimate
-    model_name = "v7_7f_combined_ultimate_uhbvlz02"  # Change this for each test
+    # EXTENDED TEST - V7.7E WITH MORE TIME FOR ROTATION!
+    # Testing if ankle_4 performance improves with time to complete rotation
 
-    model_path = f"experiments/{model_name}/final_model.zip"
-    vec_path = f"experiments/{model_name}/vec_normalize.pkl"
+    # Using the saved best model directly
+    model_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
+    vec_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
 
     # Available V7.7 models to test:
     # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures
@@ -477,10 +503,8 @@ def main():
     # v7_7f_combined_ultimate_uhbvlz02  - Everything combined for ultimate robustness
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # Extract clean model name for the output filename
-    clean_model_name = model_name.split('_')[:-1]  # Remove run ID
-    clean_model_name = '_'.join(clean_model_name) if clean_model_name else model_name
-    output_path = f"videos/{clean_model_name}_CHAMPION_{timestamp}.mp4"
+    # Special filename for extended rotation test
+    output_path = f"videos/V7_7E_EXTENDED_ROTATION_TEST_{timestamp}.mp4"
     
     os.makedirs("videos", exist_ok=True)
     

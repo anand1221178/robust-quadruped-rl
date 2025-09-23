@@ -1,0 +1,125 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.9B ROTATION REWARDS - Extended episodes + explicit rotation incentives
+# Hypothesis: Rotation rewards will make the robot rotate faster and more reliably
+experiment:
+  name: v7_9b_rotation_rewards
+  description: "V7.7e + 2500-step episodes + explicit rotation rewards for ankle failures"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+  # Keep backward penalty
+  use_backward_penalty: true
+  backward_penalty_multiplier: 5.0
+
+  # ULTRA SPEED BASE (from V7.7e)
+  use_ultra_speed_mode: true
+  speed_bonus_threshold: 0.10
+  speed_bonus_multiplier: 3.0
+  velocity_retention_bonus: true
+  target_velocity: 0.15
+
+  # EXTENDED EPISODES (same as V7.9a)
+  max_episode_steps: 2500  # 50 seconds for rotation + recovery
+
+  # NEW: ROTATION REWARDS
+  use_rotation_rewards: true
+  rotation_config:
+    # Detect rotation when specific joints fail
+    track_body_orientation: true
+    rotation_detection_window: 100  # Steps to measure rotation
+
+    # Reward structure for rotation
+    rotation_speed_bonus: 2.0       # 2x reward for rotating quickly
+    rotation_angle_thresholds:
+      - angle: 45   # degrees
+        bonus: 1.5
+      - angle: 90
+        bonus: 2.0
+      - angle: 180
+        bonus: 3.0  # Big reward for full turn
+
+    # Joint-specific rotation targets
+    joint_rotation_targets:
+      ankle_4: 180  # Turn around completely
+      ankle_3: 180  # Turn around
+      ankle_2: 90   # Quarter turn
+      ankle_1: 0    # No rotation needed (already optimal)
+      hip_4: 180
+      hip_3: 180
+      hip_2: 90
+      hip_1: 0
+
+    # Maintain forward progress while rotating
+    rotation_with_movement_bonus: 1.5  # Extra reward for moving while turning
+
+  # Additional ankle_4 focus during training
+  ankle_4_training_boost: true
+  ankle_4_failure_probability: 0.25  # 25% of Phase 2 failures are ankle_4
+
+# Modified curriculum for rotation learning
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+  phase_1_steps: 10000000
+  phase_2_steps: 12000000  # Extra 2M for rotation learning
+  phase_3_steps: 10000000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+    # Focus on problematic joints
+    joint_weights:
+      ankle_4: 3.0  # 3x more likely
+      ankle_3: 2.0  # 2x more likely
+      hip_4: 2.0    # 2x more likely
+      hip_3: 1.5    # 1.5x more likely
+      # Others default to 1.0
+  phase_3_config:
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 1
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+total_timesteps: 32000000
+save_freq: 1000000
+
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 0.5
+  speed_weight: 1.5
+  mastery_bonus: 100.0
+  rotation_reward_weight: 1.2  # Weight for rotation rewards
+
+num_envs: 8
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.9b", "rotation-rewards", "2500-steps", "ankle4-focus", "explicit-rotation"]

@@ -5,7 +5,84 @@
 **Objective**: Implement SR2L algorithm for robust quadruped FORWARD locomotion using PPO and RealAnt simulation
 **Research Proposal Goal**: Compare robustness methods for forward locomotion (NOT A-to-B navigation)
 
-## Current Status (September 13, 2025)
+## Current Status (September 23, 2025)
+
+### 🏆 CURRENT CHAMPION: V7.7E ULTRA SPEED 🏆
+
+**Best Performing Model**: `experiments/v7_7e_ultra_speed_jtfwl2qf/`
+- **Baseline Speed**: 0.175 m/s (HIGHEST achieved)
+- **Average Retention**: 39.3% across all joint failures
+- **Ankle_4 Performance**: +8.2% retention (stays positive!)
+- **Key Innovation**: Multi-tier speed bonuses (1.5x @ 0.10 m/s, 2.0x @ 0.12 m/s, 3.0x @ 0.15 m/s)
+- **Training**: 32M steps, completed successfully
+
+### 📊 V7.7 AND V7.8 CHAMPIONSHIP RESULTS - SEPTEMBER 23, 2025
+
+#### V7.7 Series (Built on V7.6C baseline):
+| Model | Baseline | Avg Retention | Ankle_4 | Key Feature |
+|-------|----------|---------------|---------|-------------|
+| **🥇 V7.7e Ultra Speed** | **0.175 m/s** | **39.3%** | **+8.2%** | Multi-tier speed bonuses |
+| V7.7 Speed Champion | 0.171 m/s | 47.3% | -12.1% | Speed bonus @ 0.12 m/s |
+| V7.7d Progressive | 0.115 m/s | 44.0% | +1.4% | Progressive difficulty |
+| V7.7c Ankle4 Spec | 0.161 m/s | 24.9% | -2.3% | Ankle_4 focus training |
+| V7.7f Combined | 0.149 m/s | 35.4% | -0.6% | Kitchen sink approach |
+| V7.7b Joint Aware | 0.133 m/s | 21.3% | -0.5% | Joint-specific penalties |
+
+#### V7.8 Series (Built on V7.7e Ultra Speed):
+| Model | Baseline | Avg Retention | Ankle_4 | Key Innovation | Status |
+|-------|----------|---------------|---------|----------------|--------|
+| **🥈 V7.8a Ankle Specialist** | **0.164 m/s** | **35.7%** | **+3.1%** | Weighted ankle sampling | ✅ Best ankle_4 solver |
+| V7.8d Dynamic Speed | 0.157 m/s | 37.0% | -4.1% | Adaptive speed targets | Hip excellence |
+| V7.8b Velocity Retention | 0.160 m/s | 32.3% | -2.2% | % retention rewards | Balanced |
+| V7.8f Ultra Speed Plus | 0.148 m/s | 29.0% | -2.9% | Combined strategies | Hip_1: 105.5%! |
+| V7.8c Forward Progress | - | - | - | 10x backward penalty | ❌ NaN crash |
+| V7.8e Symmetry | -0.001 m/s | 0.0% | 0.0% | Bilateral training | ❌ Complete failure |
+
+### 🔍 KEY DISCOVERIES - ANKLE_4 BIOMECHANICAL INSIGHT
+
+**Why Ankle_4 Consistently Fails**:
+- **Position**: Rear-right leg, perpendicular to walking direction
+- **Problem**: When lifted, robot loses critical rear-lateral support
+- **Current Behavior**: Tries to maintain forward gait → tips backward
+- **Hip_1/Ankle_1 Success**: Front position allows easy tripod adaptation
+
+**The Solution Hypothesis**:
+- Robot needs to **rotate its body** when ankle_4 fails
+- Put failed joint in "position 1" (front) through rotation
+- Maintain overall left→right screen movement with new orientation
+
+### 🎯 TRAINING INSIGHTS LEARNED
+
+#### ✅ What Works:
+1. **Speed Incentives**: Multi-tier bonuses create strong forward bias
+2. **Targeted Training**: Weighted sampling can improve specific joints
+3. **Moderate Penalties**: 5-8x backward penalty optimal (10x causes NaN)
+4. **Simple > Complex**: Focused strategies beat kitchen-sink approaches
+
+#### ❌ What Fails:
+1. **Extreme Penalties**: 10x+ multipliers cause numerical overflow
+2. **Over-complexity**: Too many competing objectives hurt learning
+3. **Symmetric Training**: Bilateral approaches confused the model
+4. **Joint-specific penalties**: Different penalties for different joints backfired
+
+### 📈 PERFORMANCE BENCHMARKS
+
+**Best Performances by Metric**:
+- **Highest Baseline Speed**: V7.7e Ultra Speed @ 0.175 m/s
+- **Best Ankle_4**: V7.7e Ultra Speed @ +8.2% retention
+- **Best Hip_1**: V7.8f @ 105.5% retention (walks FASTER with hip_1 locked!)
+- **Most Balanced**: V7.8b Velocity Retention @ 32.3% average
+- **No Backward Walking**: V7.8a Ankle Specialist (all joints positive)
+
+### 🚀 NEXT STEPS: V7.9 ROTATION ADAPTIVE TRAINING
+
+**Proposed Solution**: Teach robot to rotate body when specific joints fail
+- Base model: V7.7e Ultra Speed (proven best)
+- Add rotation rewards for ankle_4 failures
+- Maintain left→right movement with adaptive body orientation
+- Goal: Make every joint perform like hip_1/ankle_1 through rotation
+
+---
 
 ### ❌ SYSTEMATIC CURRICULUM V1 FAILURE ANALYSIS ❌
 
