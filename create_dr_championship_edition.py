@@ -8,6 +8,7 @@ import sys
 sys.path.append('src')
 
 import gymnasium as gym
+from gymnasium.wrappers import TimeLimit
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
@@ -323,10 +324,20 @@ class DRChampionRecorder:
             print(f"\nTesting failure level {level_idx+1}/{len(self.failure_levels)}: {failure_level['name']}")
             print(f"Target frames for this level: {self.frames_per_level}")
             
-            # Create environment (clean, no DR wrapper)
+            # Create environment (clean, no DR wrapper) with EXTENDED episodes
             def make_env():
-                env = gym.make('RealAntMujoco-v0', render_mode='rgb_array')
+                # Create base environment without automatic TimeLimit wrapper
+                base_env = gym.make('RealAntMujoco-v0', render_mode='rgb_array', disable_env_checker=True)
+
+                # Remove any existing TimeLimit wrappers
+                while isinstance(base_env, TimeLimit):
+                    base_env = base_env.env
+
+                # Add our own TimeLimit with extended episode length
+                env = TimeLimit(base_env, max_episode_steps=2500)  # 2500 steps = ~41.7 seconds
                 env = SuccessRewardWrapper(env)
+
+                print(f"  ✅ Environment configured with 2500 max steps (extended for rotation testing)")
                 return env
             
             env = DummyVecEnv([make_env])
@@ -487,12 +498,12 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # EXTENDED TEST - V7.7E WITH MORE TIME FOR ROTATION!
-    # Testing if ankle_4 performance improves with time to complete rotation
+    # V7.9A EXTENDED EPISODES TEST - Trained with 2500-step episodes (NO rotation rewards)!
+    # Testing with FIXED evaluation (no episode resets) to see true performance
 
-    # Using the saved best model directly
-    model_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
-    vec_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
+    model_name = "v7_9a_extended_episodes_3u65fi3q"
+    model_path = f"experiments/{model_name}/final_model.zip"
+    vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
     # Available V7.7 models to test:
     # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures
@@ -503,8 +514,9 @@ def main():
     # v7_7f_combined_ultimate_uhbvlz02  - Everything combined for ultimate robustness
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # Special filename for extended rotation test
-    output_path = f"videos/V7_7E_EXTENDED_ROTATION_TEST_{timestamp}.mp4"
+    # Clean model name for output
+    clean_name = model_name.rsplit('_', 1)[0]  # Remove run ID
+    output_path = f"videos/{clean_name}_CHAMPION_{timestamp}.mp4"
     
     os.makedirs("videos", exist_ok=True)
     
