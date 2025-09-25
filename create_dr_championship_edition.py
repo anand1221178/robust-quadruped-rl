@@ -369,11 +369,16 @@ class DRChampionRecorder:
             positions = []
             rewards = []
             frames_this_level = 0
-            
+
+            # DELAYED LOCKING: Let robot establish proper gait and momentum first!
+            DELAYED_LOCKING_STEPS = 120  # Lock joints after 120 steps (2 full seconds)
+            joint_lock_active = False
+
             print(f"  Starting episode with {failure_level['name']}...")
             if failed_joint_indices:
                 print(f"  Forcing failure on joints: {failure_level['joints']} (indices: {failed_joint_indices})")
-            
+                print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
+
             # Track if we need to continue across episode boundaries
             episode_resets = 0
             continuous_positions = []  # Track positions across resets
@@ -385,8 +390,11 @@ class DRChampionRecorder:
                 # Get action from model
                 action, _ = model.predict(obs, deterministic=True)
 
-                # FORCE joint failure by locking specific joints
-                if failed_joint_indices:
+                # DELAYED LOCKING: Only force joints to fail after initial steps
+                if failed_joint_indices and step >= DELAYED_LOCKING_STEPS:
+                    if not joint_lock_active:
+                        joint_lock_active = True
+                        print(f"    💥 JOINTS LOCKED at step {step} - Movement first, then adaptation!")
                     action = self.apply_joint_failure(action, failed_joint_indices)
 
                 obs, reward, done, info = env.step(action)
@@ -498,12 +506,13 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.9A EXTENDED EPISODES TEST - Trained with 2500-step episodes (NO rotation rewards)!
-    # Testing with FIXED evaluation (no episode resets) to see true performance
+    # V7.7E ULTRA SPEED - THE ORIGINAL CHAMPION!
+    # Testing with FIXED evaluation (2500 steps) to see its TRUE potential
+    # The ONLY model to achieve positive ankle_4 retention!
 
-    model_name = "v7_9a_extended_episodes_3u65fi3q"
-    model_path = f"experiments/{model_name}/final_model.zip"
-    vec_path = f"experiments/{model_name}/vec_normalize.pkl"
+    model_name = "v7_7e_ultra_speed_jtfwl2qf"
+    model_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
+    vec_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
 
     # Available V7.7 models to test:
     # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures

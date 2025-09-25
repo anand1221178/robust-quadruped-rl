@@ -1,0 +1,98 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.10 ULTIMATE FUSION - V7.7E formula with DEEPER training
+# Philosophy: Take the champion and give it 56% more training time
+# KISS: Keep It Simple, Stupid - no complex new features!
+experiment:
+  name: v7_10_ultimate_fusion
+  description: "V7.7E Ultra Speed formula with 50M steps - deep mastery through extended training"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+
+  # PROVEN WINNER: V7.7E backward penalty
+  use_backward_penalty: true
+  backward_penalty_multiplier: 8.0  # V7.7E's sweet spot
+
+  # PROVEN WINNER: V7.7E's ultra speed mode (unchanged!)
+  use_ultra_speed_mode: true
+  speed_bonus_threshold: 0.10
+  speed_bonus_multiplier: 3.0
+  velocity_retention_bonus: true
+  target_velocity: 0.15
+
+  # KEEP DEFAULT: 1000 steps (V7.7E setting that worked)
+  # Extended episodes didn't help much, so stick with what works
+
+# PROVEN CURRICULUM: V7.7E's balanced approach (not ankle_4 obsessed)
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+
+  # MORE TRAINING: 50M total (vs V7.7E's 32M)
+  phase_1_steps: 15000000  # 15M - Master normal walking deeply
+  phase_2_steps: 20000000  # 20M - Master single failures thoroughly
+  phase_3_steps: 15000000  # 15M - Master combinations completely
+
+  phase_1_config:
+    # Pure walking - build STRONG foundation
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+
+  phase_2_config:
+    # Single joint failures - V7.7E's approach
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 0  # Optional failures (not forced!)
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+    # NO special weighting - let model learn naturally
+
+  phase_3_config:
+    # Advanced combinations - same as V7.7E
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 0
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+# LONGER TRAINING: 50M steps total (56% more than V7.7E)
+total_timesteps: 50000000
+save_freq: 1000000
+
+# PROVEN HYPERPARAMETERS: V7.7E's exact settings (they worked!)
+ppo:
+  learning_rate: 0.0001     # V7.7E's learning rate
+  batch_size: 1536          # V7.7E's batch size
+  n_epochs: 8               # V7.7E's epochs
+  gamma: 0.995              # V7.7E's gamma
+  gae_lambda: 0.97          # V7.7E's lambda
+  clip_range: 0.15          # V7.7E's clipping
+  ent_coef: 0.005          # V7.7E's entropy
+  vf_coef: 0.5             # V7.7E's value coefficient
+  max_grad_norm: 0.4       # V7.7E's gradient norm
+
+# PROVEN NETWORK: V7.7E's architecture
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+# SIMPLE REWARDS: V7.7E's proven formula
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 0.5       # V7.7E setting
+  speed_weight: 1.5         # V7.7E setting
+  mastery_bonus: 100.0      # V7.7E setting
+  # NO rotation rewards - keep it simple!
+
+num_envs: 8  # V7.7E setting
+seed: 42
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.10", "ultimate-fusion", "50M-steps", "extended-training", "v7.7e-formula"]
