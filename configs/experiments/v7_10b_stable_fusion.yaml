@@ -1,0 +1,100 @@
+defaults:
+  - /train/default
+  - /env/realant
+
+# V7.10B STABLE FUSION - V7.7E with SAFER reward scaling
+# Fixed NaN issues by reducing reward magnitudes and adding caps
+experiment:
+  name: v7_10b_stable_fusion
+  description: "V7.7E formula with 50M steps and NaN-proof rewards"
+
+env:
+  use_success_reward: true
+  use_domain_randomization: true
+
+  # REDUCED: Safer backward penalty
+  use_backward_penalty: true
+  backward_penalty_multiplier: 5.0  # Reduced from 8.0 to prevent overflow
+
+  # SAFER: Reduced speed multipliers
+  use_ultra_speed_mode: true
+  speed_bonus_threshold: 0.10
+  speed_bonus_multiplier: 2.0  # Reduced from 3.0 for stability
+  velocity_retention_bonus: true
+  target_velocity: 0.15
+
+  # SAFETY: Add reward clipping
+  reward_clip_range: 50.0  # Cap total rewards to prevent explosion
+
+# SAME CURRICULUM: V7.7E's proven approach
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+
+  # 50M total training
+  phase_1_steps: 15000000  # 15M - Master normal walking
+  phase_2_steps: 20000000  # 20M - Master single failures
+  phase_3_steps: 15000000  # 15M - Master combinations
+
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    min_dropped_joints: 0
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+  phase_3_config:
+    joint_dropout_prob: 0.6
+    min_dropped_joints: 0
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+total_timesteps: 50000000
+save_freq: 1000000
+
+# SAFER PPO SETTINGS
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.3  # Reduced from 0.4 for stability
+
+# SAME NETWORK
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+# SAFER REWARDS
+reward_config:
+  use_modified_reward: true
+  survival_bonus: 0.5
+  speed_weight: 1.2      # Reduced from 1.5
+  mastery_bonus: 50.0    # Reduced from 100.0 to prevent spikes
+
+  # SAFETY: Explicit reward normalization
+  normalize_rewards: true
+  reward_scale: 0.1      # Scale down all rewards
+
+num_envs: 8
+seed: 42
+
+# SAFETY: Add gradient monitoring
+training:
+  monitor_gradients: true
+  gradient_threshold: 10.0  # Alert if gradients explode
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags: ["v7.10b", "stable-fusion", "50M-steps", "nan-fixed", "safer-rewards"]
