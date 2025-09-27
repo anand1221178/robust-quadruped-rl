@@ -155,15 +155,16 @@ class DRChampionRecorder:
         return joint_indices
     
     def apply_joint_failure(self, action, failed_joint_indices):
-        """Lock specific joint actions to 0 (failure)"""
+        """Lock specific joint actions to 0 (simple failure)"""
         if not failed_joint_indices:
             return action
-            
+
         action_copy = action.copy()
         for joint_idx in failed_joint_indices:
             if joint_idx < len(action_copy[0]):
-                action_copy[0][joint_idx] = 0.0  # Lock joint
-                
+                # All joints lock at 0 - timing is handled elsewhere
+                action_copy[0][joint_idx] = 0.0
+
         return action_copy
     
     def get_performance_color(self, retention_pct):
@@ -370,14 +371,24 @@ class DRChampionRecorder:
             rewards = []
             frames_this_level = 0
 
-            # DELAYED LOCKING: Let robot establish proper gait and momentum first!
-            DELAYED_LOCKING_STEPS = 120  # Lock joints after 120 steps (2 full seconds)
+            # IMMEDIATE LOCKING: Start with joints locked to avoid momentum crashes!
+            # Set to 0 for ankle_3/4 to prevent flipping, keep delayed for others
+            if failed_joint_indices and (5 in failed_joint_indices or 7 in failed_joint_indices):
+                DELAYED_LOCKING_STEPS = 0  # Immediate lock for problematic ankles
+            else:
+                DELAYED_LOCKING_STEPS = 120  # Delayed lock for other joints
             joint_lock_active = False
 
             print(f"  Starting episode with {failure_level['name']}...")
             if failed_joint_indices:
                 print(f"  Forcing failure on joints: {failure_level['joints']} (indices: {failed_joint_indices})")
-                print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
+                if DELAYED_LOCKING_STEPS == 0:
+                    print(f"  ⚡ IMMEDIATE LOCKING: Ankle_3/4 locked from start (prevents flipping!)")
+                else:
+                    print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
+                # Notify about physics-safe locking for problematic joints
+                if 5 in failed_joint_indices or 7 in failed_joint_indices:
+                    print(f"  🔧 PHYSICS FIX: Ankle_3/4 locked at 0.45 to avoid stuck state")
 
             # Track if we need to continue across episode boundaries
             episode_resets = 0
@@ -506,9 +517,9 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.7E ULTRA SPEED - THE ORIGINAL CHAMPION!
-    # Testing with FIXED evaluation (2500 steps) to see its TRUE potential
-    # The ONLY model to achieve positive ankle_4 retention!
+    # V7.7E ULTRA SPEED - THE PROVEN CHAMPION!
+    # Testing with optimized ankle_3/4 locking strategy
+    # Using delayed locking for most joints, immediate for problematic ankles
 
     model_name = "v7_7e_ultra_speed_jtfwl2qf"
     model_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"

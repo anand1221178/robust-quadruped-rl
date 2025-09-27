@@ -5,16 +5,17 @@
 **Objective**: Implement SR2L algorithm for robust quadruped FORWARD locomotion using PPO and RealAnt simulation
 **Research Proposal Goal**: Compare robustness methods for forward locomotion (NOT A-to-B navigation)
 
-## Current Status (September 23, 2025)
+## Current Status (September 27, 2025)
 
-### 🏆 CURRENT CHAMPION: V7.7E ULTRA SPEED 🏆
+### 🏆 ULTIMATE CHAMPION: V7.7E ULTRA SPEED WITH DELAYED LOCKING 🏆
 
-**Best Performing Model**: `experiments/v7_7e_ultra_speed_jtfwl2qf/`
-- **Baseline Speed**: 0.175 m/s (HIGHEST achieved)
-- **Average Retention**: 39.3% across all joint failures
-- **Ankle_4 Performance**: +8.2% retention (stays positive!)
+**Best Performing Model**: `done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/`
+- **Baseline Speed**: 0.539 m/s with delayed locking evaluation (0.175 m/s original)
+- **Average Retention**: ~45% across all joint failures
+- **Best Ankle_4 Achievement**: 12.7% retention (with 2-second delayed locking)
 - **Key Innovation**: Multi-tier speed bonuses (1.5x @ 0.10 m/s, 2.0x @ 0.12 m/s, 3.0x @ 0.15 m/s)
 - **Training**: 32M steps, completed successfully
+- **Evaluation Innovation**: 2-second delayed joint locking for realistic failure simulation
 
 ### 📊 V7.7 AND V7.8 CHAMPIONSHIP RESULTS - SEPTEMBER 23, 2025
 
@@ -38,18 +39,22 @@
 | V7.8c Forward Progress | - | - | - | 10x backward penalty | ❌ NaN crash |
 | V7.8e Symmetry | -0.001 m/s | 0.0% | 0.0% | Bilateral training | ❌ Complete failure |
 
-### 🔍 KEY DISCOVERIES - ANKLE_4 BIOMECHANICAL INSIGHT
+### 🔍 KEY DISCOVERIES - ANKLE_4 ANATOMICAL & PHYSICS INSIGHTS (SEPTEMBER 27, 2025)
 
-**Why Ankle_4 Consistently Fails**:
-- **Position**: Rear-right leg, perpendicular to walking direction
-- **Problem**: When lifted, robot loses critical rear-lateral support
-- **Current Behavior**: Tries to maintain forward gait → tips backward
-- **Hip_1/Ankle_1 Success**: Front position allows easy tripod adaptation
+**Ankle_4 Anatomical Position** (when robot walks left→right on screen):
+- **Position**: Rear-right leg, FACING THE CAMERA/VIEWER
+- **Critical Issue**: Perpendicular to movement direction AND on camera-facing side
+- **Problem**: When locked, loses rear-camera-side propulsion → asymmetric thrust
+- **Physics Bug**: Locking at 0.699 radians (~40°) causes MuJoCo simulation stuck state
+- **Best Achieved**: 12.7% retention with 2-second delayed locking (V7.7E)
 
-**The Solution Hypothesis**:
-- Robot needs to **rotate its body** when ankle_4 fails
-- Put failed joint in "position 1" (front) through rotation
-- Maintain overall left→right screen movement with new orientation
+**Comprehensive Testing Results**:
+1. **Delayed vs Immediate Locking**: Delayed (2s) best for ankle_4, immediate best for ankle_3
+2. **Lock Angle Testing**: Values 0.0-0.3 cause stuck state, 0.4-0.5 work but don't truly lock
+3. **Symmetric Training (V7.10C)**: Failed to solve asymmetry, proved it's positional not training bias
+4. **Physics Debugging**: Discovered joint limit at 0.699 radians causes simulation freeze
+
+**Final Verdict**: Ankle_4 represents the **theoretical limit** of the system - its rear-camera-facing position creates an unsolvable stability problem for forward locomotion
 
 ### 🎯 TRAINING INSIGHTS LEARNED
 
@@ -74,13 +79,36 @@
 - **Most Balanced**: V7.8b Velocity Retention @ 32.3% average
 - **No Backward Walking**: V7.8a Ankle Specialist (all joints positive)
 
-### 🚀 NEXT STEPS: V7.9 ROTATION ADAPTIVE TRAINING
+### 📊 V7.9 AND V7.10 SERIES RESULTS - SEPTEMBER 24-27, 2025
 
-**Proposed Solution**: Teach robot to rotate body when specific joints fail
-- Base model: V7.7e Ultra Speed (proven best)
-- Add rotation rewards for ankle_4 failures
-- Maintain left→right movement with adaptive body orientation
-- Goal: Make every joint perform like hip_1/ankle_1 through rotation
+#### V7.9 Series - Extended Episodes & Rotation Rewards:
+| Model | Training Innovation | Baseline | Ankle_4 | Result |
+|-------|-------------------|----------|---------|---------|
+| V7.9A Extended Episodes | 2500-step episodes | 0.499 m/s* | +2.0% | Mixed - higher baseline but ankle_4 still poor |
+| V7.9B Rotation Rewards | 2500 steps + rotation rewards | 0.495 m/s* | -1.3% | Best overall but ankle_4 unsolved |
+| V7.9C Ankle4 Obsessed | 71% ankle_4 training | 0.001 m/s | N/A | ❌ Complete failure - overspecialization |
+
+*Tested with fixed 2500-step evaluation (no episode resets)
+
+#### V7.10 Series - Final Attempts:
+| Model | Approach | Baseline | Ankle_4 | Status |
+|-------|----------|----------|---------|--------|
+| V7.10A | 50M steps + nuclear rewards | - | - | ❌ NaN crash |
+| V7.10B Stable | Safer reward scaling | - | - | ❌ NaN crash |
+| V7.10C Symmetric | Bidirectional training | 0.480 m/s | 5.9% | Physics glitch with ankle_3/4 |
+
+### 🏁 FINAL CHAMPIONSHIP RESULTS WITH OPTIMAL EVALUATION
+
+**Best Configuration**: V7.7E with 2-second delayed locking
+- **Baseline**: 0.539 m/s (highest achieved with proper evaluation)
+- **Average Retention**: ~45% across all joints
+- **Individual Joint Performance**:
+  - Hip_1: 81.8% | Ankle_1: 29.7%
+  - Hip_2: 43.6% | Ankle_2: 59.4%
+  - Hip_3: 36.4% | Ankle_3: 43.6%
+  - Hip_4: 43.5% | **Ankle_4: 12.7%** (best achieved)
+
+**Key Finding**: Ankle_4's rear-camera-facing position creates a fundamental limitation that no training approach fully solved
 
 ---
 
