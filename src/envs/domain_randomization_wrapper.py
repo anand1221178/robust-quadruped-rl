@@ -148,13 +148,26 @@ class CurriculumDRWrapper(gym.Wrapper):
     Phase 3: Multiple failures + high noise
     """
     
-    def __init__(self, env, dr_config: Dict):
+    def __init__(self, env, config: Dict):
         # Initialize the wrapper properly
         super().__init__(env)
-        self.dr_config = dr_config
+        self.config = config
+        self.dr_config = config.get('domain_randomization', {})
+        self.symmetric_config = config.get('env', {}).get('symmetric_training', {})
+
+        # V7.10: Symmetric sampling settings
+        self.symmetric_failure_sampling = self.symmetric_config.get('symmetric_failure_sampling', False)
+        self.paired_joints_names = self.symmetric_config.get('paired_joints', [])
+        self.joint_to_idx = {
+            'hip_1': 0, 'ankle_1': 1, 'hip_2': 2, 'ankle_2': 3,
+            'hip_3': 4, 'ankle_3': 5, 'hip_4': 6, 'ankle_4': 7,
+        }
+        self.paired_joint_indices = [
+            (self.joint_to_idx[p[0]], self.joint_to_idx[p[1]]) for p in self.paired_joints_names
+        ]
         
         # 🎯 3-PHASE CURRICULUM SETUP (CONFIGURABLE!)
-        self.phase_1_steps = dr_config.get('phase_1_steps', 8000000)   # Phase 1: Clean training
+        self.phase_1_steps = self.dr_config.get('phase_1_steps', 8000000)   # Phase 1: Clean training
         self.phase_2_steps = dr_config.get('phase_2_steps', 8000000)   # Phase 2: Single failures
         self.phase_3_steps = dr_config.get('phase_3_steps', 9000000)   # Phase 3: Multiple failures
         self.current_timestep = 0
@@ -288,20 +301,47 @@ class CurriculumDRWrapper(gym.Wrapper):
             return "MULTIPLE FAILURES - Ultimate robustness challenge"
     
     def _sample_joint_dropouts(self):
-        """Sample which joints to drop for this episode"""
+        """Sample which joints to drop for this episode, with symmetric sampling logic."""
         self.dropped_joints = []
-        
+
         if random.random() < self.joint_dropout_prob:
-            # Decide how many joints to drop
             if self.max_dropped_joints > 0:
                 num_to_drop = random.randint(self.min_dropped_joints, self.max_dropped_joints)
+
+                # Check if symmetric sampling is active for the current phase
+                current_phase_config = getattr(self, f'phase_{self.current_phase}_config', {})
+                use_symmetric_sampling = current_phase_config.get('use_symmetric_sampling', False)
+                prefer_paired_failures = current_phase_config.get('prefer_paired_failures', False)
+
+                if self.symmetric_failure_sampling and use_symmetric_sampling and self.paired_joint_indices:
+                    # --- Symmetric Sampling Logic ---
+                    joints_to_drop = set()
+                    if num_to_drop == 1:
+                        # Pick a random pair, then a random joint from that pair
+                        pair = random.choice(self.paired_joint_indices)
+                        joints_to_drop.add(random.choice(pair))
+                    
+                    elif num_to_drop == 2 and prefer_paired_failures and random.random() < 0.5:
+                        # 50% chance to drop a whole pair
+                        pair_to_drop = random.choice(self.paired_joint_indices)
+                        joints_to_drop.update(pair_to_drop)
+
+                    else: # Fallback for other cases (e.g., num_to_drop > 2 or non-paired failure)
+                        while len(joints_to_drop) < num_to_drop:
+                            pair = random.choice(self.paired_joint_indices)
+                            joints_to_drop.add(random.choice(pair))
+                    
+                    self.dropped_joints = list(joints_to_drop)
+
+                else:
+                    # --- Original Random Sampling ---
+                    available_joints = list(range(self.num_joints))
+                    self.dropped_joints = random.sample(available_joints, num_to_drop)
                 
-                # Randomly select joints to drop
-                available_joints = list(range(self.num_joints))
-                self.dropped_joints = random.sample(available_joints, num_to_drop)
-                
-                phase_desc = self._get_phase_description()
-                print(f"🔥 Episode {self.episode_count}: Phase {self.current_phase} - Dropping joints {self.dropped_joints} ({phase_desc})")
+                # Optional: uncomment for debugging
+                # if self.dropped_joints:
+                #     phase_desc = self._get_phase_description()
+                #     print(f"🔥 Episode {self.episode_count}: Phase {self.current_phase} - Dropping joints {self.dropped_joints} ({phase_desc})")
     
     def _apply_joint_dropout(self, action):
         """Apply joint dropout by setting dropped joint actions to 0 (locked)"""

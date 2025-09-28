@@ -371,24 +371,14 @@ class DRChampionRecorder:
             rewards = []
             frames_this_level = 0
 
-            # IMMEDIATE LOCKING: Start with joints locked to avoid momentum crashes!
-            # Set to 0 for ankle_3/4 to prevent flipping, keep delayed for others
-            if failed_joint_indices and (5 in failed_joint_indices or 7 in failed_joint_indices):
-                DELAYED_LOCKING_STEPS = 0  # Immediate lock for problematic ankles
-            else:
-                DELAYED_LOCKING_STEPS = 120  # Delayed lock for other joints
+            # DELAYED LOCKING: Let robot establish momentum first (back to standard approach)
+            DELAYED_LOCKING_STEPS = 120  # 2 seconds delay for ALL joints
             joint_lock_active = False
 
             print(f"  Starting episode with {failure_level['name']}...")
             if failed_joint_indices:
                 print(f"  Forcing failure on joints: {failure_level['joints']} (indices: {failed_joint_indices})")
-                if DELAYED_LOCKING_STEPS == 0:
-                    print(f"  ⚡ IMMEDIATE LOCKING: Ankle_3/4 locked from start (prevents flipping!)")
-                else:
-                    print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
-                # Notify about physics-safe locking for problematic joints
-                if 5 in failed_joint_indices or 7 in failed_joint_indices:
-                    print(f"  🔧 PHYSICS FIX: Ankle_3/4 locked at 0.45 to avoid stuck state")
+                print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
 
             # Track if we need to continue across episode boundaries
             episode_resets = 0
@@ -517,13 +507,13 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.7E ULTRA SPEED - THE PROVEN CHAMPION!
-    # Testing with optimized ankle_3/4 locking strategy
-    # Using delayed locking for most joints, immediate for problematic ankles
+    # V7.10D SYMMETRIC TRAINING FIXED - The properly trained symmetric model!
+    # Should finally achieve balanced performance across mirror joints
+    # Fixed curriculum with min_dropped_joints: 1 in phases 2-3
 
-    model_name = "v7_7e_ultra_speed_jtfwl2qf"
-    model_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
-    vec_path = "/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
+    model_name = "v7_10d_symmetric_training_fixed_l7moasla"
+    model_path = f"experiments/{model_name}/final_model.zip"
+    vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
     # Available V7.7 models to test:
     # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures

@@ -37,6 +37,7 @@ from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
 from envs.v7_acdr_wrapper_fixed import V7ACDRWrapperFixed
 from envs.v8_enhanced_acdr_wrapper import V8EnhancedACDRWrapper
 from envs.backward_penalty_wrapper import BackwardPenaltyWrapper
+from utils.symmetric_observation_wrapper import SymmetricObservationWrapper
 
 # Import RealAnt environments
 import realant_sim
@@ -168,6 +169,11 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
     def make_env():
         env = gym.make(env_name)
 
+        # V7.10: Apply symmetric observation wrapper if configured
+        if config.get('env', {}).get('symmetric_training', {}).get('enabled', False):
+            print("✅ Symmetric Observation Wrapper: Enforcing symmetric policy")
+            env = SymmetricObservationWrapper(env, flip_prob=config.get('env', {}).get('symmetric_training', {}).get('frame_randomization_prob', 0.5))
+
         # Apply reward wrapper
         if use_success_reward:
             print("✅ Success Reward Wrapper: Forward locomotion training")
@@ -277,8 +283,7 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
                 env = V8EnhancedACDRWrapper(env, v8_config)
             elif wrapper_type == 'CurriculumDRWrapper' or (wrapper_type == 'auto' and has_curriculum and use_curriculum):
                 print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
-                print("📚 Using CurriculumDRWrapper for phase-based training")
-                env = CurriculumDRWrapper(env, dr_config)
+                env = CurriculumDRWrapper(env, config) # Pass full config
             elif wrapper_type == 'DomainRandomizationWrapper' or (wrapper_type == 'auto' and not use_curriculum):
                 print("🎲 Basic Domain Randomization: Joint failure robustness")
                 print(f"  Joint dropout prob: {dr_config.get('joint_dropout_prob', 0.1)}")
