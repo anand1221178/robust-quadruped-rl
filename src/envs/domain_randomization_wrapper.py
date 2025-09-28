@@ -168,8 +168,8 @@ class CurriculumDRWrapper(gym.Wrapper):
         
         # 🎯 3-PHASE CURRICULUM SETUP (CONFIGURABLE!)
         self.phase_1_steps = self.dr_config.get('phase_1_steps', 8000000)   # Phase 1: Clean training
-        self.phase_2_steps = dr_config.get('phase_2_steps', 8000000)   # Phase 2: Single failures
-        self.phase_3_steps = dr_config.get('phase_3_steps', 9000000)   # Phase 3: Multiple failures
+        self.phase_2_steps = self.dr_config.get('phase_2_steps', 8000000)   # Phase 2: Single failures
+        self.phase_3_steps = self.dr_config.get('phase_3_steps', 9000000)   # Phase 3: Multiple failures
         self.current_timestep = 0
         self.current_phase = 1
         
@@ -179,22 +179,22 @@ class CurriculumDRWrapper(gym.Wrapper):
         self.episode_count = 0
         
         # 🔥 PHASE CONFIGURATIONS (FROM CONFIG FILE!)
-        self.phase_1_config = dr_config.get('phase_1_config', {
+        self.phase_1_config = self.dr_config.get('phase_1_config', {
             'joint_dropout_prob': 0.0,    # NO FAILURES - perfect learning
             'max_dropped_joints': 0,
-            'min_dropped_joints': 0, 
+            'min_dropped_joints': 0,
             'sensor_noise_std': 0.0,      # NO NOISE - clean signals
         })
-        
-        self.phase_2_config = dr_config.get('phase_2_config', {
+
+        self.phase_2_config = self.dr_config.get('phase_2_config', {
             'joint_dropout_prob': 0.05,   # 5% single failures
             'max_dropped_joints': 1,      # Single joint only
             'min_dropped_joints': 1,
             'sensor_noise_std': 0.01,     # Mild noise
         })
-        
-        self.phase_3_config = dr_config.get('phase_3_config', {
-            'joint_dropout_prob': 0.15,   # 15% multiple failures  
+
+        self.phase_3_config = self.dr_config.get('phase_3_config', {
+            'joint_dropout_prob': 0.15,   # 15% multiple failures
             'max_dropped_joints': 2,      # Up to 2 joints
             'min_dropped_joints': 1,
             'sensor_noise_std': 0.03,     # High noise
