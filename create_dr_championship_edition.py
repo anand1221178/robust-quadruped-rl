@@ -511,7 +511,7 @@ def main():
     # Should finally achieve balanced performance across mirror joints
     # Fixed curriculum with min_dropped_joints: 1 in phases 2-3
 
-    model_name = "v7_10d_symmetric_training_fixed_l7moasla"
+    model_name = "v7_10d_symmetric_training_fixed_oqy7ldcd"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 

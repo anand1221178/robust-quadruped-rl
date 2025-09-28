@@ -1,0 +1,104 @@
+# V7.11 - ROTATION MASTERY SPECIALIST
+# Teaching ankle_4 the same rotation strategy that ankle_1 uses successfully
+# Built on V7.7E foundation with NaN-safe multiplicative rewards
+
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment metadata
+experiment:
+  name: v7_11_rotation_mastery
+  description: "Rotation mastery training for ankle_4 - teaching rotation strategy from V7.7E baseline"
+  tags: ["v7.11", "rotation_mastery", "ankle_4", "pretrained", "fine_tuning"]
+
+# PRETRAINED MODEL BASE
+pretrained_model: "done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
+pretrained_vec_normalize: "done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
+
+# Environment setup (same as V7.7E)
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+  # V7.7E backward penalty (proven to work)
+  use_backward_penalty: true
+  backward_penalty_multiplier: 8.0
+
+  # 🎯 ROTATION MASTERY WRAPPER
+  use_rotation_mastery: true
+  rotation_mastery:
+    enabled: true
+    yaw_change_multiplier: 1.5      # 1.5x reward for rotation
+    forward_after_rotation: 2.0     # 2.0x reward for forward movement
+    max_total_multiplier: 2.5       # Hard cap at 2.5x to prevent NaN
+    min_rotation_threshold: 0.1     # Minimum rotation to trigger reward
+    min_forward_threshold: 0.05     # Minimum forward velocity for bonus
+    target_joints: ["ankle_4", "ankle_1"]  # Focus on ankle_4, learn from ankle_1
+
+# Domain randomization - focused ankle_4 curriculum
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+
+  # 2-phase focused training
+  phase_1_steps: 8000000   # 8M steps ankle_4 rotation mastery
+  phase_2_steps: 4000000   # 4M steps mixed validation
+  phase_3_steps: 0         # No phase 3
+
+  # Phase 1: Ankle_4 rotation mastery
+  phase_1_config:
+    joint_dropout_prob: 0.4
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+    # 🎯 FOCUSED JOINT SAMPLING
+    joint_weights:
+      ankle_4: 0.7    # 70% ankle_4 (main focus)
+      ankle_1: 0.1    # 10% ankle_1 (learn from success)
+      ankle_2: 0.05   # 5% ankle_2
+      ankle_3: 0.05   # 5% ankle_3
+      hip_1: 0.025    # 2.5% hip_1
+      hip_2: 0.025    # 2.5% hip_2
+      hip_3: 0.025    # 2.5% hip_3
+      hip_4: 0.025    # 2.5% hip_4
+
+  # Phase 2: Mixed validation
+  phase_2_config:
+    joint_dropout_prob: 0.25
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.01
+    # Normal random sampling (no weights)
+
+# Training parameters (fine-tuning from V7.7E)
+total_timesteps: 12000000
+save_freq: 1000000
+
+# PPO settings for fine-tuning
+ppo:
+  learning_rate: 0.00005     # Ultra-low LR for fine-tuning
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+
+# Same policy as V7.7E
+policy:
+  activation: relu
+  hidden_sizes: [64, 128]
+
+# Logging
+log_freq: 10000
+eval_freq: 1000000
+eval_episodes: 10
+
+# W&B
+wandb:
+  enabled: true
+  entity: anand_patel_robust_rl_research
+  project: robust-quadruped-rl
+  tags: ["v7.11", "rotation_mastery", "ankle_4_specialist", "fine_tuning"]
+  name: v7_11_rotation_mastery

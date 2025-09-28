@@ -37,7 +37,7 @@ from envs.v7_acdr_wrapper import V7ACDRWrapper, V7LinearCurriculumDR
 from envs.v7_acdr_wrapper_fixed import V7ACDRWrapperFixed
 from envs.v8_enhanced_acdr_wrapper import V8EnhancedACDRWrapper
 from envs.backward_penalty_wrapper import BackwardPenaltyWrapper
-from utils.symmetric_observation_wrapper import SymmetricObservationWrapper
+from envs.rotation_mastery_wrapper import RotationMasteryWrapper
 
 # Import RealAnt environments
 import realant_sim
@@ -169,11 +169,6 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
     def make_env():
         env = gym.make(env_name)
 
-        # V7.10: Apply symmetric observation wrapper if configured
-        if config.get('env', {}).get('symmetric_training', {}).get('enabled', False):
-            print("✅ Symmetric Observation Wrapper: Enforcing symmetric policy")
-            env = SymmetricObservationWrapper(env, flip_prob=config.get('env', {}).get('symmetric_training', {}).get('frame_randomization_prob', 0.5))
-
         # Apply reward wrapper
         if use_success_reward:
             print("✅ Success Reward Wrapper: Forward locomotion training")
@@ -188,6 +183,12 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
                                         penalty_multiplier=penalty_mult,
                                         stationary_penalty=stationary_penalty,
                                         stationary_threshold=stationary_threshold)
+
+        # V7.11: Apply rotation mastery wrapper if configured
+        if config.get('env', {}).get('use_rotation_mastery', False):
+            rotation_config = config.get('env', {}).get('rotation_mastery', {})
+            print("🎯 Rotation Mastery Wrapper: Teaching ankle_4 rotation strategy")
+            env = RotationMasteryWrapper(env, rotation_config)
 
         # V7_FIXED: The new, corrected ACDR wrapper
         if use_v7_acdr_fixed:

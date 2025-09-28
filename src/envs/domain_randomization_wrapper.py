@@ -153,18 +153,6 @@ class CurriculumDRWrapper(gym.Wrapper):
         super().__init__(env)
         self.config = config
         self.dr_config = config.get('domain_randomization', {})
-        self.symmetric_config = config.get('env', {}).get('symmetric_training', {})
-
-        # V7.10: Symmetric sampling settings
-        self.symmetric_failure_sampling = self.symmetric_config.get('symmetric_failure_sampling', False)
-        self.paired_joints_names = self.symmetric_config.get('paired_joints', [])
-        self.joint_to_idx = {
-            'hip_1': 0, 'ankle_1': 1, 'hip_2': 2, 'ankle_2': 3,
-            'hip_3': 4, 'ankle_3': 5, 'hip_4': 6, 'ankle_4': 7,
-        }
-        self.paired_joint_indices = [
-            (self.joint_to_idx[p[0]], self.joint_to_idx[p[1]]) for p in self.paired_joints_names
-        ]
         
         # 🎯 3-PHASE CURRICULUM SETUP (CONFIGURABLE!)
         self.phase_1_steps = self.dr_config.get('phase_1_steps', 8000000)   # Phase 1: Clean training
@@ -301,37 +289,51 @@ class CurriculumDRWrapper(gym.Wrapper):
             return "MULTIPLE FAILURES - Ultimate robustness challenge"
     
     def _sample_joint_dropouts(self):
-        """Sample which joints to drop for this episode, with symmetric sampling logic."""
+        """Sample which joints to drop for this episode"""
         self.dropped_joints = []
 
         if random.random() < self.joint_dropout_prob:
             if self.max_dropped_joints > 0:
                 num_to_drop = random.randint(self.min_dropped_joints, self.max_dropped_joints)
 
-                # Check if symmetric sampling is active for the current phase
+                # Check for weighted joint sampling (V7.11 rotation mastery)
                 current_phase_config = getattr(self, f'phase_{self.current_phase}_config', {})
-                use_symmetric_sampling = current_phase_config.get('use_symmetric_sampling', False)
-                prefer_paired_failures = current_phase_config.get('prefer_paired_failures', False)
+                joint_weights = current_phase_config.get('joint_weights', None)
 
-                if self.symmetric_failure_sampling and use_symmetric_sampling and self.paired_joint_indices:
-                    # --- Symmetric Sampling Logic ---
-                    joints_to_drop = set()
-                    if num_to_drop == 1:
-                        # Pick a random pair, then a random joint from that pair
-                        pair = random.choice(self.paired_joint_indices)
-                        joints_to_drop.add(random.choice(pair))
-                    
-                    elif num_to_drop == 2 and prefer_paired_failures and random.random() < 0.5:
-                        # 50% chance to drop a whole pair
-                        pair_to_drop = random.choice(self.paired_joint_indices)
-                        joints_to_drop.update(pair_to_drop)
+                if joint_weights:
+                    # --- Weighted Joint Sampling ---
+                    joint_names = ['hip_1', 'ankle_1', 'hip_2', 'ankle_2', 'hip_3', 'ankle_3', 'hip_4', 'ankle_4']
+                    weights = []
 
-                    else: # Fallback for other cases (e.g., num_to_drop > 2 or non-paired failure)
-                        while len(joints_to_drop) < num_to_drop:
-                            pair = random.choice(self.paired_joint_indices)
-                            joints_to_drop.add(random.choice(pair))
-                    
-                    self.dropped_joints = list(joints_to_drop)
+                    for i, joint_name in enumerate(joint_names):
+                        weights.append(joint_weights.get(joint_name, 1.0/len(joint_names)))
+
+                    # Normalize weights
+                    total_weight = sum(weights)
+                    if total_weight > 0:
+                        weights = [w / total_weight for w in weights]
+                    else:
+                        weights = [1.0/len(joint_names) for _ in joint_names]
+
+                    # Sample based on weights
+                    self.dropped_joints = random.choices(
+                        range(self.num_joints),
+                        weights=weights,
+                        k=num_to_drop
+                    )
+
+                    # Remove duplicates if any
+                    self.dropped_joints = list(set(self.dropped_joints))
+
+                    # If we lost joints due to duplicates, sample more
+                    while len(self.dropped_joints) < num_to_drop:
+                        additional = random.choices(
+                            range(self.num_joints),
+                            weights=weights,
+                            k=1
+                        )[0]
+                        if additional not in self.dropped_joints:
+                            self.dropped_joints.append(additional)
 
                 else:
                     # --- Original Random Sampling ---
