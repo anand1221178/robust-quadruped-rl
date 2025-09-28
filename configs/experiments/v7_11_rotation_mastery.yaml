@@ -12,9 +12,9 @@ experiment:
   description: "Rotation mastery training for ankle_4 - teaching rotation strategy from V7.7E baseline"
   tags: ["v7.11", "rotation_mastery", "ankle_4", "pretrained", "fine_tuning"]
 
-# PRETRAINED MODEL BASE
-pretrained_model: "done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
-pretrained_vec_normalize: "done/dr/Curr best/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
+# PRETRAINED MODEL BASE (cluster paths)
+pretrained_model: "/home-mscluster/panand/Research Proj/robust-quadruped-rl/experiments/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
+pretrained_vec_normalize: "/home-mscluster/panand/Research Proj/robust-quadruped-rl/experiments/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl"
 
 # Environment setup (same as V7.7E)
 env:
