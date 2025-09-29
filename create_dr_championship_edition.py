@@ -507,11 +507,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.10D SYMMETRIC TRAINING FIXED - The properly trained symmetric model!
-    # Should finally achieve balanced performance across mirror joints
-    # Fixed curriculum with min_dropped_joints: 1 in phases 2-3
+    # V7.11 ROTATION MASTERY - Teaching ankle_4 to rotate for recovery
+    # Fine-tuned from V7.7E champion with targeted rotation rewards
+    # 70% ankle_4 focus with 1.5x rotation rewards, 2.0x forward after rotation
 
-    model_name = "v7_10d_symmetric_training_fixed_oqy7ldcd"
+    model_name = "v7_11_rotation_mastery_snfpgtbj"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
