@@ -507,11 +507,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.11 ROTATION MASTERY - Teaching ankle_4 to rotate for recovery
-    # Fine-tuned from V7.7E champion with targeted rotation rewards
-    # 70% ankle_4 focus with 1.5x rotation rewards, 2.0x forward after rotation
+    # V7.12 GENTLE ANKLE SPECIALIST - Balanced 30% ankle_4 focus
+    # Fine-tuned from V7.7E champion with weighted joint sampling
+    # 30% ankle_4, 40% hips, 30% other ankles for balanced training
 
-    model_name = "v7_11_rotation_mastery_snfpgtbj"
+    model_name = "v7_12_gentle_ankle_specialist_4gdf023j"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
