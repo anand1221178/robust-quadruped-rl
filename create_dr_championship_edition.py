@@ -507,11 +507,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.14 REAR ANKLE FOCUS - Testing 50% rear ankle specialization
-    # Built on V7.13 success but focused on ankle_3/ankle_4 improvement
-    # 25% ankle_3 + 25% ankle_4 training approach
+    # V7.15 V7.7E + REAR ANKLES - The ultimate conservative approach
+    # V7.7E exact foundation (20M steps) + V7.14 rear ankle finale (5M steps)
+    # Should combine balanced excellence with rear ankle breakthrough
 
-    model_name = "v7_14_rear_ankle_focus_padq8zqr"
+    model_name = "v7_15_v77e_plus_rear_ankles_yerilmzl"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 

@@ -1,0 +1,90 @@
+[
+  {
+    "failure_mode": "NO FAILURES",
+    "failed_joints": [],
+    "velocity": 0.46025907812728645,
+    "retention_pct": 100.0,
+    "distance": 13.807772343818593,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "HIP_1 LOCKED",
+    "failed_joints": [
+      "hip_1"
+    ],
+    "velocity": 0.3291434908039237,
+    "retention_pct": 71.51265590309504,
+    "distance": 9.87430472411771,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "ANKLE_1 LOCKED",
+    "failed_joints": [
+      "ankle_1"
+    ],
+    "velocity": 0.24037814123255188,
+    "retention_pct": 52.22670288451635,
+    "distance": 7.211344236976556,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "HIP_2 LOCKED",
+    "failed_joints": [
+      "hip_2"
+    ],
+    "velocity": 0.015865290956852383,
+    "retention_pct": 3.4470348790088994,
+    "distance": 0.47595872870557143,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "ANKLE_2 LOCKED",
+    "failed_joints": [
+      "ankle_2"
+    ],
+    "velocity": 0.2350103669523152,
+    "retention_pct": 51.06045228016603,
+    "distance": 7.050311008569456,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "HIP_3 LOCKED",
+    "failed_joints": [
+      "hip_3"
+    ],
+    "velocity": 0.19631164678506305,
+    "retention_pct": 42.652422540761336,
+    "distance": 5.889349403551892,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "ANKLE_3 LOCKED",
+    "failed_joints": [
+      "ankle_3"
+    ],
+    "velocity": 0.11122646275883892,
+    "retention_pct": 24.166055172969084,
+    "distance": 3.3367938827651678,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "HIP_4 LOCKED",
+    "failed_joints": [
+      "hip_4"
+    ],
+    "velocity": 0.2789496669524208,
+    "retention_pct": 60.60709722172524,
+    "distance": 8.368490008572623,
+    "frames_recorded": 1800
+  },
+  {
+    "failure_mode": "ANKLE_4 LOCKED",
+    "failed_joints": [
+      "ankle_4"
+    ],
+    "velocity": 0.03142609797027499,
+    "retention_pct": 6.827914855724797,
+    "distance": 0.9427829391082498,
+    "frames_recorded": 1800
+  }
+]
