@@ -1,0 +1,121 @@
+# V7.15 - V7.7E FOUNDATION + REAR ANKLE PHASE
+# Start with EXACT V7.7E configuration to rebuild excellence
+# Then add targeted rear ankle phase using V7.14's proven weights
+# Conservative approach: build excellence first, then carefully add improvements
+
+defaults:
+  - /train/default
+  - /env/realant
+
+# Experiment metadata
+experiment:
+  name: v7_15_v77e_plus_rear_ankles
+  description: "V7.7E exact config foundation + final rear ankle improvement phase"
+  tags: ["v7.15", "v77e_foundation", "conservative_approach", "rear_ankle_finale"]
+
+# PRETRAINED MODEL BASE - V7.7E Champion (NO VecNormalize!)
+pretrained_model: "/home-mscluster/panand/Research Proj/robust-quadruped-rl/experiments/v7_7e_ultra_speed_jtfwl2qf/final_model.zip"
+# pretrained_vec_normalize: INTENTIONALLY OMITTED - Fresh normalization approach
+
+# Environment setup - EXACT V7.7E CONFIGURATION
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+
+  # V7.7E exact backward penalty
+  use_backward_penalty: true
+  backward_penalty_multiplier: 5.0  # V7.7E used 5.0, not 8.0!
+
+  # V7.7E exact ultra speed mode
+  use_ultra_speed_mode: true
+  speed_bonus_multiplier: 3.0
+  speed_bonus_threshold: 0.1
+  target_velocity: 0.15
+  velocity_retention_bonus: true
+
+  # NO rotation mastery
+  use_rotation_mastery: false
+
+# Domain randomization - V7.7E FOUNDATION + REAR ANKLE FINALE
+domain_randomization:
+  enabled: true
+  wrapper_type: "CurriculumDRWrapper"
+
+  # Phase 1: EXACT V7.7E curriculum (rebuild excellence)
+  phase_1_steps: 10000000  # 10M steps clean training (like V7.7E Phase 1)
+  phase_2_steps: 10000000  # 10M steps single failures (like V7.7E Phase 2)
+  phase_3_steps: 5000000   # 5M steps rear ankle focus (NEW - using V7.14 weights)
+
+  # Phase 1: Clean training (EXACT V7.7E)
+  phase_1_config:
+    joint_dropout_prob: 0.0    # NO FAILURES - perfect learning
+    max_dropped_joints: 0
+    min_dropped_joints: 0
+    sensor_noise_std: 0.0      # NO NOISE - clean signals
+
+  # Phase 2: Single failures (EXACT V7.7E)
+  phase_2_config:
+    joint_dropout_prob: 0.5    # 50% single failures
+    max_dropped_joints: 1      # Single joint only
+    min_dropped_joints: 1
+    sensor_noise_std: 0.0      # No noise
+    # NO WEIGHTS - uniform sampling like V7.7E
+
+  # Phase 3: Rear ankle focus (NEW - V7.14 proven weights)
+  phase_3_config:
+    joint_dropout_prob: 0.4
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+    # 🎯 V7.14 REAR ANKLE WEIGHTS (proven to work)
+    joint_weights:
+      ankle_4: 0.25    # 25% ankle_4 (V7.14 proven)
+      ankle_3: 0.25    # 25% ankle_3 (V7.14 proven)
+      ankle_1: 0.05    # 5% ankle_1
+      ankle_2: 0.05    # 5% ankle_2
+      hip_1: 0.10      # 10% hip_1
+      hip_2: 0.10      # 10% hip_2
+      hip_3: 0.10      # 10% hip_3
+      hip_4: 0.10      # 10% hip_4
+
+# Training parameters - Extended for 3 phases
+total_timesteps: 25000000  # 25M steps (10M + 10M + 5M)
+save_freq: 1000000
+
+# PPO settings - EXACT V7.7E CONFIGURATION
+ppo:
+  learning_rate: 0.0001      # V7.7E original LR
+  batch_size: 1536           # V7.7E
+  n_epochs: 8                # V7.7E
+  gamma: 0.995               # V7.7E
+  gae_lambda: 0.97           # V7.7E
+  clip_range: 0.15           # V7.7E
+  ent_coef: 0.005            # V7.7E
+  vf_coef: 0.5               # V7.7E
+  max_grad_norm: 0.4         # V7.7E
+
+# EXACT V7.7E policy
+policy:
+  activation: tanh           # V7.7E
+  hidden_sizes: [128, 128]   # V7.7E
+
+# EXACT V7.7E reward configuration
+reward_config:
+  mastery_bonus: 100.0       # V7.7E
+  speed_weight: 1.5          # V7.7E
+  survival_bonus: 0.5        # V7.7E
+  use_modified_reward: true  # V7.7E
+
+# Logging
+log_freq: 10000
+eval_freq: 1000000
+eval_episodes: 10
+
+# W&B
+wandb:
+  enabled: true
+  entity: anand_patel_robust_rl_research
+  project: robust-quadruped-rl
+  tags: ["v7.15", "v77e_exact", "rear_ankle_finale", "conservative"]
+  name: v7_15_v77e_plus_rear_ankles

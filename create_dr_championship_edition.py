@@ -371,14 +371,14 @@ class DRChampionRecorder:
             rewards = []
             frames_this_level = 0
 
-            # IMMEDIATE LOCKING: Test pure adaptation without momentum assistance
-            DELAYED_LOCKING_STEPS = 0  # No delay - immediate failure from start!
+            # DELAYED LOCKING: Let robot establish momentum first (back to standard approach)
+            DELAYED_LOCKING_STEPS = 120  # 2 seconds delay for ALL joints
             joint_lock_active = False
 
             print(f"  Starting episode with {failure_level['name']}...")
             if failed_joint_indices:
                 print(f"  Forcing failure on joints: {failure_level['joints']} (indices: {failed_joint_indices})")
-                print(f"  ⚡ IMMEDIATE LOCKING: Joints locked from step 0 - pure adaptation test!")
+                print(f"  🚀 DELAYED LOCKING: Joints will lock after {DELAYED_LOCKING_STEPS} steps (2 seconds)")
 
             # Track if we need to continue across episode boundaries
             episode_resets = 0
@@ -507,11 +507,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.13 FRESH NORMALIZATION - Testing with IMMEDIATE locking (no delay)
-    # Want to see pure adaptation without momentum from initial movement
-    # This reveals true robustness vs relying on 2-second head start
+    # V7.14 REAR ANKLE FOCUS - Testing 50% rear ankle specialization
+    # Built on V7.13 success but focused on ankle_3/ankle_4 improvement
+    # 25% ankle_3 + 25% ankle_4 training approach
 
-    model_name = "v7_13_fresh_normalization_57ea0nls"
+    model_name = "v7_14_rear_ankle_focus_padq8zqr"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
