@@ -1,0 +1,126 @@
+# M5 - SEQUENTIAL COMBO (Simplified - Uses Only Existing Features)
+# Based on 42,400 episode evaluation findings
+# KEY FIX: Sequential training (SR2L FIRST, then add DR)
+# Expected: 8-9m baseline, 55-60% joint retention, no M4 interference
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: ppo_sequential_combo_simple
+  description: "Sequential SR2L→DR training. SR2L establishes smooth baseline (0-20M), then DR adds robustness (20M-50M). Fixes M4 interference."
+  tags:
+    - m5_sequential
+    - sr2l_then_dr
+    - ablation_study
+    - deployment_candidate
+
+# Environment
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: true
+  use_ultra_speed_mode: true
+  target_velocity: 0.15
+  speed_bonus_threshold: 0.1
+  speed_bonus_multiplier: 3.0
+  backward_penalty_multiplier: 5.0
+  use_backward_penalty: true
+  velocity_retention_bonus: true
+
+# SR2L - PHASE 1: Establish smooth baseline (0-20M)
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_std: 0.01
+  perturb_only_joints: true
+  joint_start_dim: 13
+  joint_end_dim: 28
+
+  use_curriculum: true
+  warmup_steps: 5_000_000       # 0-5M: Pure PPO
+  curriculum_steps: 15_000_000  # 5M-20M: SR2L active
+
+# Domain Randomization - PHASE 2: Add robustness (20M-50M)
+domain_randomization:
+  enabled: true
+  wrapper_type: CurriculumDRWrapper
+
+  # Phase 1: Gentle (20M-30M) - 30% episodes
+  phase_1_steps: 10_000_000
+  phase_1_config:
+    joint_dropout_prob: 0.30
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+  # Phase 2: Moderate (30M-40M) - 50% episodes
+  phase_2_steps: 10_000_000
+  phase_2_config:
+    joint_dropout_prob: 0.50
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+  # Phase 3: Aggressive (40M-50M) - 60% episodes, 2 joints
+  phase_3_steps: 10_000_000
+  phase_3_config:
+    joint_dropout_prob: 0.60
+    min_dropped_joints: 1
+    max_dropped_joints: 2
+    sensor_noise_std: 0.0
+
+# Reward
+reward_config:
+  use_modified_reward: true
+  speed_weight: 1.5
+  survival_bonus: 0.5
+  mastery_bonus: 100.0
+
+# PPO
+ppo:
+  learning_rate: 0.0001
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+# Policy
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+# Training
+total_timesteps: 50_000_000
+num_envs: 8
+seed: 42
+
+# Checkpointing
+save_freq: 1_000_000
+eval_freq: 1_000_000
+eval_episodes: 10
+
+# Logging
+log_freq: 10000
+logging:
+  verbose: 1
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  log_interval: 10
+
+wandb:
+  enabled: true
+  project: robust-quadruped-rl
+  entity: anandpatel_patel_robust_rl_research
+  name: ppo_sequential_combo_simple
+  tags:
+    - m5_sequential
+    - sr2l_then_dr
+    - deployment_candidate
