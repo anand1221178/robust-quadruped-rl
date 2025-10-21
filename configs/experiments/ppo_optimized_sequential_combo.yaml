@@ -1,0 +1,166 @@
+# M5 - OPTIMIZED SEQUENTIAL COMBO
+# Based on 42,400 episode evaluation findings
+# Addresses M4's interference problem with sequential training
+# Expected: 8.5-9.0m baseline, 110% noise retention, 55-60% joint retention
+
+defaults:
+  - /train/default
+  - /env/realant
+
+experiment:
+  name: ppo_optimized_sequential_combo
+  description: "Sequential SR2L→DR training with anatomical awareness, recovery optimization, and lambda decay. Fixes M4's interference issues."
+  tags:
+    - m5_optimized
+    - sequential_training
+    - sr2l_dr_fixed
+    - anatomical_sampling
+    - ablation_study
+    - deployment_candidate
+
+# Environment Configuration
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: true
+  use_ultra_speed_mode: true
+  target_velocity: 0.15
+  speed_bonus_threshold: 0.1
+  speed_bonus_multiplier: 3.0
+  backward_penalty_multiplier: 5.0
+  use_backward_penalty: true
+  velocity_retention_bonus: true
+
+# SR2L Configuration - PHASE 1 PRIMARY (0-15M steps)
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_std: 0.01
+  perturb_only_joints: true
+  joint_start_dim: 13
+  joint_end_dim: 28
+
+  # Curriculum for smooth establishment
+  use_curriculum: true
+  warmup_steps: 5_000_000       # First 5M: pure PPO
+  curriculum_steps: 10_000_000  # 5M-15M: gradual SR2L
+
+  # Lambda decay for PHASE 3 (30M+)
+  use_lambda_decay: true
+  lambda_decay_start: 30_000_000
+  lambda_decay_final: 0.0005    # Half strength to reduce DR interference
+
+# Domain Randomization - PHASE 2 START (15M steps)
+domain_randomization:
+  enabled: true
+  wrapper_type: CurriculumDRWrapper
+  start_step: 15_000_000  # KEY: Start AFTER SR2L establishes smooth baseline
+
+  # Phase 1: Gentle introduction (15M-25M)
+  phase_1_steps: 10_000_000
+  phase_1_config:
+    joint_dropout_prob: 0.20      # Only 20% of episodes (gentler than M3's 50%)
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+  # Phase 2: Moderate stress (25M-35M)
+  phase_2_steps: 10_000_000
+  phase_2_config:
+    joint_dropout_prob: 0.40      # 40% of episodes
+    min_dropped_joints: 1
+    max_dropped_joints: 1
+    sensor_noise_std: 0.0
+
+  # Phase 3: Aggressive multi-joint (35M-50M)
+  phase_3_steps: 15_000_000
+  phase_3_config:
+    joint_dropout_prob: 0.60      # 60% of episodes (matches M3)
+    min_dropped_joints: 1
+    max_dropped_joints: 2         # Up to 2 joints
+    sensor_noise_std: 0.0
+
+  # Anatomically-aware sampling (2x ankle failures)
+  use_anatomical_weighting: true
+  joint_failure_weights:
+    hip_1: 1.0
+    hip_2: 1.0
+    hip_3: 1.0
+    hip_4: 1.0
+    ankle_1: 2.0   # Discovered from Exp 3: ankles are harder
+    ankle_2: 2.0
+    ankle_3: 2.0
+    ankle_4: 2.0
+
+# Reward Configuration - Recovery Optimization
+reward_config:
+  use_modified_reward: true
+  speed_weight: 1.5
+  survival_bonus: 0.5
+  mastery_bonus: 100.0
+
+  # NEW: Recovery time optimization (from Exp 5 findings)
+  use_recovery_bonus: true
+  recovery_bonus_weight: 50.0
+  recovery_window_steps: 200    # First 2 seconds after failure
+  track_pre_failure_velocity: true
+
+# PPO Hyperparameters
+ppo:
+  learning_rate: 0.0001          # Lower for fine-grained learning
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+# Policy Architecture
+policy:
+  activation: tanh               # Matches M1-M4 for fair comparison
+  hidden_sizes:
+    - 128
+    - 128
+
+# Training Configuration
+total_timesteps: 50_000_000      # 50M steps for full curriculum
+num_envs: 8
+seed: 42
+
+# Checkpointing
+save_freq: 1_000_000
+eval_freq: 1_000_000
+eval_episodes: 10
+
+# Logging
+log_freq: 10000
+logging:
+  verbose: 1
+  tensorboard: true
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  log_interval: 10
+
+# W&B Configuration
+wandb:
+  enabled: true
+  project: robust-quadruped-rl
+  entity: anandpatel_patel_robust_rl_research
+  name: ppo_optimized_sequential_combo
+  tags:
+    - m5_optimized
+    - sequential_sr2l_dr
+    - deployment_candidate
+    - anatomical_weighting
+    - recovery_optimized
+
+# VecNormalize Optimization (from Exp 6 findings)
+vec_normalize:
+  clip_obs: 15.0      # Increased from default 10.0 (better noise filtering)
+  clip_reward: 15.0   # Increased from default 10.0
+  gamma: 0.995        # Match PPO discount
+  norm_obs: true
+  norm_reward: true

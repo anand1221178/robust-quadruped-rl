@@ -1,0 +1,228 @@
+% IEEE Conference Paper Template
+% Robust Quadruped Locomotion Research
+% Research-Grade Abstract and Introduction
+
+\documentclass[conference]{IEEEtran}
+
+% Packages
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\begin{document}
+
+% ============================================================================
+% TITLE
+% ============================================================================
+\title{When Robustness Methods Collide: A Systematic Ablation Study of SR2L and Domain Randomization for Quadruped Locomotion}
+
+\author{
+    \IEEEauthorblockN{Anand Patel}
+    \IEEEauthorblockA{
+        School of Computer Science and Applied Mathematics\\
+        University of the Witwatersrand, Johannesburg\\
+        Email: anand.patel@students.wits.ac.za
+    }
+}
+
+\maketitle
+
+% ============================================================================
+% ABSTRACT
+% ============================================================================
+\begin{abstract}
+Deploying quadruped robots in real-world environments requires robustness to sensor noise and actuator failures, yet the interaction between robustness training methods remains poorly understood. We present the first systematic ablation study comparing Smooth Regularized Reinforcement Learning (SR2L), Domain Randomization (DR), and their combination across 38,000 evaluation episodes on the RealAnt quadruped. Our 4-way comparison reveals three unexpected findings: (1) combining SR2L and DR produces \textit{negative synergy}, with the combined approach underperforming DR alone by 25\% under combined stress (3.23m vs 4.32m); (2) all models exhibited unexpected sensor noise robustness (97\%+ retention at 10$\times$ training noise), traced to VecNormalize's implicit low-pass filtering through controlled ablation; (3) SR2L policies exhibit \textit{noise-induced regularization}, achieving 101\% performance at noise levels 10$\times$ higher than training—a phenomenon where mild perturbations prevent overfitting to training conditions. Through comprehensive evaluation including recovery time dynamics, multi-distribution noise testing (Gaussian, Poisson, salt-and-pepper), and full factorial joint$\times$noise interaction analysis, we provide quantitative evidence that specialized training (DR alone: 47\% joint failure retention) outperforms multi-objective approaches (combined: 43\% retention). Our findings challenge the assumption that combining robustness methods yields additive benefits, with direct implications for practitioners: specialize training to expected failure modes rather than attempting general robustness.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Quadruped Locomotion, Robustness, Domain Randomization, Smooth Regularization, Reinforcement Learning, PPO, Ablation Study, Negative Synergy
+\end{IEEEkeywords}
+
+% ============================================================================
+% INTRODUCTION
+% ============================================================================
+\section{Introduction}
+
+\subsection{Motivation and Problem Statement}
+
+Quadruped robots operating in unstructured environments face two fundamental failure modes: \textit{sensor degradation} (noisy joint encoders from vibration, electromagnetic interference, or wear) and \textit{actuator failures} (joint malfunctions, reduced torque, or complete mechanical breakdown). While reinforcement learning (RL) has achieved impressive locomotion capabilities in simulation~\cite{TODO-hwangbo2019learning,TODO-lee2020learning}, policies trained under ideal conditions exhibit catastrophic performance degradation when deployed on physical hardware experiencing these real-world perturbations.
+
+Two distinct robustness paradigms have emerged to address this sim-to-real gap:
+
+\textbf{Smooth Regularized RL (SR2L)}~\cite{TODO-sr2l} injects zero-mean Gaussian noise into observations during training while penalizing policy sensitivity to these perturbations. The regularization term $L_{\text{smooth}} = \mathbb{E}_{s \sim \mathcal{D}} [\|\pi_\theta(s) - \pi_\theta(s + \delta)\|^2]$ encourages local Lipschitz continuity, creating policies robust to continuous sensor noise. SR2L is designed specifically for observation noise robustness.
+
+\textbf{Domain Randomization (DR)}~\cite{TODO-tobin2017domain,TODO-peng2018sim} randomly varies environment parameters during training, exposing the agent to diverse conditions. For actuator failures, DR randomly disables joints (setting torque to zero) to force the policy to learn compensatory behaviors. DR targets structural and mechanical failure modes.
+
+Despite extensive work on these individual methods, a critical question remains unanswered: \textit{do SR2L and DR provide complementary or redundant robustness?} If complementary, practitioners should combine them; if redundant, specialization is preferable. More concerning, these methods might \textit{interfere}, with competing training objectives degrading overall performance.
+
+\subsection{Research Gaps}
+
+Three fundamental gaps motivate our systematic investigation:
+
+\textbf{Gap 1: Lack of direct comparison.} Prior work evaluates robustness methods in isolation, making it impossible to determine relative effectiveness. Comparisons across papers are confounded by different algorithms (PPO vs SAC), environments (ANYmal vs Unitree), and evaluation protocols.
+
+\textbf{Gap 2: Unknown interaction effects.} No prior work has systematically evaluated whether combining SR2L and DR produces synergistic benefits, additive effects, or interference. Multi-method training may create conflicting gradients: SR2L encourages \textit{smoothness} (similar actions under similar observations), while DR encourages \textit{adaptability} (different behaviors for different failure modes).
+
+\textbf{Gap 3: Unexplored mechanisms.} Empirical observations of unexpected robustness in baseline models suggest unidentified factors beyond explicit robustness training. Understanding these mechanisms is critical for principled algorithm design.
+
+\subsection{Research Questions}
+
+We address these gaps through four research questions:
+
+\textbf{RQ1 (Relative Effectiveness):} Which robustness method—SR2L, DR, or their combination—provides superior performance under sensor noise and actuator failures?
+
+\textbf{RQ2 (Interaction Effects):} Does combining SR2L and DR produce synergistic benefits, additive effects, or interference?
+
+\textbf{RQ3 (Generalization):} Does SR2L's Gaussian noise training transfer to other noise distributions (Poisson, salt-and-pepper)?
+
+\textbf{RQ4 (Hidden Mechanisms):} What accounts for unexpected baseline robustness in models without explicit robustness training?
+
+\subsection{Approach and Contributions}
+
+We conduct a systematic 4-way ablation study across 38,000 evaluation episodes, comparing:
+\begin{itemize}
+    \item \textbf{M1 (Baseline):} PPO without robustness training
+    \item \textbf{M2 (SR2L):} PPO with smooth regularization ($\lambda=0.001$, $\sigma=0.01$)
+    \item \textbf{M3 (DR):} PPO with 3-phase curriculum domain randomization (50-60\% episodes with 1-2 joint failures during training)
+    \item \textbf{M4 (Combo):} PPO with both SR2L and curriculum DR
+\end{itemize}
+
+Our evaluation protocol spans 8 experiments:
+\begin{enumerate}
+    \item Baseline performance (ideal conditions)
+    \item Sensor noise robustness (12 Gaussian noise levels, $\sigma \in [0, 3.0]$)
+    \item Extended noise types (Gaussian, Poisson, salt-and-pepper with SNR matching)
+    \item Joint failure robustness (8 individual joints with 2-second delayed locking)
+    \item Combined stress (simultaneous noise and joint failures)
+    \item Per-joint deep dive (velocity profiling and anatomical patterns)
+    \item Validation suite (controlled ablation of VecNormalize, stochastic resonance testing)
+    \item Full factorial ablation (8 joints $\times$ 4 noise conditions with recovery time tracking)
+\end{enumerate}
+
+\textbf{Contributions.} We make four key contributions:
+
+\textbf{C1: First negative result on multi-method training.} We provide quantitative evidence that combining SR2L and DR produces \textit{interference} rather than synergy. Under combined stress, M4 (combo) underperforms M3 (DR alone) by 25\% (3.23m vs 4.32m average distance), demonstrating that multi-objective robustness training creates conflicting gradients that degrade performance.
+
+\textbf{C2: Discovery of implicit robustness mechanism.} Through controlled ablation, we identify VecNormalize as an unrecognized robustness mechanism. Models with VecNormalize achieve 146\% better baseline performance (11.2m vs 4.5m) and maintain 96\% retention at $\sigma=0.1$ despite no robustness training. This running statistics normalization acts as an implicit low-pass filter, explaining unexpected noise tolerance in baseline models.
+
+\textbf{C3: Discovery of SR2L noise tolerance.} Through systematic ablation across 11 noise levels, we demonstrate that SR2L-trained policies maintain or improve performance under observation noise, averaging 108\% baseline retention (7 of 10 noise levels exceeded baseline performance). This tolerance is training-method-specific: baseline models degrade by 2.6\% and DR models by 6.4\% under identical noise conditions. Controlled experiments confirm the effect stems from SR2L's smoothness regularization rather than VecNormalize adaptation, with direct implications for deploying learned policies on hardware with noisy sensors.
+
+\textbf{C4: Comprehensive robustness methodology.} We introduce temporal recovery metrics (time to regain 50\% baseline velocity post-failure), multi-distribution noise testing with SNR equivalence, and full factorial joint$\times$noise interaction analysis. This methodology enables mechanistic understanding beyond static retention percentages.
+
+\textbf{Deployment recommendation.} Based on 38,000 episodes, we recommend M3 (DR alone) for real-world deployment: 47\% average joint failure retention, 108\% noise retention, acceptable 29\% baseline sacrifice, and simpler training than multi-method approaches. The combined method (M4) provides no benefit over M3 while requiring increased training complexity.
+
+\subsection{Paper Organization}
+
+Section II reviews related work on robustness methods and quadruped locomotion. Section III describes our methodology including the 4-model ablation design and 8-experiment evaluation protocol. Section IV presents comprehensive results across all robustness dimensions. Section V discusses mechanisms underlying our findings, including training interference in M4 and VecNormalize's implicit filtering. Section VI concludes with deployment recommendations and future directions.
+
+% ============================================================================
+% PLACEHOLDER FOR REMAINING SECTIONS
+% ============================================================================
+
+\section{Related Work}
+[To be written - will cover DR literature, SR2L background, quadruped RL, and multi-method training gaps]
+
+\section{Methodology}
+
+\subsection{Experimental Platform and Environment}
+
+All experiments use the RealAnt-v0 quadruped robot simulated in MuJoCo physics engine~\cite{TODO-mujoco}. The RealAnt has 8 actuated degrees of freedom (2 joints per leg: hip and ankle). The 29-dimensional observation space consists of: (1) torso linear velocities in x, y, z (3D), (2) torso z-position (1D), (3) sin and cos of torso Euler angles for roll, pitch, yaw (6D), (4) torso angular velocities (3D), (5) joint angular positions (8D), and (6) joint angular velocities (8D). The action space consists of 8 continuous angular position set-points for the joints.
+
+The environment uses a forward locomotion reward structure (SuccessRewardWrapper) that provides reward proportional to forward velocity: $r_t = 100 \cdot v_x^2$, where $v_x$ is the robot's velocity in the forward direction. Episodes terminate after 1000 timesteps or if the robot falls (torso height $< 0.2$m). This reward structure encourages fast, stable forward locomotion without requiring explicit goal positions.
+
+\subsection{Model Training Configurations}
+
+We train four distinct models using Proximal Policy Optimization (PPO)~\cite{TODO-schulman-ppo} to enable systematic ablation analysis:
+
+\textbf{M1 (Baseline):} Standard PPO trained in clean conditions with no robustness augmentation. Uses SuccessRewardWrapper only. Trained for 10M timesteps on RealAnt-v0 with 8 parallel environments. This establishes the performance ceiling under ideal conditions.
+
+\textbf{M2 (SR2L):} PPO with Smooth Regularized Reinforcement Learning~\cite{TODO-sr2l}. Augments the standard PPO loss with a smoothness regularization term:
+\begin{equation}
+L_{total} = L_{PPO} + \lambda \cdot \mathbb{E}_{s \sim \mathcal{D}} [\|\pi_\theta(s) - \pi_\theta(s + \delta)\|^2]
+\end{equation}
+where $\delta \sim \mathcal{N}(0, \sigma^2 I)$ with $\sigma = 0.01$ applied only to joint observation dimensions (13-28), and $\lambda = 0.001$. Perturbations applied during training but not to the actual environment. Trained for 20M timesteps.
+
+\textbf{M3 (Domain Randomization):} PPO with 3-phase curriculum domain randomization targeting joint failures. Training schedule:
+\begin{itemize}
+    \item Phase 1 (0-10M steps): Clean training, no failures
+    \item Phase 2 (10-20M steps): 50\% episodes with exactly 1 random joint locked
+    \item Phase 3 (20-32M steps): 60\% episodes with 1-2 random joints locked
+\end{itemize}
+Joint locking implemented by setting affected joint torques to zero. Total training: 32M timesteps. This is v7.7e "Ultra Speed" configuration with speed bonuses (3$\times$ multiplier at 0.1 m/s threshold).
+
+\textbf{M4 (Combined):} PPO with both SR2L smoothness regularization AND curriculum domain randomization. Identical curriculum schedule to M3, but with SR2L loss ($\lambda=0.001$, $\sigma=0.01$) applied throughout all phases. Total training: 30M timesteps.
+
+All models use identical policy architecture: 2-layer MLP with [128, 128] hidden units and tanh activation. PPO hyperparameters: learning rate $3 \times 10^{-4}$, batch size 1536, 8 epochs per update, clip range 0.15, GAE $\lambda=0.97$, discount $\gamma=0.995$.
+
+\subsection{Observation Normalization}
+
+All models use VecNormalize~\cite{TODO-baselines} to maintain running statistics (mean and standard deviation) of observations and rewards. This normalization is applied during both training and evaluation, with statistics frozen during evaluation rollouts. This is critical infrastructure that provides implicit robustness benefits across all models.
+
+\subsection{Evaluation Protocol}
+
+We conduct 8 systematic experiments totaling 42,400 evaluation episodes:
+
+\textbf{Experiment 1: Baseline Performance} (400 episodes) - Evaluate all 4 models under clean conditions (no noise, no failures) to establish performance ceiling. 100 episodes per model.
+
+\textbf{Experiment 2: Sensor Noise Robustness} (4,800 episodes) - Test all models across 12 Gaussian noise levels: $\sigma \in \{0.00, 0.01, 0.02, ..., 0.10, 0.20, 0.30\}$ applied to joint position and velocity observations. 100 episodes per model per noise level.
+
+\textbf{Experiment 2B: Extended Noise Types} (7,200 episodes) - Test noise distribution generalization using Gaussian, Poisson, and salt-and-pepper noise with SNR-matched intensities. 100 episodes per model per distribution per intensity level (6 levels).
+
+\textbf{Experiment 3: Joint Failure Robustness} (3,200 episodes) - Test each of 8 individual joints locked separately. Joint locking uses 2-second delayed onset (joint locks at $t=2$s) to measure recovery behavior. 100 episodes per model per joint.
+
+\textbf{Experiment 4: Combined Stress} (2,400 episodes) - Simultaneous sensor noise and joint failures across 6 scenarios: 3 noise levels $\times$ 2 failure modes. 100 episodes per model per scenario.
+
+\textbf{Experiment 5: Per-Joint Deep Dive} (4,800 episodes) - Velocity profiling with 100Hz sampling for all 8 joints, recovery time tracking (time to regain 50\% baseline velocity), and anatomical pattern analysis.
+
+\textbf{Experiment 6: Validation Suite} (2,400 episodes) - Controlled ablations including VecNormalize disable tests and stochastic resonance validation.
+
+\textbf{Experiment 7: Full Factorial Ablation} (12,800 episodes) - Complete 8 joints $\times$ 4 noise conditions with recovery dynamics. 100 episodes per model per combination (32 conditions).
+
+\textbf{Experiment 8: Mechanism Analysis} (4,400 episodes) - Fine-grained noise sweeps (11 levels from $\sigma=0.00$ to $\sigma=0.20$) for each model individually to identify SR2L-specific effects. 100 episodes per model per noise level.
+
+\subsection{Performance Metrics}
+
+For each evaluation episode, we record:
+
+\begin{itemize}
+    \item \textbf{Distance traveled}: Total forward distance over 1000 timesteps
+    \item \textbf{Average velocity}: Mean forward velocity $\bar{v}_x$
+    \item \textbf{Success rate}: Percentage of episodes achieving $>$ 2m distance
+    \item \textbf{Cumulative reward}: Total reward accumulated
+    \item \textbf{Fall rate}: Percentage of episodes ending in termination
+    \item \textbf{Retention percentage}: (Faulty performance / Baseline performance) $\times$ 100\%
+    \item \textbf{Recovery time}: Time to regain 50\% baseline velocity after fault injection
+\end{itemize}
+
+Statistical significance assessed using paired t-tests with Bonferroni correction for multiple comparisons ($\alpha = 0.05$).
+
+\section{Results}
+[To be written - comprehensive results from 38,000 episodes across all experiments]
+
+\section{Discussion}
+[To be written - mechanistic analysis of negative synergy, VecNormalize discovery, stochastic resonance, and deployment implications]
+
+\section{Conclusion}
+[To be written - summary of findings and recommendations]
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+% Placeholder reference file needed:
+% references.bib should include:
+% - PPO (Schulman et al.)
+% - SR2L original paper
+% - Domain Randomization (Tobin, Peng)
+% - Quadruped learning (Hwangbo, Lee, Miki)
+% - Stochastic resonance (neuroscience literature)
+
+\end{document}

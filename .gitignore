@@ -69,3 +69,6 @@ done/
 
 # But keep small demo videos in experiments
 !experiments/*/robot_demo.mp4
+
+#Remove claude.md
+CLAUDE.md

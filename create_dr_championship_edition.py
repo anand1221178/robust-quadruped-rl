@@ -507,11 +507,11 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # V7.15 V7.7E + REAR ANKLES - The ultimate conservative approach
-    # V7.7E exact foundation (20M steps) + V7.14 rear ankle finale (5M steps)
-    # Should combine balanced excellence with rear ankle breakthrough
+    # ULTIMATE ROBUSTNESS COMBO: PPO + SR2L + DR
+    # 30M steps training with BOTH sensor noise and joint failure robustness
+    # Expected: Universal robustness to both perturbation types
 
-    model_name = "v7_15_v77e_plus_rear_ankles_yerilmzl"
+    model_name = "ultimate_robustness_combo_ju7lfsk2"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 

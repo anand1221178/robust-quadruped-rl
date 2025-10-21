@@ -1,0 +1,42 @@
+{
+  "M1_baseline": {
+    "model_key": "M1_baseline",
+    "model_name": "PPO Baseline",
+    "joint_results": [
+      {
+        "failed_joint": "hip_1",
+        "num_rollouts": 100,
+        "distance": {
+          "mean": 8.380408763699016,
+          "std": 0.2777514091563256,
+          "min": 7.58269249797183,
+          "max": 9.329949451391046,
+          "median": 8.369675835661864
+        },
+        "reward": {
+          "mean": 10928.9896484375,
+          "std": 515.1359624623817
+        },
+        "success_rate": 1.0,
+        "failure_rate": 1.0,
+        "recovery": {
+          "recovery_rate": 1.0,
+          "recovery_time_mean": 0.01783333333333333,
+          "recovery_time_std": 0.005894913061275799,
+          "recovery_time_median": 0.016666666666666666,
+          "recovery_time_min": 0.016666666666666666,
+          "recovery_time_max": 0.06666666666666667,
+          "pre_fault_velocity_mean": 0.6603996157646179,
+          "post_fault_velocity_mean": 0.6590790748596191
+        },
+        "rollouts": [
+          {
+            "rollout_id": 0,
+            "distance": 8.617575784852576,
+            "reward": 11453.01171875,
+            "success": true,
+            "failure": true,
+            "steps": 1000,
+            "recovered": true,
+            "recovery_time_seconds": 0.016666666666666666,
+            "pre_fault_velocity": 

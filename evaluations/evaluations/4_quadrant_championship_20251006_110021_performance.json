@@ -1,0 +1,434 @@
+[
+  {
+    "section": "NORMAL WALKING",
+    "type": "normal",
+    "noise_level": 0.0,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.2231816045782369,
+        "distance": 10.04317220602066,
+        "retention": 100.0
+      },
+      "sr2l": {
+        "velocity": 0.18297607166455435,
+        "distance": 8.233923224904945,
+        "retention": 100.0
+      },
+      "dr": {
+        "velocity": 0.16199748447148138,
+        "distance": 7.289886801216662,
+        "retention": 100.0
+      },
+      "combo": {
+        "velocity": 0.15647395472455758,
+        "distance": 7.0413279626050915,
+        "retention": 100.0
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.0 (Baseline)",
+    "type": "noise",
+    "noise_level": 0.0,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.2236782693504536,
+        "distance": 10.065522120770412,
+        "retention": 100.22253840013171
+      },
+      "sr2l": {
+        "velocity": 0.19068142730576995,
+        "distance": 8.580664228759648,
+        "retention": 104.21112748301955
+      },
+      "dr": {
+        "velocity": 0.17654051602325022,
+        "distance": 7.94432322104626,
+        "retention": 108.97731936962826
+      },
+      "combo": {
+        "velocity": 0.16751242342856382,
+        "distance": 7.538059054285371,
+        "retention": 107.05450867106757
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.01 (1X Training)",
+    "type": "noise",
+    "noise_level": 0.01,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.22309154018742683,
+        "distance": 10.039119308434207,
+        "retention": 99.95964524451722
+      },
+      "sr2l": {
+        "velocity": 0.18755348810623892,
+        "distance": 8.439906964780752,
+        "retention": 102.50164756519433
+      },
+      "dr": {
+        "velocity": 0.16868787491639725,
+        "distance": 7.590954371237876,
+        "retention": 104.12993477444626
+      },
+      "combo": {
+        "velocity": 0.16331828810562124,
+        "distance": 7.349322964752956,
+        "retention": 104.37410391595957
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.05 (5X Training)",
+    "type": "noise",
+    "noise_level": 0.05,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.21857836046310544,
+        "distance": 9.836026220839745,
+        "retention": 97.9374446546208
+      },
+      "sr2l": {
+        "velocity": 0.1842918560471151,
+        "distance": 8.29313352212018,
+        "retention": 100.7191018861597
+      },
+      "dr": {
+        "velocity": 0.17462422660086355,
+        "distance": 7.85809019703886,
+        "retention": 107.79440629623174
+      },
+      "combo": {
+        "velocity": 0.16189239266550468,
+        "distance": 7.2851576699477105,
+        "retention": 103.46283696253809
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.1 (10X Training)",
+    "type": "noise",
+    "noise_level": 0.1,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.20952779665122248,
+        "distance": 9.428750849305011,
+        "retention": 93.88219833224291
+      },
+      "sr2l": {
+        "velocity": 0.1859866454484447,
+        "distance": 8.369399045180012,
+        "retention": 101.6453374239062
+      },
+      "dr": {
+        "velocity": 0.17686087401068756,
+        "distance": 7.958739330480941,
+        "retention": 109.17507428445458
+      },
+      "combo": {
+        "velocity": 0.16351312224387615,
+        "distance": 7.358090500974427,
+        "retention": 104.49861929527484
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.2 (20X Training)",
+    "type": "noise",
+    "noise_level": 0.2,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.20888483805231445,
+        "distance": 9.39981771235415,
+        "retention": 93.59411070059285
+      },
+      "sr2l": {
+        "velocity": 0.18413939827691778,
+        "distance": 8.2862729224613,
+        "retention": 100.63578073448649
+      },
+      "dr": {
+        "velocity": 0.1730889767814061,
+        "distance": 7.789003955163275,
+        "retention": 106.846706506654
+      },
+      "combo": {
+        "velocity": 0.157275821850938,
+        "distance": 7.07741198329221,
+        "retention": 100.51246044607996
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.3 (30X Training)",
+    "type": "noise",
+    "noise_level": 0.3,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.1977504724748218,
+        "distance": 8.898771261366981,
+        "retention": 88.60518448575803
+      },
+      "sr2l": {
+        "velocity": 0.1609127476912603,
+        "distance": 7.241073646106713,
+        "retention": 87.94196215243805
+      },
+      "dr": {
+        "velocity": 0.17129150597762832,
+        "distance": 7.708117768993274,
+        "retention": 105.73713939847202
+      },
+      "combo": {
+        "velocity": 0.1619001859242934,
+        "distance": 7.285508366593202,
+        "retention": 103.46781750949394
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.5 (50X Training)",
+    "type": "noise",
+    "noise_level": 0.5,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.18262610240671331,
+        "distance": 8.2181746083021,
+        "retention": 81.82847450704355
+      },
+      "sr2l": {
+        "velocity": 0.1308663144652474,
+        "distance": 5.888984150936134,
+        "retention": 71.52099904361347
+      },
+      "dr": {
+        "velocity": 0.16027948304842787,
+        "distance": 7.212576737179254,
+        "retention": 98.93948882684289
+      },
+      "combo": {
+        "velocity": 0.15382081177611642,
+        "distance": 6.9219365299252384,
+        "retention": 98.30441880687971
+      }
+    }
+  },
+  {
+    "section": "NOISE: 0.7 (70X Training)",
+    "type": "noise",
+    "noise_level": 0.7,
+    "failed_joints": [],
+    "models": {
+      "baseline": {
+        "velocity": 0.16903566582401316,
+        "distance": 7.606604962080592,
+        "retention": 75.73906735882315
+      },
+      "sr2l": {
+        "velocity": 0.11042526026309638,
+        "distance": 4.969136711839337,
+        "retention": 60.34956333827976
+      },
+      "dr": {
+        "velocity": 0.14669328253515035,
+        "distance": 6.601197714081765,
+        "retention": 90.55281507224562
+      },
+      "combo": {
+        "velocity": 0.14962469597095968,
+        "distance": 6.733111318693185,
+        "retention": 95.6227483572875
+      }
+    }
+  },
+  {
+    "section": "ANKLE_1 LOCKED",
+    "type": "joint_failure",
+    "noise_level": 0.0,
+    "failed_joints": [
+      "ankle_1"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.038104596851377424,
+        "distance": 3.4294137166239684,
+        "retention": 17.073359125357378
+      },
+      "sr2l": {
+        "velocity": 0.05563758305685875,
+        "distance": 5.0073824751172875,
+        "retention": 30.407026749846178
+      },
+      "dr": {
+        "velocity": 0.052489422215962894,
+        "distance": 4.72404799943666,
+        "retention": 32.40138103823663
+      },
+      "combo": {
+        "velocity": 0.06138551757471387,
+        "distance": 5.524696581724248,
+        "retention": 39.230501768023515
+      }
+    }
+  },
+  {
+    "section": "ANKLE_4 LOCKED",
+    "type": "joint_failure",
+    "noise_level": 0.0,
+    "failed_joints": [
+      "ankle_4"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.004239637494559071,
+        "distance": 0.3815673745103164,
+        "retention": 1.8996357260586207
+      },
+      "sr2l": {
+        "velocity": 0.009777010047577432,
+        "distance": 0.879930904281969,
+        "retention": 5.343327113012564
+      },
+      "dr": {
+        "velocity": 0.0246996668866234,
+        "distance": 2.2229700197961058,
+        "retention": 15.246944708559113
+      },
+      "combo": {
+        "velocity": 0.01717936289145137,
+        "distance": 1.5461426602306234,
+        "retention": 10.979055857374059
+      }
+    }
+  },
+  {
+    "section": "HIP_1 LOCKED",
+    "type": "joint_failure",
+    "noise_level": 0.0,
+    "failed_joints": [
+      "hip_1"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.16187438956252687,
+        "distance": 14.568695060627418,
+        "retention": 72.53034579997446
+      },
+      "sr2l": {
+        "velocity": 0.15483597740271904,
+        "distance": 13.935237966244713,
+        "retention": 84.62088840041125
+      },
+      "dr": {
+        "velocity": 0.14971877640325157,
+        "distance": 13.474689876292642,
+        "retention": 92.42043287999859
+      },
+      "combo": {
+        "velocity": 0.14834825689720474,
+        "distance": 13.351343120748426,
+        "retention": 94.80699657546423
+      }
+    }
+  },
+  {
+    "section": "HIP_4 LOCKED",
+    "type": "joint_failure",
+    "noise_level": 0.0,
+    "failed_joints": [
+      "hip_4"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.11841571498517131,
+        "distance": 10.657414348665418,
+        "retention": 53.058008615427966
+      },
+      "sr2l": {
+        "velocity": 0.029613354637788532,
+        "distance": 2.665201917400968,
+        "retention": 16.18427719449458
+      },
+      "dr": {
+        "velocity": 0.08506041704065272,
+        "distance": 7.655437533658745,
+        "retention": 52.5072456020927
+      },
+      "combo": {
+        "velocity": 0.06341515307505746,
+        "distance": 5.707363776755171,
+        "retention": 40.52760933069513
+      }
+    }
+  },
+  {
+    "section": "COMBINED: Noise 0.05 + Ankle_1",
+    "type": "combined",
+    "noise_level": 0.05,
+    "failed_joints": [
+      "ankle_1"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.038325094587182924,
+        "distance": 3.449258512846463,
+        "retention": 17.17215657608016
+      },
+      "sr2l": {
+        "velocity": 0.05682238551561845,
+        "distance": 5.11401469640566,
+        "retention": 31.05454445420031
+      },
+      "dr": {
+        "velocity": 0.05033268856851932,
+        "distance": 4.529941971166739,
+        "retention": 31.070043298962503
+      },
+      "combo": {
+        "velocity": 0.0034794725570248047,
+        "distance": 0.31315253013223243,
+        "retention": 2.2236752200388556
+      }
+    }
+  },
+  {
+    "section": "COMBINED: Noise 0.1 + Hip_4",
+    "type": "combined",
+    "noise_level": 0.1,
+    "failed_joints": [
+      "hip_4"
+    ],
+    "models": {
+      "baseline": {
+        "velocity": 0.1200626923875647,
+        "distance": 10.805642314880822,
+        "retention": 53.79596253663299
+      },
+      "sr2l": {
+        "velocity": 0.02514198174206327,
+        "distance": 2.2627783567856943,
+        "retention": 13.740584500117295
+      },
+      "dr": {
+        "velocity": 0.08378242537798923,
+        "distance": 7.54041828401903,
+        "retention": 51.7183496097673
+      },
+      "combo": {
+        "velocity": 0.06609312951583862,
+        "distance": 5.948381656425476,
+        "retention": 42.239061211294185
+      }
+    }
+  }
+]
