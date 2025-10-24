@@ -1,0 +1,77 @@
+defaults:
+- /train/default
+- /env/realant
+
+# ============================================================================
+# VECNORMALIZE ABLATION: SR2L WITHOUT VECNORMALIZE
+# ============================================================================
+# This config is IDENTICAL to ppo_sr2l_forward_m7gtjtpa except VecNormalize is disabled
+# Purpose: Isolate SR2L's contribution vs VecNormalize's implicit robustness
+
+domain_randomization:
+  enabled: false
+
+env:
+  name: RealAntMujoco-v0
+  use_domain_randomization: false
+  use_success_reward: true
+
+# 🔥 KEY CHANGE: Disable VecNormalize
+vec_normalize:
+  enabled: false  # This is the ONLY difference from original SR2L config
+
+eval_freq: 10000
+
+experiment:
+  description: "VecNormalize Ablation: PPO + SR2L WITHOUT VecNormalize - Testing SR2L's isolated contribution"
+  name: ppo_sr2l_no_vecnorm
+  tags:
+  - vecnormalize_ablation
+  - sr2l
+  - no_normalization
+  - sensor-noise-robustness
+  - ablation_study
+
+logging:
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl
+
+num_envs: 8
+
+policy:
+  activation: tanh
+  hidden_sizes:
+  - 64
+  - 128
+
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+
+pretrained_model: null
+save_freq: 100000
+seed: 42
+
+sr2l:
+  curriculum_steps: 15000000
+  enabled: true
+  joint_end_dim: 28
+  joint_start_dim: 13
+  lambda_smooth: 0.001
+  max_perturbation: 0.05
+  perturb_only_joints: true
+  perturbation_std: 0.01
+  use_curriculum: true
+  warmup_steps: 5000000
+
+# Keep original training duration - DO NOT cap at 10M
+total_timesteps: 20000000

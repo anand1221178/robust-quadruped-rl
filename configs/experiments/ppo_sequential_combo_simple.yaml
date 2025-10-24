@@ -29,7 +29,7 @@ env:
   use_backward_penalty: true
   velocity_retention_bonus: true
 
-# SR2L - PHASE 1: Establish smooth baseline (0-20M)
+# SR2L - Active throughout for smooth policy
 sr2l:
   enabled: true
   lambda_smooth: 0.001
@@ -40,33 +40,33 @@ sr2l:
 
   use_curriculum: true
   warmup_steps: 5_000_000       # 0-5M: Pure PPO
-  curriculum_steps: 15_000_000  # 5M-20M: SR2L active
+  curriculum_steps: 15_000_000  # 5M-20M: SR2L ramps up
 
-# Domain Randomization - PHASE 2: Add robustness (20M-50M)
+# Domain Randomization - SEQUENTIAL (starts at 20M!)
 domain_randomization:
   enabled: true
   wrapper_type: CurriculumDRWrapper
 
-  # Phase 1: Gentle (20M-30M) - 30% episodes
-  phase_1_steps: 10_000_000
+  # Phase 1: SR2L ONLY (0-20M) - NO joint failures
+  phase_1_steps: 20_000_000
   phase_1_config:
-    joint_dropout_prob: 0.30
-    min_dropped_joints: 1
-    max_dropped_joints: 1
-    sensor_noise_std: 0.0
+    joint_dropout_prob: 0.0      # ZERO failures during SR2L learning
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0        # SR2L handles noise, DR stays clean
 
-  # Phase 2: Moderate (30M-40M) - 50% episodes
+  # Phase 2: Gentle DR introduction (20M-30M)
   phase_2_steps: 10_000_000
   phase_2_config:
-    joint_dropout_prob: 0.50
+    joint_dropout_prob: 0.30     # 30% of episodes
     min_dropped_joints: 1
     max_dropped_joints: 1
     sensor_noise_std: 0.0
 
-  # Phase 3: Aggressive (40M-50M) - 60% episodes, 2 joints
+  # Phase 3: Moderate DR (30M-40M)
   phase_3_steps: 10_000_000
   phase_3_config:
-    joint_dropout_prob: 0.60
+    joint_dropout_prob: 0.50     # 50% of episodes
     min_dropped_joints: 1
     max_dropped_joints: 2
     sensor_noise_std: 0.0
@@ -96,7 +96,7 @@ policy:
   hidden_sizes: [128, 128]
 
 # Training
-total_timesteps: 50_000_000
+total_timesteps: 40_000_000    # 20M SR2L + 20M DR = 40M total
 num_envs: 8
 seed: 42
 

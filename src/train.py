@@ -368,9 +368,15 @@ def train(config: dict):
     print(f"Experiment: {experiment_config.get('name', 'unknown')}")
     print(f"Environment: {config.get('env', {}).get('name', 'RealAntMujoco-v0')}")
     print(f"Total timesteps: {config.get('total_timesteps', 10000000):,}")
-    
+
+    # Check if VecNormalize should be enabled (default: True for backward compatibility)
+    vec_normalize_config = config.get('vec_normalize', {})
+    use_vecnormalize = vec_normalize_config.get('enabled', True)
+
+    print(f"VecNormalize: {'✅ ENABLED' if use_vecnormalize else '❌ DISABLED (ABLATION)'}")
+
     # Create environment
-    env = create_env(config, normalize=True, norm_reward=True)
+    env = create_env(config, normalize=use_vecnormalize, norm_reward=True)
     
     # 🔥 CHECK FOR PRETRAINED MODEL LOADING
     pretrained_model_path = config.get('pretrained_model')
