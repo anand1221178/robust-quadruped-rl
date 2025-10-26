@@ -248,7 +248,7 @@ class CurriculumDRWrapper(gym.Wrapper):
     def _update_curriculum(self):
         """🔥 ULTIMATE 3-PHASE CURRICULUM UPDATE! 🔥"""
         old_phase = self.current_phase
-        
+
         # Determine current phase based on timesteps
         if self.current_timestep < self.phase_1_steps:
             # Phase 1: Clean training
@@ -258,10 +258,14 @@ class CurriculumDRWrapper(gym.Wrapper):
             # Phase 2: Single failures + mild noise
             self.current_phase = 2
             config = self.phase_2_config
-        else:
-            # Phase 3: Multiple failures + high noise
+        elif self.phase_3_steps > 0:
+            # Phase 3: Multiple failures + high noise (only if enabled)
             self.current_phase = 3
             config = self.phase_3_config
+        else:
+            # Phase 3 disabled - stay in Phase 2
+            self.current_phase = 2
+            config = self.phase_2_config
         
         # Update parameters from current phase config
         self.joint_dropout_prob = config['joint_dropout_prob']

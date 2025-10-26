@@ -1,0 +1,80 @@
+# ==============================================================================
+# M2: SR2L Model - RETRAINED for Fair 32M Comparison
+# ==============================================================================
+#
+# Purpose: Fresh training of SR2L to 32M steps for fair comparison.
+#
+# Training Strategy:
+#   - PPO with Smooth Regularization (SR2L)
+#   - Perturbs joint observations during training (σ=0.01)
+#   - Penalizes policy sensitivity to perturbations (λ=0.001)
+#   - Targets sensor noise robustness
+#
+# Expected Outcome:
+#   - Baseline: ~8.75m (22% sacrifice vs M1)
+#   - Sensor noise retention: 95-114% at 10× training noise
+#   - Cross-distribution generalization to Poisson/salt-and-pepper noise
+#
+# Research Value:
+#   - Tests if SR2L benefits from longer training (20M→32M)
+#   - Fair comparison with M3/M4 at matched 32M timesteps
+#   - Validates sensor noise specialization hypothesis
+#
+# Date Created: October 26, 2025
+# Status: Ready for submission
+# ==============================================================================
+
+experiment:
+  name: M2_sr2l_32M_RETRAINED
+  description: "SR2L retrained to 32M - sensor noise robustness specialist"
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false
+
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001  # Smoothness regularization weight
+  perturbation_std: 0.01  # Gaussian noise std for training
+  perturb_dims: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]  # Joint positions/velocities only
+  warmup_steps: 0  # No warmup - apply from start
+
+ppo:
+  learning_rate: 0.0003
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.15
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+policy:
+  activation: tanh  # Tanh prevents NaN issues with SR2L
+  hidden_sizes: [128, 128]
+
+total_timesteps: 32_000_000  # 32M for fair comparison
+
+save_freq: 1_000_000  # Save every 1M steps
+eval_freq: 100_000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - M2
+    - SR2L
+    - RETRAINED
+    - 32M
+    - sensor-noise-specialist
+    - fair-comparison
+  wandb_notes: "M2 SR2L retrained to 32M. Tests if additional training (20M→32M) improves sensor noise robustness beyond original model."
+  tensorboard: true
+  verbose: 1
+  log_interval: 10
+
+seed: 42
+num_envs: 8

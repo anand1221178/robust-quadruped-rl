@@ -1,0 +1,105 @@
+# ==============================================================================
+# M3_v2: Domain Randomization - IMPROVED CURRICULUM (Single Failures Only)
+# ==============================================================================
+#
+# Purpose: Retrain DR with simplified curriculum focusing on single joint
+#          failure mastery (NO dual failures).
+#
+# Key Improvement vs Old M3:
+#   OLD: Phase 3 had 1-2 joint failures (dual failures introduced complexity)
+#   NEW: Only single joint failures throughout (22M vs 12M training time)
+#
+# Training Strategy:
+#   - Phase 1 (0-10M): Clean baseline learning
+#   - Phase 2 (10-32M): Single joint failures ONLY
+#     * 50% episode failure rate
+#     * Always exactly 1 joint locked
+#     * 22M steps of focused single-failure training
+#
+# Expected Improvements:
+#   - Better baseline: 8.0-8.5m (vs old 7.96m)
+#   - Better joint failure retention: 50%+ (vs old 47%)
+#   - Reason: More training time on fundamentals, less curriculum complexity
+#
+# Hypothesis:
+#   Simpler curriculum = better performance AND better robustness.
+#   Master one joint before attempting multiple.
+#
+# Date Created: October 26, 2025
+# Status: Ready for submission
+# ==============================================================================
+
+experiment:
+  name: M3_dr_v2_single_failures_32M
+  description: "DR with IMPROVED curriculum - single failures only, no dual phase"
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: true
+
+domain_randomization:
+  enabled: true
+  wrapper_type: CurriculumDRWrapper
+
+  # IMPROVED CURRICULUM - Single Failures Only
+
+  # Phase 1: Clean baseline learning (0-10M)
+  phase_1_steps: 10_000_000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+
+  # Phase 2: Single joint failure mastery (10-32M)
+  # KEY CHANGE: 22M steps (vs old 12M) of single-failure training
+  # NO dual failures - simplified curriculum
+  phase_2_steps: 22_000_000
+  phase_2_config:
+    joint_dropout_prob: 0.50  # 50% of episodes have failures
+    min_dropped_joints: 1     # Always exactly 1 joint
+    max_dropped_joints: 1     # Never more than 1
+    sensor_noise_std: 0.0
+
+  # NO PHASE 3 - removed dual failure complexity
+  phase_3_steps: 0  # Explicitly disable Phase 3
+
+ppo:
+  learning_rate: 0.0003
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh
+  hidden_sizes: [128, 128]
+
+total_timesteps: 32_000_000  # 32M total
+
+save_freq: 1_000_000  # Save every 1M steps
+eval_freq: 100_000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - M3_v2
+    - DR
+    - improved-curriculum
+    - single-failures-only
+    - 32M
+    - FINAL-RUN
+  wandb_notes: "M3_v2 with improved curriculum. Removed dual failure phase, extended single-failure training to 22M steps. Hypothesis: Simpler curriculum improves both baseline and robustness."
+  tensorboard: true
+  verbose: 1
+  log_interval: 10
+
+seed: 42
+num_envs: 8

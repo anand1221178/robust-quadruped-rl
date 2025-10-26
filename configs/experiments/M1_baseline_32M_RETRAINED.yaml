@@ -1,0 +1,72 @@
+# ==============================================================================
+# M1: Baseline Model - RETRAINED for Fair 32M Comparison
+# ==============================================================================
+#
+# Purpose: Fresh training of baseline PPO to 32M steps for fair comparison
+#          with DR models (which require 32M for full curriculum).
+#
+# Training Strategy:
+#   - Pure PPO, no robustness methods
+#   - Clean environment, no perturbations
+#   - Establishes performance ceiling under ideal conditions
+#
+# Expected Outcome:
+#   - Baseline: ~11.20m (should match original M1 @ 10M, proving convergence)
+#   - This confirms M1's early convergence and validates that additional
+#     training beyond convergence doesn't improve performance
+#
+# Research Value:
+#   - Eliminates training duration confound
+#   - Proves baseline converges early and stays stable
+#   - Fair "equal compute" comparison baseline
+#
+# Date Created: October 26, 2025
+# Status: Ready for submission
+# ==============================================================================
+
+experiment:
+  name: M1_baseline_32M_RETRAINED
+  description: "Baseline PPO retrained to 32M for fair comparison - no robustness methods"
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false  # Clean baseline
+
+ppo:
+  learning_rate: 0.0003
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+policy:
+  activation: relu
+  hidden_sizes: [64, 128]
+
+total_timesteps: 32_000_000  # 32M for fair comparison
+
+save_freq: 1_000_000  # Save every 1M steps
+eval_freq: 100_000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - M1
+    - baseline
+    - RETRAINED
+    - 32M
+    - fair-comparison
+  wandb_notes: "M1 retrained to 32M to eliminate training duration confound. Should converge early and stay at ~11.20m, proving convergence is not affected by additional training."
+  tensorboard: true
+  verbose: 1
+  log_interval: 10
+
+seed: 42
+num_envs: 8

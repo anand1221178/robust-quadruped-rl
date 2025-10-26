@@ -1,0 +1,115 @@
+# ==============================================================================
+# M4_v2: SR2L + DR Combo - IMPROVED CURRICULUM (Critical Test!)
+# ==============================================================================
+#
+# Purpose: Test if simpler DR curriculum fixes M4's catastrophic collapse.
+#
+# Critical Hypothesis:
+#   OLD M4: Catastrophic collapse at 14-20M steps → baseline 5.34m
+#   Cause: SR2L smoothness + dual joint failure complexity = gradient conflict
+#
+#   NEW M4_v2: Single failures only → might AVOID collapse!
+#   Reasoning: Simpler task (1 joint not 2) = less gradient conflict
+#
+# Training Strategy:
+#   - SR2L smoothness regularization (λ=0.001, σ=0.01)
+#   - Improved DR curriculum (single failures only)
+#   - Phase 1 (0-10M): Clean + SR2L
+#   - Phase 2 (10-32M): Single joint failures + SR2L
+#
+# Expected Outcomes:
+#   SCENARIO A (Success): No collapse, baseline 6.5-7.5m
+#     → Proves dual failure complexity caused collapse
+#     → Major finding: curriculum design matters for multi-objective training
+#
+#   SCENARIO B (Collapse persists): Collapse at 14-20M, baseline 5-6m
+#     → Proves SR2L + DR fundamentally incompatible
+#     → Confirms gradient conflict hypothesis
+#
+# Either outcome is valuable for the research!
+#
+# Date Created: October 26, 2025
+# Status: Ready for submission (HIGH PRIORITY - critical test)
+# ==============================================================================
+
+experiment:
+  name: M4_combo_v2_single_failures_32M
+  description: "SR2L+DR with improved curriculum - TEST FOR COLLAPSE FIX"
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: true
+
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001  # Smoothness regularization weight
+  perturbation_std: 0.01  # Gaussian noise std for training
+  perturb_dims: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]  # Joint positions/velocities only
+  warmup_steps: 0  # No warmup - apply from start
+
+domain_randomization:
+  enabled: true
+  wrapper_type: CurriculumDRWrapper
+
+  # IMPROVED CURRICULUM - Same as M3_v2 (single failures only)
+
+  # Phase 1: Clean baseline learning with SR2L (0-10M)
+  phase_1_steps: 10_000_000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    min_dropped_joints: 0
+    max_dropped_joints: 0
+    sensor_noise_std: 0.0
+
+  # Phase 2: Single joint failure mastery with SR2L (10-32M)
+  # KEY TEST: Does simpler curriculum (vs dual failures) prevent collapse?
+  phase_2_steps: 22_000_000
+  phase_2_config:
+    joint_dropout_prob: 0.50  # 50% of episodes have failures
+    min_dropped_joints: 1     # Always exactly 1 joint
+    max_dropped_joints: 1     # Never more than 1 (NO DUAL FAILURES)
+    sensor_noise_std: 0.0
+
+  # NO PHASE 3 - testing if dual failures caused the collapse
+  phase_3_steps: 0  # Explicitly disable Phase 3
+
+ppo:
+  learning_rate: 0.0003
+  batch_size: 1536
+  n_epochs: 8
+  gamma: 0.995
+  gae_lambda: 0.97
+  clip_range: 0.15
+  ent_coef: 0.005
+  vf_coef: 0.5
+  max_grad_norm: 0.4
+
+policy:
+  activation: tanh  # Critical for SR2L stability
+  hidden_sizes: [128, 128]
+
+total_timesteps: 32_000_000  # 32M total
+
+save_freq: 1_000_000  # Save every 1M steps (watch for collapse!)
+eval_freq: 100_000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+    - M4_v2
+    - SR2L-plus-DR
+    - improved-curriculum
+    - COLLAPSE-TEST
+    - 32M
+    - CRITICAL-EXPERIMENT
+    - FINAL-RUN
+  wandb_notes: "M4_v2: CRITICAL TEST - Does simpler curriculum prevent catastrophic collapse? Old M4 collapsed at 14-20M with dual failures. New M4_v2 uses single failures only. WATCH TRAINING CLOSELY for collapse at 14-20M steps!"
+  tensorboard: true
+  verbose: 1
+  log_interval: 10
+
+seed: 42
+num_envs: 8

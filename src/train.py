@@ -283,7 +283,34 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
                 v8_config = config.get('env', {}).get('v8_enhanced_acdr', {})
                 env = V8EnhancedACDRWrapper(env, v8_config)
             elif wrapper_type == 'CurriculumDRWrapper' or (wrapper_type == 'auto' and has_curriculum and use_curriculum):
-                print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
+                print("🔥 CURRICULUM DOMAIN RANDOMIZATION 🔥")
+
+                # Print detailed curriculum schedule
+                print("   📋 Curriculum Schedule:")
+
+                # Phase 1
+                phase_1_steps = dr_config.get('phase_1_steps', 0)
+                phase_1_prob = dr_config.get('phase_1_config', {}).get('joint_dropout_prob', 0)
+                phase_1_max = dr_config.get('phase_1_config', {}).get('max_dropped_joints', 0)
+                print(f"   📍 Phase 1 (0-{phase_1_steps/1e6:.0f}M): {phase_1_prob*100:.0f}% failure rate, max {phase_1_max} joints")
+
+                # Phase 2
+                phase_2_steps = dr_config.get('phase_2_steps', 0)
+                phase_2_prob = dr_config.get('phase_2_config', {}).get('joint_dropout_prob', 0)
+                phase_2_min = dr_config.get('phase_2_config', {}).get('min_dropped_joints', 0)
+                phase_2_max = dr_config.get('phase_2_config', {}).get('max_dropped_joints', 0)
+                total_2 = phase_1_steps + phase_2_steps
+                print(f"   📍 Phase 2 ({phase_1_steps/1e6:.0f}-{total_2/1e6:.0f}M): {phase_2_prob*100:.0f}% failure rate, {phase_2_min}-{phase_2_max} joints")
+
+                # Phase 3 (if exists)
+                phase_3_steps = dr_config.get('phase_3_steps', 0)
+                if phase_3_steps > 0:
+                    phase_3_prob = dr_config.get('phase_3_config', {}).get('joint_dropout_prob', 0)
+                    phase_3_min = dr_config.get('phase_3_config', {}).get('min_dropped_joints', 0)
+                    phase_3_max = dr_config.get('phase_3_config', {}).get('max_dropped_joints', 0)
+                    total_3 = total_2 + phase_3_steps
+                    print(f"   📍 Phase 3 ({total_2/1e6:.0f}-{total_3/1e6:.0f}M): {phase_3_prob*100:.0f}% failure rate, {phase_3_min}-{phase_3_max} joints")
+
                 env = CurriculumDRWrapper(env, config) # Pass full config
             elif wrapper_type == 'DomainRandomizationWrapper' or (wrapper_type == 'auto' and not use_curriculum):
                 print("🎲 Basic Domain Randomization: Joint failure robustness")
@@ -293,8 +320,35 @@ def create_env(config: dict, normalize: bool = True, norm_reward: bool = True):
             else:
                 # Default behavior - auto-detect based on phases
                 if has_curriculum:
-                    print("🔥 ULTIMATE 3-PHASE CURRICULUM DR: Research proposal compliant! 🔥")
+                    print("🔥 CURRICULUM DOMAIN RANDOMIZATION 🔥")
                     print("📚 Phase-based training detected - using CurriculumDRWrapper")
+
+                    # Print detailed curriculum schedule
+                    print("   📋 Curriculum Schedule:")
+
+                    # Phase 1
+                    phase_1_steps = dr_config.get('phase_1_steps', 0)
+                    phase_1_prob = dr_config.get('phase_1_config', {}).get('joint_dropout_prob', 0)
+                    phase_1_max = dr_config.get('phase_1_config', {}).get('max_dropped_joints', 0)
+                    print(f"   📍 Phase 1 (0-{phase_1_steps/1e6:.0f}M): {phase_1_prob*100:.0f}% failure rate, max {phase_1_max} joints")
+
+                    # Phase 2
+                    phase_2_steps = dr_config.get('phase_2_steps', 0)
+                    phase_2_prob = dr_config.get('phase_2_config', {}).get('joint_dropout_prob', 0)
+                    phase_2_min = dr_config.get('phase_2_config', {}).get('min_dropped_joints', 0)
+                    phase_2_max = dr_config.get('phase_2_config', {}).get('max_dropped_joints', 0)
+                    total_2 = phase_1_steps + phase_2_steps
+                    print(f"   📍 Phase 2 ({phase_1_steps/1e6:.0f}-{total_2/1e6:.0f}M): {phase_2_prob*100:.0f}% failure rate, {phase_2_min}-{phase_2_max} joints")
+
+                    # Phase 3 (if exists)
+                    phase_3_steps = dr_config.get('phase_3_steps', 0)
+                    if phase_3_steps > 0:
+                        phase_3_prob = dr_config.get('phase_3_config', {}).get('joint_dropout_prob', 0)
+                        phase_3_min = dr_config.get('phase_3_config', {}).get('min_dropped_joints', 0)
+                        phase_3_max = dr_config.get('phase_3_config', {}).get('max_dropped_joints', 0)
+                        total_3 = total_2 + phase_3_steps
+                        print(f"   📍 Phase 3 ({total_2/1e6:.0f}-{total_3/1e6:.0f}M): {phase_3_prob*100:.0f}% failure rate, {phase_3_min}-{phase_3_max} joints")
+
                     env = CurriculumDRWrapper(env, dr_config)
                 else:
                     print("🎲 Basic Domain Randomization: Joint failure robustness")
@@ -451,6 +505,17 @@ def train(config: dict):
     robot_callback = RobotPositionCallback(verbose=1)
     callbacks.append(robot_callback)
     print("✅ Robot position callback added (continuous W&B tracking)")
+
+    # Curriculum phase logging callback (for DR models with curriculum)
+    if config.get('env', {}).get('use_domain_randomization', False):
+        dr_config = config.get('domain_randomization', {})
+        # Check if using curriculum DR (has phase configs)
+        has_curriculum = 'phase_1_config' in dr_config or 'phase_1_steps' in dr_config
+        if has_curriculum:
+            from callbacks.curriculum_logging_callback import CurriculumLoggingCallback
+            curriculum_callback = CurriculumLoggingCallback(verbose=1)
+            callbacks.append(curriculum_callback)
+            print("✅ Curriculum phase logging callback added (tracks DR phases to W&B)")
 
     # Phase switching callback for V2 (if enabled)
     if config.get('phase_switching', {}).get('enabled', False):
