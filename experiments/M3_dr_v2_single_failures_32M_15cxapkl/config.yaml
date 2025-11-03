@@ -1,0 +1,60 @@
+domain_randomization:
+  enabled: true
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    max_dropped_joints: 0
+    min_dropped_joints: 0
+    sensor_noise_std: 0.0
+  phase_1_steps: 10000000
+  phase_2_config:
+    joint_dropout_prob: 0.5
+    max_dropped_joints: 1
+    min_dropped_joints: 1
+    sensor_noise_std: 0.0
+  phase_2_steps: 22000000
+  phase_3_steps: 0
+  wrapper_type: CurriculumDRWrapper
+env:
+  name: RealAntMujoco-v0
+  use_domain_randomization: true
+  use_success_reward: true
+eval_freq: 100000
+experiment:
+  description: DR with IMPROVED curriculum - single failures only, no dual phase
+  name: M3_dr_v2_single_failures_32M
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_notes: 'M3_v2 with improved curriculum. Removed dual failure phase, extended
+    single-failure training to 22M steps. Hypothesis: Simpler curriculum improves
+    both baseline and robustness.'
+  wandb_project: robust-quadruped-rl
+  wandb_tags:
+  - M3_v2
+  - DR
+  - improved-curriculum
+  - single-failures-only
+  - 32M
+  - FINAL-RUN
+num_envs: 8
+policy:
+  activation: tanh
+  hidden_sizes:
+  - 128
+  - 128
+ppo:
+  batch_size: 1536
+  clip_range: 0.15
+  ent_coef: 0.005
+  gae_lambda: 0.97
+  gamma: 0.995
+  learning_rate: 0.0003
+  max_grad_norm: 0.4
+  n_epochs: 8
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 42
+total_timesteps: 32000000

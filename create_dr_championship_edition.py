@@ -507,21 +507,19 @@ class DRChampionRecorder:
 def main():
     """Create the DR Championship Edition video"""
 
-    # ULTIMATE ROBUSTNESS COMBO: PPO + SR2L + DR
-    # 30M steps training with BOTH sensor noise and joint failure robustness
-    # Expected: Universal robustness to both perturbation types
+    # M3 DR V2 RETRAINED: Domain Randomization with improved curriculum (32M steps)
+    # Single joint failures only (10-32M), no dual failures
+    # FAIR COMPARISON: Trained to 32M steps like all other models
 
-    model_name = "ultimate_robustness_combo_ju7lfsk2"
+    model_name = "M3_dr_v2_single_failures_32M_15cxapkl"
     model_path = f"experiments/{model_name}/final_model.zip"
     vec_path = f"experiments/{model_name}/vec_normalize.pkl"
 
-    # Available V7.7 models to test:
-    # v7_7_speed_champion_3yjaqdrp      - Speed bonuses for walking >0.12 m/s with failures
-    # v7_7b_joint_aware_z92bswuk        - Joint-specific penalties (hips > ankles)
-    # v7_7c_ankle4_specialist_b8qotdf1  - Ankle-4 specialist (rear right ankle focus)
-    # v7_7d_progressive_mastery_2iwcmhoh - Progressive difficulty with ultra-dense rewards
-    # v7_7e_ultra_speed_jtfwl2qf        - Multi-tier speed bonuses (0.10, 0.12, 0.15 m/s)
-    # v7_7f_combined_ultimate_uhbvlz02  - Everything combined for ultimate robustness
+    # Other RETRAINED models available (all 32M steps):
+    # M1_baseline_32M_RETRAINED_ym2jcllj          - Pure PPO baseline
+    # M2_sr2l_32M_RETRAINED_ze09p0vf              - SR2L sensor noise robustness
+    # M3_dr_v2_single_failures_32M_15cxapkl       - DR actuator failure robustness (CURRENT)
+    # M4_combo_v2_single_failures_32M_azutfddh    - SR2L + DR combination
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # Clean model name for output

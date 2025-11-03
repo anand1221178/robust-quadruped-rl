@@ -31,22 +31,22 @@ class ValidationSuite:
         self.episode_length = 1200  # 20 seconds
         self.num_rollouts = 100  # Statistical significance
 
-        # Model configurations
+        # Model configurations (UPDATED: Using 32M retrained M1/M2, keeping champion M3/M4)
         self.models = {
             'M1_baseline': {
-                'name': 'PPO Baseline',
-                'path': '../done/ppo_baseline_ueqbjf2x/best_model/best_model',
-                'vec_path': '../done/ppo_baseline_ueqbjf2x/vec_normalize.pkl',
-                'baseline_distance': 11.20
+                'name': 'PPO Baseline (32M)',
+                'path': '../experiments/M1_baseline_32M_RETRAINED_ym2jcllj/final_model',
+                'vec_path': '../experiments/M1_baseline_32M_RETRAINED_ym2jcllj/vec_normalize.pkl',
+                'baseline_distance': 11.20  # To be updated after rerun
             },
             'M2_sr2l': {
-                'name': 'PPO + SR2L',
-                'path': '../done/ppo_sr2l_forward_m7gtjtpa/final_model',
-                'vec_path': '../done/ppo_sr2l_forward_m7gtjtpa/vec_normalize.pkl',
-                'baseline_distance': 8.91
+                'name': 'PPO + SR2L (32M)',
+                'path': '../experiments/M2_sr2l_32M_RETRAINED_ze09p0vf/final_model',
+                'vec_path': '../experiments/M2_sr2l_32M_RETRAINED_ze09p0vf/vec_normalize.pkl',
+                'baseline_distance': 8.91  # To be updated after rerun
             },
             'M3_dr': {
-                'name': 'PPO + DR (V7.7E)',
+                'name': 'PPO + DR (V7.7E Champion)',
                 'path': '../done/v7_7e_ultra_speed_jtfwl2qf/final_model',
                 'vec_path': '../done/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl',
                 'baseline_distance': 7.90

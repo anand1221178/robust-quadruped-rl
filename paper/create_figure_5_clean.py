@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 
 # Load Experiment 7 data
-exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251020_153154.json")
+exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251027_223017.json")
 
 with open(exp7_file, 'r') as f:
     data = json.load(f)

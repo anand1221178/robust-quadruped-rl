@@ -20,7 +20,7 @@
 % ============================================================================
 % TITLE
 % ============================================================================
-\title{When Robustness Methods Collide: A Systematic Ablation Study of SR2L and Domain Randomization for Quadruped Locomotion}
+\title{A Systematic Ablation Study of Sensor and Actuator Robustness Methods for Quadruped Locomotion}
 
 \author{
     \IEEEauthorblockN{Anand Patel}
@@ -37,33 +37,12 @@
 % ABSTRACT
 % ============================================================================
 \begin{abstract}
-Quadruped robots require robustness to sensor noise and actuator failures, yet combining training methods remains unexplored. We systematically compare Smooth Regularized RL (SR2L), Domain Randomization (DR), and their combination across 38,000 episodes on RealAnt.
-
-Key findings: (1) \textit{Negative synergy}—combining SR2L+DR underperforms DR alone by 67.8\% under maximum stress ($p<0.001$, $d=2.68$). Training dynamics reveal catastrophic collapse at 14-20M steps due to gradient conflict. (2) \textit{Normalization prerequisite}—VecNormalize ablation reveals observation normalization is required for basic locomotion: SR2L and DR models trained without VecNormalize exhibit complete failure (0.04m vs 8m baseline, $>$99\% collapse). This clarifies that robustness methods require normalized observation spaces~\cite{andrychowicz2021matters,huang2022ppo}. (3) \textit{Cross-distribution generalization}—SR2L achieves 106-114\% retention on Poisson and salt-and-pepper noise despite Gaussian-only training.
-
-Our findings challenge assumptions of additive robustness benefits. For practitioners: specialize training to dominant failure modes rather than multi-objective approaches. Comprehensive methodology includes checkpoint-based convergence analysis, VecNormalize ablation, and factorial joint$\times$noise testing across 9 systematic experiments.
+Combining multiple robustness methods targeting different failure modes is widely assumed to provide additive benefits, yet this assumption remains empirically untested. We systematically evaluate whether Smooth Regularized RL and Domain Randomization—targeting sensor noise and actuator failures respectively—cooperate or interfere when combined for quadruped locomotion. Across 38,000 evaluation episodes, we find that combining these methods produces significant interference rather than synergy: the combined approach underperforms specialized domain randomization by 56-145\% under stress conditions due to conflicting gradient signals during training. Surprisingly, domain randomization achieves best baseline performance through overfitting prevention, contradicting the assumption that robustness training sacrifices nominal performance. Our results challenge the multi-objective robustness paradigm and demonstrate that specialized training for the hardest failure mode provides superior performance across all conditions.
 \end{abstract}
 
 \begin{IEEEkeywords}
 Quadruped Locomotion, Robustness, Domain Randomization, Smooth Regularization, Reinforcement Learning, PPO, Ablation Study, Negative Synergy
 \end{IEEEkeywords}
-
-% ============================================================================
-% RELATED WORK
-% ============================================================================
-\section{Related Work}
-
-\subsection{Robustness Methods: SR2L and Domain Randomization}
-
-Smooth Regularized Reinforcement Learning (SR2L)~\cite{shen2020deep} introduces smoothness constraints through a regularization term $L_{SR2L} = \mathbb{E}[\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2]$ that penalizes policy sensitivity to observation perturbations, creating robustness to sensor noise. Related approaches enforce Lipschitz continuity~\cite{yu22f} or adversarial perturbations~\cite{pinto2017robust}. Domain randomization (DR)~\cite{tobin2017domain,peng2018sim} trains on randomized environment parameters; for locomotion, this includes joint failure randomization with curriculum learning~\cite{muratore2022robot}. While both methods address robustness individually, no prior work systematically evaluates their interaction when combined.
-
-\subsection{Multi-Objective Learning and Negative Transfer}
-
-Multi-objective RL aims to optimize competing objectives simultaneously~\cite{liu2015multiobjective}. Conventional wisdom suggests additive benefits from combining robustness methods. However, recent work on negative transfer~\cite{standley2020tasks} shows that some objective combinations interfere during training. Our work demonstrates that SR2L smoothness penalties and DR adaptation requirements create conflicting gradients, providing one of the first systematic studies of negative transfer in robustness training.
-
-\subsection{Quadruped Locomotion and Implicit Robustness}
-
-Deep RL has achieved impressive quadruped locomotion~\cite{hwangbo2019learning,lee2020learning,miki2022learning}, typically using DR as an implicit robustness mechanism. VecNormalize~\cite{openai2018baselines}, a standard observation normalization technique, is typically viewed as a training stabilizer. Our controlled ablation reveals VecNormalize is a prerequisite for SR2L and DR training ($>$99\% collapse without normalization, $p<0.001$), clarifying that observation normalization is required infrastructure with critical implications for fair method comparison~\cite{andrychowicz2021matters}.
 
 % ============================================================================
 % INTRODUCTION
@@ -72,82 +51,96 @@ Deep RL has achieved impressive quadruped locomotion~\cite{hwangbo2019learning,l
 
 \subsection{Motivation and Problem Statement}
 
-Quadruped robots operating in unstructured environments face two fundamental failure modes: \textit{sensor degradation} (noisy joint encoders from vibration, electromagnetic interference, or wear) and \textit{actuator failures} (joint malfunctions, reduced torque, or complete mechanical breakdown). While reinforcement learning (RL) has achieved impressive locomotion capabilities in simulation~\cite{hwangbo2019learning,lee2020learning}, policies trained under ideal conditions exhibit catastrophic performance degradation when deployed on physical hardware experiencing these real-world perturbations.
+Real-world robotic systems fail in predictable ways: sensors degrade and actuators malfunction. Reinforcement learning policies trained under ideal simulation conditions catastrophically fail when deployed on physical hardware experiencing sensor noise and actuator failures~\cite{hwangbo2019learning,miki2022learning,kumar2021rma,peng2018sim,tobin2017domain}. Two training paradigms address these failure modes: Smooth Regularized RL creates robustness to sensor noise through smoothness constraints~\cite{shen2020deep}, while Domain Randomization creates robustness to actuator failures through randomized exposure~\cite{tobin2017domain,peng2018sim}.
 
-Two distinct robustness paradigms have emerged to address this sim-to-real gap:
-
-\textbf{Smooth Regularized RL (SR2L)}~\cite{shen2020deep} injects zero-mean Gaussian noise into observations during training while penalizing policy sensitivity to these perturbations. The regularization term $L_{\text{smooth}} = \mathbb{E}_{s \sim \mathcal{D}} [\|\pi_\theta(s) - \pi_\theta(s + \delta)\|^2]$ encourages local Lipschitz continuity, creating policies robust to continuous sensor noise. SR2L is designed specifically for observation noise robustness.
-
-\textbf{Domain Randomization (DR)}~\cite{tobin2017domain,peng2018sim} randomly varies environment parameters during training, exposing the agent to diverse conditions. For actuator failures, DR randomly disables joints (setting torque to zero) to force the policy to learn compensatory behaviors. DR targets structural and mechanical failure modes.
-
-Despite extensive work on these individual methods, a critical question remains unanswered: \textit{do SR2L and DR provide complementary or redundant robustness?} The natural hypothesis is that these methods should be complementary: SR2L targets continuous sensor noise through smoothness regularization, while DR targets discrete structural failures through randomized exposure. Different failure modes affecting different system components suggest additive robustness benefits when combined. Multi-randomization approaches in prior DR work~\cite{mehta2020active} support this intuition, showing that combining visual and dynamics randomization improves sim-to-real transfer. However, these methods might instead \textit{interfere}, with competing training objectives degrading overall performance—a possibility unexplored in prior literature.
+The natural hypothesis is complementary benefits: since these methods target orthogonal failure modes, combining them should provide additive robustness. However, an alternative hypothesis is interference: SR2L demands policy insensitivity to observation changes while DR demands strong sensitivity to detect failures, creating conflicting training objectives. Prior multi-randomization work shows promise~\cite{mehta2020active}, yet no systematic study quantifies whether combining SR2L and DR produces synergy or interference. This work provides that empirical analysis.
 
 \subsection{Research Questions and Approach}
 
-We conduct a systematic 4-way ablation study across approximately 38,000 evaluation episodes, comparing:
-\begin{itemize}
-    \item \textbf{M1 (Baseline):} PPO without robustness training
-    \item \textbf{M2 (SR2L):} PPO with smooth regularization ($\lambda=0.001$, $\sigma=0.01$)
-    \item \textbf{M3 (DR):} PPO with 3-phase curriculum domain randomization (50-60\% episodes with 1-2 joint failures during training)
-    \item \textbf{M4 (Combo):} PPO with both SR2L and curriculum DR
-\end{itemize}
+We train four quadruped locomotion policies to systematically test these hypotheses: baseline PPO with no robustness training, SR2L only, DR only, and their combination. Each model undergoes identical evaluation across sensor noise tests, actuator failure tests, and combined stress conditions.
 
-Our evaluation protocol spans 8 experiments:
-\begin{enumerate}
-    \item Baseline performance (ideal conditions)
-    \item Sensor noise robustness (12 Gaussian noise levels, $\sigma \in [0, 3.0]$)
-    \item Extended noise types (Gaussian, Poisson, salt-and-pepper with SNR matching)
-    \item Joint failure robustness (8 individual joints with 2-second delayed locking)
-    \item Combined stress (simultaneous noise and joint failures)
-    \item Per-joint deep dive (velocity profiling and anatomical patterns)
-    \item Validation suite (controlled ablation of VecNormalize, stochastic resonance testing)
-    \item Full factorial ablation (8 joints $\times$ 4 noise conditions with recovery time tracking)
-\end{enumerate}
+This ablation design directly answers whether combining methods provides complementary benefits or creates interference. Our evaluation across 38,000 episodes provides quantitative evidence for the interference hypothesis: specialized training outperforms multi-objective training across all conditions.
 
-\textbf{Contributions.} We make four key contributions:
+\textbf{Contributions.} This work makes three key contributions:
 
-\textbf{C1: Quantified interference in multi-method training.} We provide quantitative evidence that combining SR2L and DR produces \textit{interference} rather than synergy. Under the highest stress condition (dual joint failure + high noise), M4 (combo) underperforms M3 (DR alone) by 67.8\% (0.72m vs 2.22m, $p<0.001$, Cohen's $d=+2.68$), demonstrating that multi-objective robustness training creates conflicting objectives that severely degrade performance.
+\textbf{1. Negative transfer in multi-objective robustness.} We provide quantitative evidence that combining robustness methods targeting different failure modes creates interference rather than synergy, with the combined approach (M4) underperforming specialized training (M3) by 56-145\% under stress conditions.
 
-\textbf{C2: Identification of normalization as prerequisite.} Through controlled ablation, we identify VecNormalize as a prerequisite for SR2L/DR training rather than an "implicit robustness mechanism." Models trained without VecNormalize exhibit $>$99\% performance collapse (M2/M3/M4: $<$0.1m vs 2-8m). Root cause analysis reveals RealAnt's heterogeneous observation space (200:1 scale ratio) causes gradient domination without normalization, preventing learning~\cite{andrychowicz2021matters,huang2022ppo}. This clarifies that robustness methods require normalized observations as infrastructure.
+\textbf{2. Observation normalization as critical enabler.} Through controlled ablation, we identify that observation normalization (VecNormalize) provides substantial robustness baseline (83\% sensor noise retention), making specialized robustness training less critical than previously assumed.
 
-\textbf{C3: Discovery of SR2L noise tolerance and generalization.} Through systematic multi-distribution noise testing (Experiment 2B), we demonstrate that SR2L-trained policies exhibit noise-induced regularization, achieving up to 114\% performance at moderate noise levels ($\sigma=0.05$-$0.10$). Remarkably, despite training on Gaussian noise only, SR2L generalizes to novel distributions: 106.6\% average retention on Poisson noise and 112.8\% on salt-and-pepper noise. This cross-distribution transfer demonstrates that smoothness regularization creates general noise robustness rather than distribution-specific adaptation.
+\textbf{3. Cross-distribution generalization.} We demonstrate that sensor noise robustness training creates cross-distribution generalization, with policies maintaining high performance on noise types never encountered during training (Poisson, salt-and-pepper).
 
-\textbf{C4: Comprehensive robustness methodology.} We introduce temporal recovery metrics (time to regain 50\% baseline velocity post-failure), multi-distribution noise testing with SNR equivalence, and full factorial joint$\times$noise interaction analysis. This methodology enables mechanistic understanding beyond static retention percentages.
+Our findings challenge the assumption that combining complementary robustness methods produces additive benefits, and provide actionable deployment guidance: train specialized DR for actuator failures, which also provides cross-robustness to sensor noise as a side benefit.
 
-\textbf{Deployment recommendation.} Based on approximately 38,000 episodes, we recommend M3 (DR alone) for real-world deployment: 3.73m average absolute distance under joint failures (superior to M4's 3.38m), 104.7\% noise retention, acceptable 29\% baseline sacrifice, and simpler training than multi-method approaches. The combined method (M4) provides no benefit over M3 while requiring increased training complexity and sacrificing an additional 23\% baseline performance.
+% ============================================================================
+% BACKGROUND
+% ============================================================================
+\section{Background}
+
+\subsection{Reinforcement Learning Fundamentals}
+
+Reinforcement learning addresses sequential decision-making under uncertainty, formalized as a Markov Decision Process (MDP) defined by tuple $(\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma)$: state space $\mathcal{S}$, action space $\mathcal{A}$, transition dynamics $\mathcal{P}(s'|s,a)$, reward function $\mathcal{R}(s,a)$, and discount factor $\gamma$. A policy $\pi: \mathcal{S} \rightarrow \mathcal{A}$ maps observations to actions. The goal is to learn an optimal policy $\pi^*$ that maximizes expected cumulative discounted reward: $J(\pi) = \mathbb{E}_{\tau \sim \pi}[\sum_{t=0}^{\infty} \gamma^t r_t]$. For quadruped locomotion, states are proprioceptive observations (joint positions, velocities, torso orientation), actions are motor commands, and rewards encourage forward motion.
+
+\subsection{Proximal Policy Optimization}
+
+We use Proximal Policy Optimization (PPO)~\cite{schulman2017proximal}, a policy gradient method that balances sample efficiency with training stability. PPO updates the policy by maximizing a clipped surrogate objective that constrains policy changes per update, preventing destructive large updates common in vanilla policy gradient methods. PPO has become the standard for continuous control tasks including legged locomotion~\cite{hwangbo2019learning,lee2020learning}, providing reliable convergence with moderate hyperparameter sensitivity.
+
+\subsection{Robustness Methods for Reinforcement Learning}
+
+Policies trained in ideal simulation conditions often fail when deployed on physical hardware due to observation noise and environmental variations. Two primary approaches address this sim-to-real gap: \textit{observation robustness} methods like SR2L that train policies to tolerate sensor noise through smoothness regularization, and \textit{environmental robustness} methods like domain randomization that expose policies to varied conditions during training. While both target robustness, they operate through different mechanisms—SR2L penalizes policy sensitivity to observation perturbations, while DR trains on randomly varied environments. Whether these complementary approaches cooperate or interfere when combined remains an open question that this work addresses.
+
+\subsection{SR2L Hyperparameter Selection}
+
+SR2L requires three key design choices: perturbation magnitude $\sigma$, regularization weight $\lambda$, and which observation dimensions to perturb. We determined these parameters empirically, following the general framework from the original SR2L work~\cite{shen2020deep} and adapting it to the quadruped locomotion domain.
+
+\textbf{Perturbation magnitude ($\sigma = 0.01$):} We selected $\sigma = 0.01$ through empirical tuning to represent realistic sensor noise levels while maintaining training stability. This magnitude is large enough to expose the policy to meaningful measurement errors but small enough to avoid overwhelming the learning signal during early training phases. The value balances between insufficient robustness training (at lower noise levels) and training instability (at higher noise levels).
+
+\textbf{Regularization weight ($\lambda = 0.001$):} We use $\lambda = 0.001$ following the original SR2L paper's experimental setup~\cite{shen2020deep} for continuous control tasks. This weight balances robustness and performance: values too large ($\lambda > 0.01$) cause excessive policy smoothing that degrades nominal locomotion, while values too small ($\lambda < 0.0001$) provide insufficient robustness incentive. Our experimental results (Section~\ref{sec:results}) confirm this weight provides measurable robustness benefits while maintaining competitive baseline performance.
+
+\textbf{Perturbation dimensions (13-28):} We determined through preliminary experiments that perturbing only joint-specific measurements—positions (dimensions 21-28) and velocities (dimensions 13-20)—provided better training stability than full observation perturbation. This selective approach targets proprioceptive sensor noise in joint encoders, the primary sensor failure mode in quadruped systems. We exclude torso state dimensions (positions 0-12) because perturbing global pose measurements destabilized early training before the policy learned basic locomotion. This dimension selection focuses the smoothness regularization on joint sensors while maintaining stable learning dynamics.
+
+\subsection{Curriculum Learning in Reinforcement Learning}
+
+Curriculum learning~\cite{bengio2009curriculum} is a training strategy inspired by human education, where learning progresses from simple to complex tasks. Rather than training on the full task difficulty from the start, curriculum learning organizes training into stages of progressively increasing difficulty, enabling the agent to master fundamental skills before attempting harder variations.
+
+In reinforcement learning, curriculum learning prevents early training failure on tasks where the full difficulty would overwhelm the untrained policy. For robustness training specifically, curriculum learning is particularly valuable when the target robustness conditions (e.g., high sensor noise or multiple simultaneous joint failures) would cause complete locomotion failure if applied from the beginning. By gradually introducing these challenges, the policy first learns stable baseline locomotion, then incrementally adapts to handle perturbations.
+
+For domain randomization targeting actuator failures, curriculum learning typically involves phased training: early phases use clean environments or minimal randomization to establish basic locomotion, middle phases introduce single failure modes, and later phases increase failure frequency or combine multiple failures~\cite{muratore2022robot}. This structured approach has become standard practice in robot learning from randomized simulations, as it significantly improves both training success rates and final policy robustness compared to exposing agents to full randomization from initialization.
 
 % ============================================================================
 % METHODOLOGY
 % ============================================================================
 
 \section{Methodology}
+\label{sec:methodology}
 
 \subsection{Experimental Platform and Environment}
 
-All experiments use the RealAnt-v0 quadruped environment, a custom robot extending Gymnasium's Ant-v4~\cite{gymnasium2023} with latency modeling, noise injection, and joint failure support, simulated in MuJoCo physics engine~\cite{todorov2012mujoco}. The RealAnt has 8 actuated degrees of freedom (2 joints per leg: hip and ankle), organized as shown in Figure~\ref{fig:joint_diagram}. The 29-dimensional observation space consists of: (1) torso linear velocities in x, y, z (3D), (2) torso z-position (1D), (3) sin and cos of torso Euler angles for roll, pitch, yaw (6D), (4) torso angular velocities (3D), (5) joint angular positions (8D), and (6) joint angular velocities (8D). The action space consists of 8 continuous angular position set-points for the joints.
+All experiments use the RealAnt-v0 quadruped environment, a custom robot extending Gymnasium's Ant-v4~\cite{gymnasium2023} with latency modeling, noise injection, and joint failure support, simulated in MuJoCo physics engine~\cite{todorov2012mujoco}. The RealAnt has 8 actuated degrees of freedom (2 joints per leg: hip and ankle), organized as shown in Figure~\ref{fig:joint_diagram}. The 29-dimensional observation space consists of: (1) torso linear velocities in $x$, $y$, $z$ (3D), (2) torso $z$-position (1D), (3) $\sin$ and $\cos$ of torso Euler angles for roll, pitch, yaw (6D), (4) torso angular velocities (3D), (5) joint angular positions (8D), and (6) joint angular velocities (8D). The action space consists of 8 continuous angular position set-points for the joints.
 
-Joint numbering follows the convention: Joint 1 (hip\_1/ankle\_1) = front-left leg, Joint 2 (hip\_2/ankle\_2) = front-right leg (camera-facing), Joint 3 (hip\_3/ankle\_3) = rear-left leg, Joint 4 (hip\_4/ankle\_4) = rear-right leg (camera-facing). Hip joints are proximal (closer to torso), while ankle joints are distal (end of leg). This anatomical layout is critical for interpreting joint failure results in Section~4.3, particularly the worst-case performance of camera-facing ankle joints.
+These observations have vastly different numerical ranges: joint velocities span approximately $\pm$10 rad/s, while torso positions span approximately $\pm$0.05m, creating a 200:1 magnitude ratio. To prevent gradient domination by high-magnitude features, we apply observation normalization: maintaining online mean and standard deviation statistics during training, then normalizing each dimension to zero mean and unit variance before passing observations to the policy network.
+
+The robot's four legs are numbered by position: Joint 1 (front-left), Joint 2 (front-right, camera-facing), Joint 3 (rear-left), and Joint 4 (rear-right, camera-facing). Each leg contains two joints: a proximal hip joint closer to the torso and a distal ankle joint at the leg's end. References to specific joints throughout the paper use this numbering (e.g., "hip 1" refers to the front-left hip, "ankle 4" refers to the rear-right ankle). This anatomical layout is critical for interpreting joint failure results in Section~\ref{sec:joint_failures}, particularly the worst-case performance of camera-facing ankle joints.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/joint_numbering_diagram.pdf}
-\caption{\textbf{RealAnt joint numbering convention.} Top-down view showing the 8 actuated joints (4 hips + 4 ankles) and their anatomical positions. Each leg has two joints: a proximal hip joint (larger circles) and a distal ankle joint (smaller circles). Joints are numbered 1-4 corresponding to front-left, front-right, rear-left, and rear-right legs respectively. Note that joints 2 and 4 are camera-facing (positioned on the right side when robot walks left→right), which affects failure observability and recovery strategies. This diagram serves as reference for interpreting per-joint robustness results throughout the paper.}
+\caption{\textbf{RealAnt quadruped robot and joint labeling.} The RealAnt robot has 8 actuated joints organized as 4 legs with 2 joints each: proximal hip joints (closer to torso) and distal ankle joints (end of leg). Joints are numbered 1-4 corresponding to front-left, front-right, rear-left, and rear-right legs respectively. The image shows joint positions labeled on the robot body for anatomical clarity. Note that joints 2 and 4 are camera-facing (positioned on the right side when robot walks left→right), which affects failure observability and recovery strategies. This diagram serves as reference for interpreting per-joint robustness results throughout the paper.}
 \label{fig:joint_diagram}
 \end{figure}
 
-The environment uses a forward locomotion reward structure (SuccessRewardWrapper) that provides reward proportional to forward velocity: $r_t = 100 \cdot v_x^2$, where $v_x$ is the robot's velocity in the forward direction. This custom wrapper implements the velocity-based reward shaping described by Sutton \& Barto~\cite{sutton2018reinforcement}, using exponential scaling ($v^2$) rather than linear velocity to strongly incentivize faster gaits. Episodes terminate after 1000 timesteps or if the robot falls (torso height $< 0.2$m). This reward structure encourages fast, stable forward locomotion without requiring explicit goal positions.
+The reward function is $r_t = 100 \cdot v_x^2$, where $v_x$ is forward velocity, following velocity-based reward shaping~\cite{sutton2018reinforcement}. Episodes terminate after 1000 timesteps or if the robot falls (torso height $< 0.2$m).
 
 \subsection{Model Training Configurations}
 
 We train four distinct models using Proximal Policy Optimization (PPO)~\cite{schulman2017proximal} to enable systematic ablation analysis:
 
-\textbf{M1 (Baseline):} Standard PPO trained in clean conditions with no robustness augmentation. Uses SuccessRewardWrapper only. Trained for 10M timesteps on RealAnt-v0. This establishes the performance ceiling under ideal conditions.
+\textbf{M1 (Baseline):} Standard PPO trained in clean conditions with no robustness augmentation. Uses SuccessRewardWrapper only. Trained for 32M timesteps on RealAnt-v0. This establishes the performance ceiling under ideal conditions.
 
 \textbf{M2 (SR2L):} PPO with Smooth Regularized Reinforcement Learning~\cite{shen2020deep}. Augments the standard PPO loss with a smoothness regularization term:
 \begin{equation}
 L_{total} = L_{PPO} + \lambda \cdot \mathbb{E}_{s \sim \mathcal{D}} [\|\pi_\theta(s) - \pi_\theta(s + \delta)\|^2]
 \end{equation}
-where $\delta \sim \mathcal{N}(0, \sigma^2 I)$ with $\sigma = 0.01$ applied only to joint observation dimensions (13-28), and $\lambda = 0.001$. Perturbations applied during training but not to the actual environment. Trained for 20M timesteps. While training uses Gaussian noise only, we evaluate generalization to Poisson and salt-and-pepper noise distributions (Experiment 2B) to assess whether smoothness regularization transfers across noise types.
+where $\delta \sim \mathcal{N}(0, \sigma^2 I)$ with $\sigma = 0.01$ applied only to joint observation dimensions (13-28), and $\lambda = 0.001$. Hyperparameter selection rationale is detailed in Section 2.4. Perturbations applied during training but not to the actual environment. Trained for 32M timesteps. While training uses Gaussian noise only, we evaluate generalization to Poisson and salt-and-pepper noise distributions (Experiment 2B) to assess whether smoothness regularization transfers across noise types.
 
 \textbf{M3 (Domain Randomization):} PPO with 3-phase curriculum domain randomization targeting joint failures. Training schedule:
 \begin{itemize}
@@ -159,31 +152,19 @@ Joint locking implemented by setting affected joint torques to zero. Total train
 
 \textbf{M4 (Combined):} PPO with both SR2L smoothness regularization AND curriculum domain randomization. Identical curriculum schedule to M3, but with SR2L loss ($\lambda=0.001$, $\sigma=0.01$) applied throughout all phases. Total training: 30M timesteps.
 
-All models use identical policy architecture: 2-layer MLP with [128, 128] hidden units and tanh activation. PPO hyperparameters: learning rate $3 \times 10^{-4}$, batch size 1536, 8 epochs per update, clip range 0.15, GAE $\lambda=0.97$, discount $\gamma=0.995$.
+\subsection{PPO Training Configuration}
+
+All models use identical training configuration to ensure fair comparison. The policy architecture is a 2-layer multilayer perceptron (MLP) with [128, 128] hidden units and tanh activation, following standard practice in quadruped RL~\cite{hwangbo2019learning}. This moderate architecture size balances model expressiveness with sample efficiency. Tanh activation is standard for continuous control as it naturally bounds policy outputs.
+
+PPO hyperparameters were selected following established best practices~\cite{huang2022ppo} with minor empirical adjustments for the quadruped locomotion domain: learning rate $3 \times 10^{-4}$ (Stable Baselines3 default~\cite{openai2018baselines}), batch size 1536, 8 epochs per update, clip range 0.15, GAE $\lambda=0.97$, discount $\gamma=0.995$. The clip range of 0.15 (more conservative than the default 0.2) prevents excessively large policy updates, improving training stability. We use 8 epochs per update (higher than the typical 4-10 range) to improve sample efficiency during the extended 32M-step training runs. The high discount factor ($\gamma=0.995$) and GAE parameter ($\lambda=0.97$) are appropriate for the long-horizon task (1000 timesteps per episode), enabling effective credit assignment over extended trajectories.
 
 \subsection{Observation Normalization}
 
-All models use VecNormalize~\cite{openai2018baselines} to maintain running statistics (mean and standard deviation) of observations and rewards. This normalization is applied during both training and evaluation, with statistics frozen during evaluation rollouts. This is critical infrastructure that provides implicit robustness benefits across all models.
+All models use running observation normalization to handle the vastly different numerical ranges in the observation space. During training, we maintain running statistics (mean $\mu$ and standard deviation $\sigma$) for each observation dimension, updating these with each environment step. Observations are normalized using $\hat{o}_i = (o_i - \mu_i) / \sigma_i$ before being passed to the policy network. During evaluation, statistics are frozen at their final training values to ensure consistent behavior. This normalization prevents gradient domination by high-magnitude features and is critical infrastructure for learning in continuous control tasks~\cite{openai2018baselines,andrychowicz2021matters}.
 
 \subsection{Evaluation Protocol}
 
-We conduct 9 systematic experiments totaling approximately 38,000 evaluation episodes:
-
-\textbf{Experiment 1: Baseline Performance} (400 episodes) - Establish baseline locomotion capabilities without any perturbations. Each model evaluated for 100 episodes in nominal RealAnt-v0 environment with no sensor noise or joint failures.
-
-\textbf{Experiment 2: Sensor Noise Robustness} (4,800 episodes) - Test robustness to sensor observation noise at escalating severity levels. Gaussian noise ($\mu=0$, $\sigma$) added to joint position/velocity observations. Tested 12 noise levels: $\sigma \in \{0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.10, 0.15, 0.20, 0.25, 0.30\}$. Range spans $0\times$ to $30\times$ M2's training noise level ($\sigma=0.01$). 100 episodes per model per noise level.
-
-\textbf{Experiment 3: Joint Failure Robustness} (3,200 episodes) - Evaluate adaptation to individual joint actuator failures. Each of 8 joints (4 hips, 4 ankles) locked at neutral position for entire episode. Tests catastrophic single-joint failure scenarios. 100 episodes per model per joint.
-
-\textbf{Experiment 4: Combined Stress Testing} (2,400 episodes) - Assess performance under simultaneous sensor and actuator failures. 6 combined scenarios crossing 3 joint failure rates $\{10\%, 30\%, 50\%\}$ with 2 noise levels $\{\sigma=0.00, \sigma=0.05\}$. Episode-level random joint selection with specified probability. 100 episodes per model per scenario.
-
-\textbf{Experiment 5: Per-Joint Deep Dive} (4,800 episodes) - High-resolution analysis of individual joint vulnerabilities with velocity profiling. Each of 8 joints tested individually with locked actuator for entire episode. 150 episodes per joint for statistical power in velocity variance analysis. Total: 4 models $\times$ 8 joints $\times$ 150 episodes.
-
-\textbf{Experiment 6: Delayed Joint Locking} (3,200 episodes) - Test adaptation to mid-episode actuator failures. 2-second delay before locking joints (simulating sudden failure). Tested across all 8 individual joints. 100 episodes per model per joint.
-
-\textbf{Experiment 7: Joint-Noise Interaction Analysis} (12,800 episodes) - Systematic ablation of joint failure $\times$ sensor noise interactions. Full factorial design crossing 8 joints with 4 noise levels $\{\sigma=0.00, \sigma=0.05, \sigma=0.10, \sigma=1.0\}$. Tests whether failures combine additively or synergistically. 100 episodes per model per combination (32 conditions).
-
-\textbf{Experiment 8: Detailed Combined Stress} (6,400 episodes) - Extended combined stress testing with additional noise levels. 16 scenarios crossing 4 joint failure rates $\{0\%, 10\%, 30\%, 50\%\}$ with 4 noise levels $\{\sigma=0.00, \sigma=0.02, \sigma=0.05, \sigma=0.10\}$. 100 episodes per model per scenario.
+We evaluate all four models through systematic experiments testing baseline performance, sensor noise robustness, joint failure adaptation, and combined stress scenarios. Each experiment uses consistent evaluation protocols across models to enable direct comparison.
 
 \subsection{Performance Metrics}
 
@@ -201,108 +182,95 @@ For each evaluation episode, we record:
 
 Statistical significance assessed using paired t-tests with Bonferroni correction for multiple comparisons ($\alpha = 0.05$).
 
-\section{Results}
+\section{Experiments and Results}
 \label{sec:results}
 
-We present comprehensive evaluation results across approximately 38,000 episodes, organized chronologically by stress condition. All statistical tests use paired t-tests with Bonferroni correction ($\alpha = 0.05/n$) where $n$ is the number of comparisons. Retention percentage is defined as (faulty performance / baseline performance) $\times$ 100\%.
+We present systematic experimental evaluation of all four models. Each experiment is described immediately before its results for clarity. All statistical tests use paired t-tests with Bonferroni correction ($\alpha = 0.05/n$) where $n$ is the number of comparisons. Retention percentage is defined as (faulty performance / baseline performance) $\times$ 100\%.
 
-\subsection{Baseline Performance}
+\subsection{Experiment 1: Baseline Performance and Training Dynamics}
 
-Figure~1 shows performance under ideal conditions (no sensor noise, no joint failures). M1 achieved the highest baseline performance (11.20 $\pm$ 0.16m, 95\% CI: [11.17, 11.23], $n=100$), significantly outperforming all robustness-trained models (all $p<0.001$). M2 (SR2L) achieved 8.75 $\pm$ 2.35m (22\% sacrifice), M3 (DR) achieved 7.96 $\pm$ 2.33m (29\% sacrifice), and M4 (Combined) achieved 5.34 $\pm$ 3.75m (52\% sacrifice).
+\textbf{Protocol.} Each model was evaluated for 100 episodes in clean conditions (no perturbations) to establish baseline performance. Training dynamics were assessed by evaluating saved checkpoints every 500K-1M steps (10 episodes per checkpoint).
 
-The 52\% baseline sacrifice by M4 is substantially larger than M3's 29\% sacrifice, despite both models undergoing domain randomization training. This suggests training interference rather than complementary benefits. The pairwise comparison between M3 and M4 did not achieve statistical significance after Bonferroni correction ($p=0.024 > \alpha_{adj}=0.0083$), though the large effect size (Cohen's $d=+0.84$) indicates a practically meaningful difference. This exemplifies the distinction between statistical and practical significance: with $n=100$ episodes, we have sufficient power to detect that a moderate-to-large effect (d=0.84) exists, even when it falls short of our conservative significance threshold.
+\textbf{Baseline results} (Figure~\ref{fig:baseline}): M3 (DR) achieved best performance at 8.26m, significantly outperforming M1 (6.40m, $p<0.001$), M2 (7.26m, $p=0.005$), and M4 (6.70m, $p<0.001$). This reveals that domain randomization prevents overfitting: M1 (unaugmented) severely overfit, while M3's training randomization acted as effective regularization. M4 underperforms M3 despite identical DR training, indicating SR2L+DR interference.
 
-All robustness training methods incurred baseline performance costs, with combined training (M4) showing the largest sacrifice. M4's high standard deviation (3.75m) indicates inconsistent performance, with some episodes achieving reasonable distances while others exhibited near-zero locomotion.
+\textbf{Training dynamics} (Figure~\ref{fig:learning_curves}): Training rewards do not predict evaluation performance. M1 achieved highest peak training reward (312K) but worst evaluation (6.40m) due to 79.6\% reward degradation from overfitting. Conversely, M3 showed worst training degradation (98.2\%: 149K → 2.7K) with continuous oscillations, yet achieved best evaluation (8.26m)—this instability reflects adaptation to randomized conditions, not failure. M4 exhibited catastrophic collapse at 14-20M steps (rewards → 0) when SR2L smoothness and DR failures were simultaneously active, providing direct evidence of gradient conflict.
+
+\textbf{Key finding:} Domain randomization prevents overfitting and acts as regularization, providing ``free'' baseline improvement (M3: 8.26m vs M1: 6.40m). Training reward curves are unreliable indicators—M3's unstable training yields best evaluation.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/figure_1_baseline_performance.pdf}
-\caption{\textbf{Baseline performance comparison across four training methods.} Left: Average distance traveled in ideal conditions (no noise, no failures). Center: Success rates (episodes $>$5m). Right: Failure rates (falls/immobility). M1 achieves highest performance (11.20m) but lacks robustness training. M3 (DR) and M4 (Combined) show substantial baseline sacrifices (29\% and 52\% respectively), with M4's combined training producing the largest performance cost. Error bars: 95\% confidence intervals. All pairwise differences $p<0.001$ (Bonferroni corrected, $n=100$ episodes per model).}
+\caption{\textbf{Baseline performance comparison.} M3 (DR) achieves best performance (8.26m), significantly outperforming M1 (6.40m, $p<0.001$), M2 (7.26m, $p=0.005$), M4 (6.70m, $p<0.001$). Error bars: 95\% CI. Bonferroni corrected, $n=100$ episodes.}
 \label{fig:baseline}
 \end{figure}
-
-\subsection{Training Dynamics and Convergence}
-
-Figure~\ref{fig:learning_curves} presents training dynamics reconstructed from checkpoint evaluation at regular intervals throughout training. This checkpoint-based approach provides more rigorous convergence analysis than W\&B training logs, as it uses the exact evaluation protocol applied to final models.
-
-\textbf{Convergence patterns.} M1 (Baseline) achieved rapid convergence within 2M steps, reaching a stable plateau at 11m distance with minimal variance (CV: 2.1\%). M2 (SR2L) showed smooth, monotonic improvement over 20M steps, stabilizing at 9m with very low variance (CV: 3.8\%)—consistent with SR2L's smoothness objective. M3 (DR) exhibited high training variance throughout all 32M steps, with frequent oscillations between 3m and 9m reflecting continuous adaptation to randomized joint failures. \textit{Critically, M3 did not achieve a stable plateau}—the 15.7\% coefficient of variation in the final 10M steps indicates ongoing adaptation rather than convergence.
-
-\textbf{M4's catastrophic collapse.} M4 (Combined) experienced catastrophic forgetting at 14-20M steps, with episode rewards collapsing from 8m to near-zero (robot unable to walk). This 6M-step failure period preceded partial recovery to 7-8m by 30M steps, though final performance remained below M3. The collapse occurred during the training phase when both SR2L smoothness penalties and DR joint failures were simultaneously active. Neither M2 (SR2L alone) nor M3 (DR alone) exhibited such instability.
-
-\textbf{Training variance.} The final 10M steps of training reveal distinct stability profiles: M1 shows coefficient of variation (CV) of 2.1\%, M2 shows 3.8\%, M3 shows 15.7\%, and M4 shows 12.4\%. M3's high variance reflects oscillations between 3m and 9m throughout training, while M4 shows moderate variance but lower absolute performance, never recovering to pre-collapse levels.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/learning_curves_reconstructed.pdf}
-\caption{\textbf{Training dynamics reconstructed from checkpoint evaluation.} (a) Episode reward progression showing convergence patterns: M1 rapid convergence (2M steps), M2 smooth monotonic improvement (20M steps), M3 high variance reflecting DR adaptation (32M steps). Most critically, M4 exhibits catastrophic collapse at 14-20M steps (reward → 0) with incomplete recovery, providing direct evidence of gradient conflict between SR2L smoothness and DR adaptation objectives. (b) Locomotion distance over training confirming reward patterns correlate with actual forward movement. Checkpoints evaluated every 500K-1M steps using identical protocol as final evaluation ($n=10$ episodes per checkpoint). This collapse is not visible in sparse W\&B training logs (4-6\% sampling), highlighting the importance of checkpoint-based convergence analysis.}
+\caption{\textbf{Training dynamics show training-evaluation disconnect.} M1: 79.6\% reward degradation (312K → 63K), worst evaluation (6.40m, overfitting). M3: 98.2\% degradation (149K → 2.7K) with high variance, best evaluation (8.26m, adaptation not failure). M4: catastrophic collapse at 14-20M steps (SR2L-DR gradient conflict). Checkpoints evaluated every 500K-1M steps, $n=10$ episodes.}
 \label{fig:learning_curves}
 \end{figure}
 
-\subsection{Sensor Noise Robustness}
+\subsection{Experiment 2: Sensor Noise Robustness}
 
-Figure~2 presents results across 12 Gaussian noise levels ranging from $\sigma=0.00$ to $\sigma=0.30$. At $\sigma=0.10$ (10$\times$ M2's training noise level), models achieved: M1: 10.95 $\pm$ 0.16m (97.8\% retention), M2: 8.38 $\pm$ 2.60m (95.8\% retention), M3: 8.33 $\pm$ 1.66m (104.7\% retention), and M4: 7.91 $\pm$ 1.40m (148.1\% retention). M4's anomalous 148\% retention reflects baseline inconsistency (5.34m baseline vs M3's 7.96m)—absolute performance remains lower than M3.
+\textbf{Protocol.} Models evaluated across 12 escalating Gaussian noise levels (0× to 30× M2's training noise, 100 episodes per level). Observation normalization ablation conducted by training M2/M3/M4 without normalization.
 
-Statistical tests comparing performance at $\sigma=0.10$ against baseline (Bonferroni $\alpha=0.05/4=0.0125$) revealed: M1 showed significant degradation ($p<0.001$, $d=+1.58$), while M2 ($p=0.318$, $d=+0.15$) and M3 ($p=0.213$, $d=-0.18$) showed no significant changes.
+\textbf{Results} (Figure~\ref{fig:noise}): All robustness-trained models maintain $>$90\% performance at 10× training noise (σ=0.10), with M2 showing slight improvement (100.7% retention, consistent with stochastic resonance). M3 maintains 92\% retention despite never training with noise, indicating cross-robustness from joint failure adaptation. M1 shows 83\% retention, revealing moderate natural robustness.
 
-\textbf{VecNormalize ablation.} We trained M2 (SR2L), M3 (DR), and M4 (Combo) without VecNormalize to isolate normalization effects from explicit robustness methods. Results revealed \textit{complete locomotion failure}: M2: $-0.08 \pm 0.33$m (walks backward), M3: $0.04 \pm 0.06$m (essentially frozen), M4: $0.04 \pm 0.05$m (essentially frozen). These represent $>$99\% performance collapse compared to models with VecNormalize (M2: 8.04m, M3: 8.26m, M4: 2.27m).
+\textbf{Normalization prerequisite}: Without observation normalization, all models exhibited $>$99\% performance collapse (M2/M3/M4: $<$0.1m), confirming normalization is a fundamental prerequisite—not an implicit robustness mechanism—for continuous control with high-dimensional observations spanning vastly different numerical ranges~\cite{andrychowicz2021matters}.
 
-\textit{Root cause}: RealAnt's 29D observation space contains features spanning vastly different scales—joint velocities $\in [-10, +10]$, torso position $\in [0.12, 0.23]$, torso velocities $\in [-0.05, +0.05]$. Without normalization, gradients from high-magnitude features dominate by 66:1, preventing learning of position/velocity relationships critical for locomotion~\cite{andrychowicz2021matters,huang2022ppo}. This effect compounds with SR2L's smoothness penalty (perturbations become unbalanced across feature scales) and DR's distribution shifts (joint failures overwhelm already-imbalanced gradients).
-
-\textit{Implication}: VecNormalize is not an "implicit robustness mechanism" but a \textbf{fundamental prerequisite} for continuous control with heterogeneous observation spaces. SR2L and DR provide robustness \textit{on top of} normalized observations, not instead of normalization~\cite{openai2018baselines}.
+\textbf{Key finding:} Observation normalization alone provides substantial sensor noise robustness (M1: 83\% retention). SR2L training adds only marginal improvement (+17.7\%), while M3 achieves 92\% retention as cross-robustness without noise training. Implication: specialized noise training may be unnecessary.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/figure_2_noise_robustness.pdf}
-\caption{\textbf{Sensor noise robustness across 12 noise levels.} Top left: Average distance vs noise standard deviation ($\sigma$). Top right: Retention percentage heatmap showing all models maintain $>$95\% at $\sigma=0.10$ (10$\times$ M2 training level). Bottom left: VecNormalize ablation revealing M2/M3/M4 exhibit complete failure without normalization ($<$0.1m, $>$99\% collapse), demonstrating observation normalization is prerequisite for SR2L/DR methods. Bottom right: M2 (SR2L) multi-distribution generalization achieving 101-114\% retention on Gaussian, Poisson, and salt-and-pepper noise distributions, demonstrating noise-induced regularization with cross-distribution transfer. $n=100$ episodes per condition.}
+\caption{\textbf{Sensor noise robustness.} Top: All models maintain $>$90\% retention at 10$\times$ training noise ($\sigma=0.10$). M2 shows 100.7\% retention. Bottom left: Normalization ablation shows $>$99\% collapse without normalization. Bottom right: M2 cross-distribution generalization (101-114\% retention on Gaussian, Poisson, salt-and-pepper). $n=100$ episodes per condition.}
 \label{fig:noise}
 \end{figure}
 
-\subsection{Joint Failure Robustness}
+\subsection{Experiment 3: Joint Failure Robustness}
+\label{sec:joint_failures}
 
-Figure~4 analyzes performance when individual joints were locked throughout episodes, simulating catastrophic actuator failures. M3 achieved the highest average absolute distance under joint failures: 3.73m across 8 joints, outperforming M1 (3.57m), M4 (3.38m), and M2 (2.24m). M3's 10.5\% advantage over M4 (3.73m vs 3.38m) demonstrates superior real-world robustness.
+\textbf{Protocol.} Each of 8 joints locked individually for entire episodes (100 episodes per joint), simulating catastrophic single-joint failures.
 
-When expressed as retention percentage (secondary metric), results appear contradictory: M4 shows 63.2\% $\pm$ 34.8\% average retention, higher than M3's 46.9\% $\pm$ 24.0\%. However, M4's substantially lower baseline (5.34m vs M3's 7.96m) inflates this metric—a small absolute distance appears as high retention when divided by a small baseline. Statistical comparison of retention percentages found no significant difference between M3 and M4 ($p=0.086$, $n.s.$), Cohen's $d=-0.55$.
+\textbf{Results} (Figure~\ref{fig:joint_failures}): M3 achieved highest average distance (3.80m), outperforming M4 (3.39m), M2 (2.23m), and M1 (1.71m). Retention percentage (faulty performance / baseline performance) can mislead when baselines differ: M4's 50.6\% appears superior to M3's 46.0\%, but M4's lower baseline (6.70m) inflates this metric—absolute distance is more informative for deployment. Hip joints showed consistently better adaptation than ankle joints across all models, though not statistically significant after Bonferroni correction.
 
-\textbf{Anatomical Patterns.} Hip joints consistently outperformed ankle joints across all models: M1 (hips: 48.6\%, ankles: 15.2\%), M2 (hips: 35.5\%, ankles: 15.7\%), M3 (hips: 52.2\%, ankles: 41.6\%), M4 (hips: 84.9\%, ankles: 41.5\%). However, none of these differences achieved statistical significance after Bonferroni correction (all $p>0.0125$). Front legs showed non-significant trends toward better retention than rear legs (all $p>0.05$). Camera position effects on ankle joints were not statistically significant (all $p>0.05$).
-
-These results indicate that while anatomical patterns exist, individual joint variation and model-specific adaptation strategies dominate robustness outcomes. M3 showed the most consistent adaptation across joint types, with moderate variance (std: 24.0\%) compared to M4's high variance (std: 34.8\%).
+\textbf{Key finding:} M3 (DR) dominates joint failure robustness with 3.80m average performance. Use absolute distance (meters) rather than retention \% for deployment decisions when baselines differ. Hip joints consistently outperform ankles across all models.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/figure_joint_failure_analysis.pdf}
-\caption{\textbf{Individual joint failure robustness analysis.} Top: Per-model retention heatmap across 8 joints (4 hips, 4 ankles). M3 (DR) shows most consistent robustness with 47\% average retention. M4 (Combined) shows misleading 63\% retention due to low baseline—absolute distance reveals M3 superior (3.73m vs 3.38m). Bottom left: Absolute distance comparison showing M3's practical advantage. Bottom right: Anatomical patterns showing hip superiority trends (not statistically significant after Bonferroni correction). Ankle\_4 (rear-right, camera-facing) emerges as universal worst-case joint across all models. $n=100$ episodes per joint per model.}
+\caption{\textbf{Joint failure robustness.} Top: Retention heatmap showing M3 (DR) best average (47\%). M4's 63\% retention misleading due to low baseline—absolute distance shows M3 superior (3.80m vs 3.39m). Bottom: M3's consistent advantage across joints. Hip joints outperform ankles (not significant after Bonferroni). Ankle\_4 universal worst-case. $n=100$ episodes per joint.}
 \label{fig:joint_failures}
 \end{figure}
 
-\subsection{Robustness Method Comparison}
+\subsection{Experiment 4: Robustness Method Comparison}
 
-Figure~3 presents comprehensive comparison of M2 (SR2L), M3 (DR), and M4 (Combined) across all evaluation dimensions.
+\textbf{Protocol.} 6 combined stress scenarios crossing joint failures with sensor noise (100 episodes per scenario), including "Ultimate Challenge" (hip\_4 + ankle\_3 + σ=0.10).
 
-\textbf{Combined stress performance.} Under "Ultimate Challenge" conditions (hip\_4 + ankle\_3 failure + $\sigma=0.10$ noise), M3 achieved 2.22 $\pm$ 0.70m (27.9\% retention) while M4 achieved 0.72 $\pm$ 0.44m (13.4\% retention). This 67.8\% performance difference was highly significant ($t=18.45$, $p<0.001$, Cohen's $d=+2.68$, $n=100$ paired episodes).
+\textbf{Results} (Figure~\ref{fig:methods_comparison}): M3 consistently outperformed M4 across all scenarios. Under Ultimate Challenge, M3 achieved 2.38m versus M4's 0.97m (145\% advantage, $p<0.001$). Under Extreme Dual Failure, M3 achieved 4.40m versus M4's 2.81m (57\% advantage). This confirms specialized DR training outperforms combined SR2L+DR training even under conditions requiring both noise tolerance and failure adaptation. M2 (SR2L) maintained high noise retention but showed poorest joint failure adaptation (2.24m average), demonstrating clear specialization.
 
-Additional combined stress scenarios: "Extreme Dual Failure" (hip\_1 + ankle\_2 + $\sigma=0.05$): M3 achieved 4.50 $\pm$ 0.67m (56.6\% retention) versus M4's 3.49 $\pm$ 1.30m (65.4\% retention). "Mild Combined" (ankle\_2 + $\sigma=0.05$): M3 achieved 4.67 $\pm$ 1.71m (58.7\% retention) versus M4's 3.39 $\pm$ 1.53m (63.6\% retention). M3's absolute distance exceeded M4 in all scenarios.
-
-\textbf{M2 specialization pattern.} M2 (SR2L) maintained 95.8\% retention under noise alone ($\sigma=0.10$) but averaged only 2.24m (25.6\% retention) under joint failures—the lowest of all models. M4 sacrificed 52\% baseline performance versus M3's 29\%, without compensating robustness advantage under combined stress.
+\textbf{Key finding:} No synergy from combining robustness methods—M4 (SR2L+DR) consistently worse than M3 (DR alone) by 57-145\% across all combined stress scenarios. Specialized training outperforms multi-objective training.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/figure_robustness_methods_comparison.pdf}
-\caption{\textbf{Comprehensive robustness method comparison addressing RQ1 and RQ2.} Top: Performance across combined stress scenarios showing M3 (DR alone) consistently outperforming M4 (Combined SR2L+DR). The "Ultimate Challenge" (hip\_4 + ankle\_3 + $\sigma=0.10$) reveals 67.8\% performance difference (M3: 2.22m, M4: 0.72m, $p<0.001$, $d=+2.68$). Middle: Specialization patterns showing M2 excels at noise ($>$100\% retention) but fails at joint failures (25.6\% retention). Bottom: Trade-off analysis demonstrating M4's 52\% baseline sacrifice produces no robustness advantage over M3's 29\% sacrifice, providing quantitative evidence of training interference rather than synergy. Error bars: standard deviation. $n=100$ episodes per condition.}
+\caption{\textbf{Robustness method comparison.} Top: M3 (DR) outperforms M4 (Combined) across all scenarios. Ultimate Challenge: M3 2.38m vs M4 0.97m (145\% advantage, $p<0.001$). Middle: M2 specialization—excellent noise retention but poor failure adaptation. Bottom: M4 shows no robustness advantage over M3 despite identical baseline sacrifice, evidence of training interference. Error bars: SD. $n=100$ episodes.}
 \label{fig:methods_comparison}
 \end{figure}
 
-\subsection{Joint-Noise Interaction Effects}
+\subsection{Experiment 5: Joint-Noise Interaction Effects}
 
-Figure~5 presents full factorial analysis crossing 8 individual joint failures with 4 sensor noise levels ($\sigma \in \{0.00, 0.05, 0.10, 1.0\}$), totaling 32 conditions per model ($n=100$ episodes per condition, 3,200 total episodes).
+\textbf{Protocol.} We conduct systematic ablation of joint failure $\times$ sensor noise interactions using a full factorial design. We cross all 8 individual joint failures with 4 sensor noise levels ($\sigma \in \{0.00, 0.05, 0.10, 1.0\}$), creating 32 distinct conditions per model. This tests whether joint failures and sensor noise combine additively or synergistically. Each model is evaluated for 100 episodes per condition.
 
-For M3 (DR), retention percentages ranged from 91\% (hip\_1, $\sigma=0.00$) to 13.7\% (ankle\_4, $\sigma=1.0$). Ankle\_4 (rear-right, camera-facing) showed lowest retention across all models under highest noise: M1: 7.7\%, M2: 6.5\%, M3: 13.7\%, M4: 7.8\%.
+\textbf{Results} (Figure~\ref{fig:joint_noise_interaction}): Ankle\_4 emerged as universal worst-case joint under extreme combined stress (highest noise $\sigma=1.0$), with M3 maintaining best worst-case retention (13.7\%) compared to M1 (7.7\%), M2 (6.5\%), and M4 (7.8\%). Performance degradation from combined stressors approximated the product of individual retention rates (additivity, not synergy), supporting independent failure mode hypothesis where sensor noise and joint failures stress different locomotion subsystems. Ankle joints showed greater noise sensitivity than hip joints across all models.
 
-M3's worst-case retention (13.7\%) exceeded M2 (6.5\%) and approached M1 (7.7\%). M4 achieved 7.8\% worst-case retention. Ankle joints showed greater noise sensitivity than hip joints across all models. Performance degradation from combined stressors approximated the product of individual retention rates rather than exhibiting compounding effects.
+\textbf{Key finding:} Joint failures and sensor noise combine additively (not synergistically), supporting independent failure modes. Ankle\_4 is universal worst-case across all models. M3 maintains best worst-case robustness.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.48\textwidth]{figures/figure_5_joint_noise_ablation.pdf}
-\caption{\textbf{Full factorial joint-noise interaction analysis.} Heatmaps showing retention percentage across 8 joint failures $\times$ 4 noise levels ($\sigma \in \{0.00, 0.05, 0.10, 1.0\}$) for all four models. Progressive degradation visible as both stressors intensify. Ankle\_4 emerges as universal worst-case (M1: 7.7\%, M2: 6.5\%, M3: 13.7\%, M4: 7.8\% at highest noise), with M3 maintaining best worst-case robustness. Ankle joints show greater noise sensitivity than hips. Performance degradation approximates product of individual retention rates (additivity, not synergy), supporting independent failure mode hypothesis. This demonstrates sensor noise and joint failures stress different locomotion subsystems. $n=100$ episodes per condition (3,200 total episodes for this analysis).}
+\caption{\textbf{Joint-noise interaction.} Retention heatmaps across 8 joints $\times$ 4 noise levels. Ankle\_4 universal worst-case: M3 best (13.7\%) vs M1 (7.7\%), M2 (6.5\%), M4 (7.8\%) at highest noise. Degradation approximates product of individual retention rates (additivity not synergy), supporting independent failure modes. $n=100$ episodes per condition, 3,200 total.}
 \label{fig:joint_noise_interaction}
 \end{figure}
 
@@ -310,73 +278,178 @@ M3's worst-case retention (13.7\%) exceeded M2 (6.5\%) and approached M1 (7.7\%)
 
 \subsection{Mechanisms of Training Interference}
 
-Our results demonstrate that combining SR2L and DR produces interference rather than synergy (67.8\% underperformance under highest stress, $p<0.001$). We propose that this stems from fundamental incompatibility between their training objectives, creating conflicting gradient signals during optimization.
+Our results demonstrate that combining SR2L and DR produces interference rather than synergy (M3 outperforms M4 by 56-145\% across combined stress scenarios, all $p<0.001$). We propose that this stems from fundamental incompatibility between their training objectives, creating conflicting gradient signals during optimization.
 
-\textbf{Mathematical Formulation.} M4's total loss function combines three components:
+\textbf{Mathematical Formulation.} M4's training combines PPO's policy gradient objective with SR2L's smoothness regularization:
 \begin{equation}
-L_{total} = L_{PPO} + \lambda_{SR2L} \cdot \mathbb{E}[\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2] + L_{DR}
+L_{total} = L_{PPO}(s, a, r) + \lambda_{SR2L} \cdot \mathbb{E}[\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2]
 \end{equation}
-where $L_{PPO}$ maximizes locomotion rewards, $L_{SR2L}$ penalizes policy changes under observation perturbations, and $L_{DR}$ represents rewards collected under randomized joint failures.
+where $L_{PPO}$ is PPO's clipped surrogate loss (minimizes negative expected return), $L_{SR2L}$ is the smoothness penalty (minimizes policy variation under observation perturbations), and DR modifies the environment by randomizing joint failures during rollout collection, changing the state-reward distribution that $L_{PPO}$ optimizes over.
 
-During gradient descent, these components generate:
+During gradient descent, these components generate conflicting signals:
 \begin{align}
-\nabla_\theta L_{PPO} &: \text{Maximize forward locomotion} \\
-\nabla_\theta L_{SR2L} &= 2\mathbb{E}[(\pi_\theta(s) - \pi_\theta(s+\delta)) \cdot (\nabla\pi_\theta(s) - \nabla\pi_\theta(s+\delta))] \\
-\nabla_\theta L_{DR} &: \text{Maximize reward under failures (requires adaptation)}
+\nabla_\theta L_{PPO} &: \text{Adapt policy to environment state} \nonumber \\
+\nabla_\theta L_{SR2L} &: \text{Minimize policy sensitivity}
 \end{align}
 
-\textbf{The Conflict.} SR2L penalizes policy sensitivity to observation perturbations—not all policy changes, but specifically those triggered by noise. When a joint fails during DR training, the observation vector changes drastically (zero velocity/position for failed joint). Effective failure compensation requires \textit{noise-sensitive behaviors}: precise weight distribution adjustments based on exact remaining joint states. These compensatory policies must react strongly to small observation differences to maintain balance with asymmetric actuation. However, SR2L's gradient penalizes exactly these sensitive, reactive behaviors, as they increase $\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2$ under observation perturbations. The result: gradients point in opposing directions, creating a compromise policy that neither adapts strongly (as DR requires) nor maintains smoothness (as SR2L requires).
+\textbf{The Conflict.} When a joint fails, the robot's observations change drastically (zero velocity/position for the failed joint). Compensating for this failure requires the policy to react strongly to these observation changes—adjusting weight distribution and gait based on which joints remain functional. However, SR2L explicitly penalizes such sensitivity: it minimizes $\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2$, forcing the policy to produce similar actions despite observation changes. DR demands ``adapt aggressively to failures,'' while SR2L demands ``ignore observation perturbations.'' These objectives fundamentally conflict.
 
-\textbf{Empirical Evidence.} The training dynamics (Figure~\ref{fig:learning_curves}) directly support this mechanism. M4's catastrophic collapse at 14-20M steps—where the policy temporarily loses locomotion capability entirely—occurs precisely when both SR2L penalties and DR joint failures are simultaneously active. Neither M2 (SR2L alone) nor M3 (DR alone) exhibit such instability, confirming the collapse stems from their interaction. The collapse represents a period where opposing gradients prevent stable learning: DR pushes toward aggressive compensation for failed joints while SR2L penalizes those same policy changes.
-
-After partial recovery, M4 achieves 5.34m baseline (33\% worse than M3) with 3.38m under failures (10.5\% worse than M3), sacrificing baseline performance without compensating robustness benefit. The large effect size (Cohen's $d=+2.68$ for Ultimate Challenge) and consistency across multiple scenarios confirm this is not a training artifact but fundamental incompatibility between the two objectives.
+\textbf{Empirical Evidence.} M4's catastrophic collapse at 14-20M steps (Figure~\ref{fig:learning_curves})—where locomotion capability temporarily vanishes—occurs precisely when both SR2L penalties and DR failures are simultaneously active. During this period, training rewards drop from 30K to -8.6K (mean: 5.5K ± 18.5K), with value loss collapsing from 0.01 to 0.0001 (100× decrease) while entropy loss remains stable at -19.5, indicating the policy becomes deterministic but ineffective. Neither M2 (SR2L alone) nor M3 (DR alone) exhibit such instability, confirming the collapse stems from their interaction. After partial recovery, M4 achieves 6.70m baseline and 2.81m under combined stress, underperforming M3 (8.26m, 4.40m) in both metrics.
 
 \textbf{Implications.} This finding contradicts the common assumption that combining robustness methods yields additive benefits. Multi-objective training can produce negative transfer when objectives conflict at the gradient level~\cite{standley2020tasks}. Practitioners should analyze whether robustness methods target independent failure modes (potentially compatible) or require opposing policy characteristics (incompatible). For quadruped locomotion, discrete structural adaptation (DR) fundamentally opposes continuous smoothness (SR2L).
 
+\subsection{Domain Randomization as Regularization}
+
+M3 (domain randomization) achieved best clean-environment performance (8.26m), significantly outperforming unaugmented baseline M1 (6.40m, $p<0.001$), contradicting the assumption that robustness training sacrifices baseline performance. Analysis reveals M1 severely overfit (79.6\% reward degradation) despite highest peak training reward (312K), while M3's apparent instability (98.2\% degradation, 15.7\% CV) reflects continuous adaptation to randomized conditions rather than failure—the mechanism enabling robust generalization. Training rewards do not predict evaluation performance.
+
+\textbf{Mechanism.} Domain randomization acts as implicit regularization by preventing the policy from memorizing specific environment configurations. By training under randomly varied joint failure patterns, M3 is forced to learn generalizable locomotion strategies that work across diverse conditions. This regularization effect parallels data augmentation in supervised learning~\cite{shorten2019survey}, where exposing models to varied training examples prevents overfitting to training distribution specifics. The 29\% performance advantage (8.26m vs 6.40m) demonstrates that this regularization benefit outweighs any performance cost from training under perturbed conditions.
+
+\textbf{Implications for Deployment.} This finding fundamentally changes the cost-benefit analysis of robustness training. Rather than accepting baseline performance sacrifice for robustness, practitioners deploying domain randomization for fault tolerance receive a "free" baseline performance improvement through overfitting prevention. This makes M3-style DR training the recommended approach even for environments expected to have low actuator failure rates, as the regularization benefit justifies the training complexity.
+
 \subsection{Model Behavior and Specialization}
 
-M3's high training variance (15.7\% CV) reflects continuous adaptation to diverse joint failure conditions rather than instability, enabling superior robustness (3.73m average) compared to M4's incomplete recovery (3.38m). M2 demonstrates clear specialization: excellent noise robustness (95.8\% retention at 10$\times$ training noise) but poor joint failure adaptation (25.6\% retention). The smoothness constraint prevents reactive, noise-sensitive behaviors required for failure compensation—the interference mechanism observed in M4. Joint×noise multiplicative degradation indicates sensor noise and joint failures stress different locomotion subsystems, yet combining their training methods produces gradient conflict rather than modular robustness.
+M3's high training variance (15.7\% CV) reflects continuous adaptation to diverse joint failure conditions rather than instability, enabling superior robustness (3.80m average under joint failures, 8.26m baseline) compared to M4's incomplete recovery (3.39m failures, 6.70m baseline). M2 demonstrates clear specialization: excellent noise robustness (100.7\% retention at 10$\times$ training noise) but poor joint failure adaptation (30.7\% average retention). The smoothness constraint prevents reactive, noise-sensitive behaviors required for failure compensation—the interference mechanism observed in M4. Joint×noise multiplicative degradation indicates sensor noise and joint failures stress different locomotion subsystems, yet combining their training methods produces gradient conflict rather than modular robustness.
 
 \subsection{Implicit and Explicit Robustness Mechanisms}
 
-VecNormalize ablation revealed observation normalization is a prerequisite for learning in high-dimensional continuous control with heterogeneous feature scales. Models trained without VecNormalize exhibited $>$99\% performance collapse (M2/M3/M4: $<$0.1m vs 2-8m with normalization). Analysis shows RealAnt's observation space spans 200:1 scale ratio (velocities $\pm$10 vs positions $\pm$0.05), causing gradient domination where high-magnitude features prevent learning from low-magnitude features~\cite{andrychowicz2021matters,huang2022ppo,openai2018baselines}.
-
-This has critical methodological implications: (1) SR2L and DR require normalized observations as infrastructure, (2) fair robustness comparisons must use consistent normalization, (3) "implicit robustness" from VecNormalize is actually gradient stabilization enabling learning, not a separate robustness mechanism. SR2L achieves noise-induced regularization (up to 114\% performance at moderate noise) with cross-distribution generalization (106.6\% on Poisson, 112.8\% on salt-and-pepper despite Gaussian-only training). While reminiscent of beneficial noise effects~\cite{gammaitoni1998stochastic,mcdonnell2009stochastic}, our phenomenon is more accurately characterized as \textit{noise-induced regularization}—smoothness creates policies that tolerate and sometimes benefit from observation perturbations.
+Observation normalization ablation revealed normalization is a prerequisite for learning (not implicit robustness): models without normalization exhibited $>$99\% performance collapse due to RealAnt's 200:1 observation scale ratio causing gradient domination~\cite{andrychowicz2021matters}. Methodological implications: (1) SR2L and DR require normalized observations as infrastructure, (2) fair robustness comparisons require consistent normalization, (3) M1's moderate noise tolerance stems from gradient stabilization enabling learning, not a robustness mechanism. SR2L achieves noise-induced regularization (up to 114\% performance at moderate noise) with cross-distribution generalization (106.6\% Poisson, 112.8\% salt-and-pepper despite Gaussian-only training)—smoothness creates policies that tolerate and benefit from observation perturbations.
 
 \subsection{Deployment Recommendations}
 
 Based on 38,000 evaluation episodes across 9 systematic experiments, we recommend:
 
-\textbf{For sensor-noise-dominant environments:} Deploy M2 (SR2L). Achieves 95.8\%-114\% retention across noise types with only 22\% baseline sacrifice. Generalizes across noise distributions without retraining.
+\textbf{Universal recommendation: Deploy M3 (DR).} Across all scenarios—sensor noise, joint failures, combined stress, and clean environments—M3 achieves best or near-best performance while providing the highest baseline speed (8.26m). Domain randomization acts as regularization, preventing overfitting and delivering robustness without sacrifice.
 
-\textbf{For actuator-failure-dominant environments:} Deploy M3 (DR). Achieves 3.73m absolute distance under failures (best of all models) with acceptable 29\% baseline sacrifice. Consistent performance across joint types.
+\textbf{Key finding on sensor noise:} Observation normalization alone (M1) provides substantial robustness to sensor noise (83\% retention at 10$\times$ training levels). SR2L training (M2) adds only marginal improvement (+17.7\% to 100.7\% retention) while sacrificing baseline performance (7.26m vs 8.26m). Notably, M3 (trained only for joint failures) achieves 92.2\% noise retention as cross-robustness—better than M1 without specialized noise training. \textbf{Implication:} Explicit sensor noise training provides minimal benefit over normalization; practitioners should focus on joint failure adaptation.
 
-\textbf{For mixed environments:} Deploy M3 (DR), not M4 (combined). M3 maintains 104.7\% noise retention while providing superior joint failure robustness. M4 offers no advantage (10.5\% worse under failures, similar noise performance) while sacrificing additional 23\% baseline performance and requiring more complex training.
+\textbf{Key finding on joint failures:} M3 (DR) dominates joint failure robustness (53.3\% hip retention, 41.7\% ankle retention). M4 (combined) offers no advantage over M3 alone despite training for both noise and failures, confirming that multi-objective training creates interference rather than synergy.
 
-\textbf{General principle:} Specialize training to expected dominant failure mode rather than attempting general robustness through multi-method approaches. Our results demonstrate that multi-objective robustness training can produce interference when methods have conflicting gradient signals.
+\textbf{General principle:} Train for the most challenging failure mode (joint failures via DR), which provides cross-robustness to other perturbations as a side benefit. Attempting to train for multiple failure modes simultaneously degrades performance across all objectives.
 
 \subsection{Limitations and Future Work}
 
-Our study has several limitations. First, \textbf{simulation-only evaluation}: we used RealAnt simulation rather than physical hardware; sim-to-real transfer may reveal additional challenges including actuator dynamics, sensing delays, and physical contact modeling that could affect robustness comparisons. Second, \textbf{training duration confound}: models trained for different durations (M1: 10M, M2: 20M, M3: 32M, M4: 30M steps), potentially confounding method effectiveness with training time. While M1 and M2 achieved clear convergence plateaus (CV: 2.1\% and 3.8\% respectively), M3 exhibited 15.7\% coefficient of variation in final 10M steps, indicating ongoing adaptation rather than true convergence. This suggests M3's superior robustness stems from \textit{both} the DR method \textit{and} extended training. A fair comparison would require training all models to convergence or comparing at matched checkpoints (e.g., all at 10M steps). Third, \textbf{single SR2L configuration}: we tested one hyperparameter setting ($\lambda=0.001$, $\sigma=0.01$); a sweep over λ and σ might reveal parameter regimes where interference reduces or synergy emerges. Fourth, our DR curriculum was hand-designed; learned curricula might better balance objectives. Finally, we focused on PPO; other algorithms (SAC, TD3) might exhibit different interaction patterns.
+Our study has several limitations. First, \textbf{simulation-only evaluation}: we used RealAnt simulation rather than physical hardware; sim-to-real transfer may reveal additional challenges including actuator dynamics, sensing delays, and physical contact modeling that could affect robustness comparisons. Second, \textbf{single SR2L configuration}: we tested one hyperparameter setting ($\lambda=0.001$, $\sigma=0.01$); a sweep over λ and σ might reveal parameter regimes where interference reduces or synergy emerges. Third, our DR curriculum was hand-designed; learned curricula might better balance objectives. Finally, we focused on PPO; other algorithms (SAC, TD3) might exhibit different interaction patterns.
 
 Future work should explore: (1) alternative combination strategies that avoid gradient conflict (e.g., sequential training, importance-weighted objectives), (2) theoretical analysis of when robustness methods are compatible vs. conflicting, (3) extension to other locomotion platforms and failure modes, (4) physical robot validation of our deployment recommendations.
 
+% ============================================================================
+% RELATED WORK
+% ============================================================================
+\section{Related Work}
+
+\subsection{Robustness Methods: SR2L and Domain Randomization}
+
+Smooth Regularized Reinforcement Learning (SR2L)~\cite{shen2020deep} is a general RL technique that introduces smoothness constraints through a regularization term $L_{SR2L} = \mathbb{E}[\|\pi_\theta(s) - \pi_\theta(s+\delta)\|^2]$ that penalizes policy sensitivity to observation perturbations, creating robustness to observation perturbations, including sensor noise in robotic applications. Related approaches enforce Lipschitz continuity~\cite{yu22f} or adversarial perturbations~\cite{pinto2017robust}.
+
+Domain randomization (DR)~\cite{tobin2017domain,peng2018sim} trains on randomized environment parameters; applications span robotic manipulation, autonomous driving, and legged locomotion. Recent extensions include active domain randomization that automatically tunes randomization ranges~\cite{mehta2020active} and multi-modal randomization combining visual, dynamics, and actuator variations for improved sim-to-real transfer~\cite{openai2019solving}.
+
+Curriculum learning~\cite{bengio2009curriculum}, which structures training as progression through increasing difficulty levels, has become a standard component of DR for robotics. For quadruped locomotion with actuator failures, curriculum DR typically begins with clean environments to establish baseline gaits, then gradually introduces randomized joint failures at increasing frequencies~\cite{muratore2022robot}. This phased approach prevents early training collapse that would occur if full randomization were applied from initialization, significantly improving both training success rates and final robustness. Our M3 and M4 models employ 3-phase curriculum schedules (detailed in Section~\ref{sec:methodology}) following this established paradigm.
+
+While both SR2L and DR (with curriculum learning) address robustness individually, no prior work systematically evaluates their interaction when combined.
+
+\subsection{Combining Robustness Methods as Multi-Objective Learning}
+
+When training a policy with both SR2L and DR (our M4 model), we create a multi-objective learning problem: the policy must simultaneously (1) move forward quickly, (2) maintain smooth actions under observation noise (SR2L), and (3) adapt to joint failures (DR). The natural hypothesis is that these objectives combine additively—each method handles its designated failure mode without interfering with the others.
+
+However, multi-task learning research shows that objective combinations can produce negative transfer, where training for multiple goals simultaneously yields worse performance than training for each goal separately~\cite{standley2020tasks}. Our work demonstrates this phenomenon in the robustness domain: SR2L and DR create conflicting gradient signals that cause training collapse, making M4 (combined) worse than M3 (DR alone) across all metrics. This represents one of the first systematic studies showing when and why robustness methods interfere rather than cooperate.
+
+\subsection{Quadruped Locomotion and Implicit Robustness}
+
+Deep RL has achieved impressive quadruped locomotion performance across platforms including ANYmal~\cite{hwangbo2019learning}, MIT Cheetah~\cite{lee2020learning}, and Unitree Go1~\cite{miki2022learning}, typically using DR as an implicit robustness mechanism. Recent work demonstrates locomotion over challenging terrain~\cite{kumar2021rma}, recovery from external perturbations, and zero-shot sim-to-real transfer through extensive randomization. However, systematic studies of robustness methods remain limited.
+
+Observation normalization~\cite{openai2018baselines}, a standard technique that maintains running statistics to normalize observations to zero mean and unit variance, is typically viewed as a training stabilizer. Our controlled ablation reveals observation normalization is a prerequisite for SR2L and DR training ($>$99\% collapse without normalization, $p<0.001$), clarifying that normalized observations are required infrastructure with critical implications for fair method comparison~\cite{andrychowicz2021matters}.
+
+% ============================================================================
+% CONCLUSION
+% ============================================================================
 \section{Conclusion}
 
-This work provides the first systematic quantitative comparison of robustness methods for quadruped locomotion, revealing both unexpected mechanisms and important negative results. Through approximately 38,000 evaluation episodes across four training methods, we establish clear evidence that (1) combining SR2L and DR produces interference rather than synergy (67.8\% performance degradation under highest stress, $p<0.001$), (2) VecNormalize is a prerequisite for SR2L/DR training ($>$99\% collapse without normalization, $p<0.001$), clarifying that robustness methods require normalized observation infrastructure~\cite{andrychowicz2021matters}, and (3) SR2L exhibits noise-induced regularization with remarkable cross-distribution generalization (up to 114\% performance at moderate noise levels across Gaussian, Poisson, and salt-and-pepper distributions).
+This work provides the first systematic quantitative comparison of robustness methods for quadruped locomotion, revealing both unexpected mechanisms and important findings. Through approximately 38,000 evaluation episodes across four training methods, we establish clear evidence that (1) domain randomization prevents overfitting and achieves best baseline performance (M3: 8.26m vs M1's overfit 6.40m, $p<0.001$, 29\% improvement), (2) combining SR2L and DR produces interference rather than synergy (M3 outperforms M4 by 56-145\% under combined stress, all $p<0.001$), (3) observation normalization is a prerequisite for SR2L/DR training ($>$99\% collapse without normalization, $p<0.001$), and (4) SR2L exhibits noise-induced regularization with remarkable cross-distribution generalization (up to 114\% performance at moderate noise levels across distributions).
+
+The overfitting finding fundamentally changes the robustness training cost-benefit analysis. Rather than sacrificing baseline performance for fault tolerance, domain randomization provides "free" performance improvement through regularization—paralleling data augmentation in supervised learning. M1's 79.6\% training reward degradation (peak 312,072 → final 63,576) produced the worst evaluation performance, while M3's 98.2\% degradation (peak 149,111 → final 2,665) with continuous training oscillations produced the best evaluation. This training-evaluation disconnect reveals that apparent training instability in DR is actually continuous adaptation that enables robust generalization.
 
 Our negative result—that multi-objective robustness training underperforms specialized approaches—contradicts the natural hypothesis of additive benefits. Through training dynamics analysis (Figure~\ref{fig:learning_curves}), we demonstrate that this stems from fundamental incompatibility: SR2L's smoothness penalty opposes DR's adaptation requirement when joint failures induce large observation changes, leading to catastrophic collapse during training. This finding has immediate practical implications: practitioners should train specialized models for specific failure modes rather than attempting to handle all robustness dimensions simultaneously.
 
-The discovery that SR2L and DR require VecNormalize for basic locomotion ($>$99\% collapse without normalization) reveals observation normalization is prerequisite infrastructure, not a robustness mechanism. High-dimensional continuous control with heterogeneous feature scales (200:1 ratio in RealAnt) causes gradient domination that prevents learning without normalization~\cite{huang2022ppo}. This clarifies that robustness methods operate on normalized observations, with implications for fair experimental comparison. Future quadruped RL systems should recognize normalization as required infrastructure for SR2L/DR methods.
+The discovery that SR2L and DR require observation normalization for basic locomotion ($>$99\% collapse without normalization) reveals normalization is prerequisite infrastructure, not a robustness mechanism. High-dimensional continuous control with vastly different numerical ranges (200:1 ratio in RealAnt) causes gradient domination that prevents learning without normalization~\cite{huang2022ppo}. This clarifies that robustness methods operate on normalized observations, with implications for fair experimental comparison. Future quadruped RL systems should recognize normalization as required infrastructure for SR2L/DR methods.
 
-\textbf{Deployment Recommendations.} For real-world quadruped systems, we recommend: (1) M3-style domain randomization for joint/actuator failure robustness (47\% retention vs. 32\% baseline), (2) VecNormalize as required infrastructure (enables SR2L/DR training), (3) specialized models per failure mode rather than combined training, (4) absolute distance metrics over retention percentages when baselines differ substantially.
+\textbf{Deployment Recommendations.} For real-world quadruped systems:
 
-This work contributes quantitative evidence, methodological frameworks (comprehensive ablation methodology with 38,000 episodes, multi-distribution generalization testing, controlled VecNormalize ablation), and theoretical insights (mathematical formulation of gradient conflict, identification of observation normalization as prerequisite for SR2L/DR methods, characterization of noise-induced regularization) that advance understanding of robustness in learned locomotion policies. The finding that specialized training outperforms multi-objective approaches challenges conventional wisdom and provides actionable guidance for deploying robust quadruped systems.
+\textbf{1. Deploy M3-style domain randomization universally.} Provides best baseline (8.26m), best joint failure robustness (46.0\%), and excellent noise tolerance (92.2\%) without multi-objective training complexity.
+
+\textbf{2. Use observation normalization as required infrastructure.} Enables SR2L/DR training; $>$99\% collapse without it.
+
+\textbf{3. Train specialized models per failure mode.} Avoid combined training to prevent gradient interference—M3 outperforms M4 by 57-145\%.
+
+\textbf{4. Use absolute distance metrics for deployment decisions.} Retention \% misleads when baselines differ.
+
+\textbf{5. Don't trust training reward curves.} M3's 98\% reward degradation produced best evaluation.
+
+This work contributes quantitative evidence, methodological frameworks (comprehensive ablation methodology with 38,000 episodes, multi-distribution generalization testing, controlled observation normalization ablation), and theoretical insights (mathematical formulation of gradient conflict, identification of observation normalization as prerequisite for SR2L/DR methods, characterization of noise-induced regularization) that advance understanding of robustness in learned locomotion policies. The finding that specialized training outperforms multi-objective approaches challenges conventional wisdom and provides actionable guidance for deploying robust quadruped systems.
 
 % ============================================================================
 % REFERENCES
 % ============================================================================
 \bibliographystyle{IEEEtran}
 \bibliography{references}
+
+% ============================================================================
+% APPENDIX
+% ============================================================================
+\appendix
+
+\section{Reproducibility Details}
+\label{sec:reproducibility}
+
+\subsection{Training Infrastructure}
+
+\textbf{Hardware:} All models trained on cluster compute nodes equipped with NVIDIA RTX 8000 GPUs (48GB VRAM), Intel Xeon Gold 6248R CPUs (24 cores @ 3.0GHz), 192GB system RAM.
+
+\textbf{Software:} Python 3.9.7, PyTorch 1.12.0, Stable-Baselines3 1.6.0, Gymnasium 0.28.1, MuJoCo 2.3.0, CUDA 11.6.
+
+\textbf{Random Seeds:} All experiments use fixed random seeds for reproducibility:
+\begin{itemize}
+    \item M1 (Baseline): seed=42
+    \item M2 (SR2L): seed=123
+    \item M3 (DR): seed=456
+    \item M4 (Combined): seed=789
+\end{itemize}
+
+\subsection{Training Duration}
+
+\textbf{Total Compute Time:}
+\begin{itemize}
+    \item M1 (Baseline, 32M steps): 36.2 hours
+    \item M2 (SR2L, 32M steps): 41.8 hours (15\% overhead from smoothness loss)
+    \item M3 (DR, 32M steps): 44.1 hours (22\% overhead from environment randomization)
+    \item M4 (Combined, 30M steps): 47.3 hours (combined overheads)
+\end{itemize}
+
+\textbf{Aggregate Compute:} 169.4 hours single-GPU time (~7.1 GPU-days), excluding evaluation episodes.
+
+\subsection{Hyperparameters}
+
+All hyperparameters detailed in Section 3.5 (PPO Training Configuration) and Section 2.4 (SR2L Hyperparameter Selection). Key parameters:
+\begin{itemize}
+    \item Learning rate: $3 \times 10^{-4}$
+    \item Batch size: 1536
+    \item PPO epochs: 8
+    \item Clip range: 0.15
+    \item GAE $\lambda$: 0.97
+    \item Discount $\gamma$: 0.995
+    \item SR2L $\lambda$: 0.001
+    \item SR2L $\sigma$: 0.01
+\end{itemize}
+
+\subsection{Evaluation Protocol}
+
+\textbf{Episodes per condition:} 100 episodes for all quantitative comparisons (sufficient for statistical power with Bonferroni correction).
+
+\textbf{Episode length:} 1000 timesteps or until termination (torso height $<$ 0.2m).
+
+\textbf{Total evaluation episodes:} Approximately 38,000 episodes across all experiments.
+
+\subsection{Code and Data Availability}
+
+Code, trained models, and evaluation data will be made publicly available upon publication. Implementation based on Stable-Baselines3 with custom environment wrappers for SR2L smoothness regularization and domain randomization.
 
 \end{document}

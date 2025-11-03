@@ -19,7 +19,7 @@ with open(data_file, 'r') as f:
 sr2l_data = data['8B_sr2l_fine_grained_sweep']
 
 # Get data from Experiment 2 (sensor noise robustness)
-exp2_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251020_001128.json")
+exp2_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251027_201704.json")
 with open(exp2_file, 'r') as f:
     exp2_data = json.load(f)
 

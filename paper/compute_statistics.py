@@ -60,7 +60,7 @@ print("="*80)
 print("EXPERIMENT 1: BASELINE PERFORMANCE")
 print("="*80)
 
-exp1_file = Path("../evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251020_092458.json")
+exp1_file = Path("../evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251027_195743.json")
 exp1_data = load_json(exp1_file)
 
 models = ['M1_baseline', 'M2_sr2l', 'M3_dr', 'M4_combo']
@@ -112,7 +112,7 @@ print("\n" + "="*80)
 print("EXPERIMENT 2: SENSOR NOISE ROBUSTNESS")
 print("="*80)
 
-exp2_file = Path("../evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251020_001128.json")
+exp2_file = Path("../evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251027_201704.json")
 exp2_data = load_json(exp2_file)
 
 # Test at key noise level: σ=0.10 (10x training noise for M2)
@@ -160,7 +160,7 @@ print("\n" + "="*80)
 print("EXPERIMENT 3: JOINT FAILURE ROBUSTNESS")
 print("="*80)
 
-exp3_file = Path("../evaluations/evaluations/experiment_3_joint_failures/data/joint_failure_results_20251013_111836.json")
+exp3_file = Path("../evaluations/evaluations/experiment_3_joint_failures/data/joint_failure_results_20251027_205918.json")
 exp3_data = load_json(exp3_file)
 
 print("\n--- Average Retention Across All 8 Joints ---")

@@ -1,0 +1,65 @@
+env:
+  name: RealAntMujoco-v0
+  use_domain_randomization: false
+  use_success_reward: true
+eval_freq: 100000
+experiment:
+  description: SR2L retrained to 32M - sensor noise robustness specialist
+  name: M2_sr2l_32M_RETRAINED
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_notes: "M2 SR2L retrained to 32M. Tests if additional training (20M\u2192\
+    32M) improves sensor noise robustness beyond original model."
+  wandb_project: robust-quadruped-rl
+  wandb_tags:
+  - M2
+  - SR2L
+  - RETRAINED
+  - 32M
+  - sensor-noise-specialist
+  - fair-comparison
+num_envs: 8
+policy:
+  activation: tanh
+  hidden_sizes:
+  - 128
+  - 128
+ppo:
+  batch_size: 1536
+  clip_range: 0.15
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 8
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 42
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturb_dims:
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+  perturbation_std: 0.01
+  warmup_steps: 0
+total_timesteps: 32000000

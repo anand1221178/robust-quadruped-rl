@@ -23,23 +23,23 @@ from tqdm import tqdm
 # Register custom environment
 import realant_sim
 
-# Model configurations
+# Model configurations (UPDATED: October 28, 2025 - Using 32M retrained models)
 MODELS = {
     'M1_baseline': {
-        'path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/ppo_baseline_ueqbjf2x',
-        'label': 'M1 (Baseline)',
+        'path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/M1_baseline_32M_RETRAINED_ym2jcllj',
+        'label': 'M1 (Baseline - 32M)',
         'color': '#2E86AB',
-        'total_steps': 10_000_000,
-        'eval_interval': 500_000,  # Evaluate every 500K steps
-        'checkpoint_pattern': 'model_{steps}_steps.zip'  # M1 uses model_* pattern
+        'total_steps': 32_000_000,
+        'eval_interval': 1_000_000,  # Evaluate every 1M steps
+        'checkpoint_pattern': 'checkpoint_{steps}_steps.zip'  # Uses checkpoint_* pattern
     },
     'M2_sr2l': {
-        'path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/ppo_sr2l_forward_m7gtjtpa',
-        'label': 'M2 (SR2L)',
+        'path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/M2_sr2l_32M_RETRAINED_ze09p0vf',
+        'label': 'M2 (SR2L - 32M)',
         'color': '#9C27B0',
-        'total_steps': 20_000_000,
+        'total_steps': 32_000_000,
         'eval_interval': 1_000_000,  # Evaluate every 1M steps
-        'checkpoint_pattern': 'checkpoint_{steps}_steps.zip'  # M2 uses checkpoint_* pattern
+        'checkpoint_pattern': 'checkpoint_{steps}_steps.zip'  # Uses checkpoint_* pattern
     },
     'M3_dr': {
         'path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/done/v7_7e_ultra_speed_jtfwl2qf',

@@ -12,8 +12,8 @@ from pathlib import Path
 import matplotlib.patches as mpatches
 
 # Load data
-baseline_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251020_092458.json")
-noise_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251020_001128.json")
+baseline_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251027_195743.json")
+noise_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251027_201704.json")
 vec_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_6_validation_suite/data/validation_results_20251020_115842.json")
 
 with open(baseline_file, 'r') as f:

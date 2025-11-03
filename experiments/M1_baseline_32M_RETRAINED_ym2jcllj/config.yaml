@@ -1,0 +1,43 @@
+env:
+  name: RealAntMujoco-v0
+  use_domain_randomization: false
+  use_success_reward: true
+eval_freq: 100000
+experiment:
+  description: Baseline PPO retrained to 32M for fair comparison - no robustness methods
+  name: M1_baseline_32M_RETRAINED
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_notes: M1 retrained to 32M to eliminate training duration confound. Should
+    converge early and stay at ~11.20m, proving convergence is not affected by additional
+    training.
+  wandb_project: robust-quadruped-rl
+  wandb_tags:
+  - M1
+  - baseline
+  - RETRAINED
+  - 32M
+  - fair-comparison
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 42
+total_timesteps: 32000000

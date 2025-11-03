@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-# Load Experiment 7 data
-exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251020_153154.json")
+# Load Experiment 7 data (UPDATED: October 27, 2025)
+exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251027_223017.json")
 
 with open(exp7_file, 'r') as f:
     data = json.load(f)
@@ -21,10 +21,10 @@ colors = ['#2E86AB', '#9C27B0', '#FF6F00', '#D32F2F']
 
 # Create figure with 2 panels (top: heatmap, bottom: worst-case)
 fig = plt.figure(figsize=(16, 10))
-gs = fig.add_gridspec(2, 1, hspace=0.3, height_ratios=[2, 1])
+gs = fig.add_gridspec(2, 1, hspace=0.35, height_ratios=[2, 1])
 
-fig.suptitle('Joint-Noise Interaction Analysis\n(How do joint failures perform under sensor noise?)',
-             fontsize=16, fontweight='bold', y=0.96)
+fig.suptitle('Joint-Noise Interaction Analysis',
+             fontsize=16, fontweight='bold', y=0.98)
 
 # ===== TOP: Heatmap for M3 (DR) - our best model =====
 ax1 = fig.add_subplot(gs[0])
@@ -73,10 +73,10 @@ for i in range(len(joints)):
                            ha='center', va='center', color='black',
                            fontsize=10, fontweight='bold')
 
-ax1.set_xlabel('Sensor Noise Level', fontsize=14, fontweight='bold')
-ax1.set_ylabel('Failed Joint', fontsize=14, fontweight='bold')
-ax1.set_title('(a) M3 (DR) Performance Matrix: Joint Failure × Sensor Noise\n(Shows retention % for each combination)',
-              fontsize=14, fontweight='bold', pad=20)
+ax1.set_xlabel('Sensor Noise Level', fontsize=13, fontweight='bold')
+ax1.set_ylabel('Failed Joint', fontsize=13, fontweight='bold')
+ax1.set_title('(a) M3 (DR) Retention Matrix: Joint Failures × Sensor Noise',
+              fontsize=13, fontweight='bold', pad=10)
 
 # Add colorbar
 cbar = plt.colorbar(im, ax=ax1, orientation='vertical', pad=0.02)
@@ -120,8 +120,8 @@ bars = ax2.bar(range(len(models)), retentions,
 
 ax2.set_ylabel('Worst-Case Retention (%)', fontsize=13, fontweight='bold')
 ax2.set_xlabel('Model', fontsize=13, fontweight='bold')
-ax2.set_title('(b) Worst-Case Performance Comparison\n(Most challenging joint + noise combination for each model)',
-              fontsize=14, fontweight='bold', pad=15)
+ax2.set_title('(b) Worst-Case Scenario Performance',
+              fontsize=13, fontweight='bold', pad=10)
 ax2.set_xticks(range(len(models)))
 ax2.set_xticklabels(model_labels, fontsize=12)
 ax2.set_ylim(0, max(retentions) * 1.3)
@@ -138,23 +138,23 @@ for i, (bar, w) in enumerate(zip(bars, worst_case_data)):
 
 # Add summary
 fig.text(0.5, 0.02,
-         '✅ KEY FINDINGS: Noise degrades all joints progressively | Ankles more sensitive than hips | M3 (DR) maintains best worst-case performance (13.7%)',
-         ha='center', fontsize=12, fontweight='bold',
-         bbox=dict(boxstyle='round,pad=0.8', facecolor='lightyellow', alpha=0.8))
+         'KEY FINDINGS: Ankle_4 universal worst-case joint | M3 (DR) maintains best worst-case robustness',
+         ha='center', fontsize=11, fontweight='bold',
+         bbox=dict(boxstyle='round,pad=0.6', facecolor='lightyellow', alpha=0.8))
 
 plt.tight_layout()
 
 # Save
 output_dir = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/paper/figures")
-output_file = output_dir / "figure_5_joint_noise_interaction.pdf"
+output_file = output_dir / "figure_5_joint_noise_ablation.pdf"
 plt.savefig(output_file, dpi=300, bbox_inches='tight', format='pdf', facecolor='white')
-print(f"✅ Joint-noise interaction figure saved to: {output_file}")
+print(f"✅ Joint-noise ablation figure saved to: {output_file}")
 
-output_file_png = output_dir / "figure_5_joint_noise_interaction.png"
+output_file_png = output_dir / "figure_5_joint_noise_ablation.png"
 plt.savefig(output_file_png, dpi=300, bbox_inches='tight', facecolor='white')
 print(f"✅ PNG preview saved to: {output_file_png}")
 
-plt.show()
+# plt.show()  # Commented out
 
 # Print summary
 print("\n" + "="*80)

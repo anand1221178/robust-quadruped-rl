@@ -14,31 +14,31 @@ from pathlib import Path
 ENTITY = "anandpatel1221178-university-of-the-witswatersrand"
 PROJECT = "robust-quadruped-rl"
 
-# Model configurations
+# Model configurations (UPDATED: October 27, 2025 - 32M retrained models)
 MODELS = {
     'M1_baseline': {
-        'run_id': 'ueqbjf2x',
-        'label': 'M1 (Baseline)',
+        'run_id': 'ym2jcllj',  # NEW: M1_baseline_32M_RETRAINED
+        'label': 'M1 (Baseline - 32M)',
         'color': '#2E86AB',
-        'steps': 10_000_000
+        'steps': 32_000_000  # All models now trained to 32M
     },
     'M2_sr2l': {
-        'run_id': 'm7gtjtpa',
-        'label': 'M2 (SR2L)',
+        'run_id': 'ze09p0vf',  # NEW: M2_sr2l_32M_RETRAINED
+        'label': 'M2 (SR2L - 32M)',
         'color': '#9C27B0',
-        'steps': 20_000_000
+        'steps': 32_000_000  # All models now trained to 32M
     },
     'M3_dr': {
-        'run_id': 'jtfwl2qf',
-        'label': 'M3 (DR)',
+        'run_id': 'jtfwl2qf',  # KEPT: V7.7E Champion
+        'label': 'M3 (DR - V7.7E)',
         'color': '#FF6F00',
         'steps': 32_000_000
     },
     'M4_combo': {
-        'run_id': 'ju7lfsk2',
+        'run_id': 'ju7lfsk2',  # KEPT: Existing combo
         'label': 'M4 (Combined)',
         'color': '#D32F2F',
-        'steps': 30_000_000
+        'steps': 30_000_000  # This one is actually 30M
     }
 }
 
@@ -49,11 +49,14 @@ def download_run_data(run_id, metrics=['rollout/ep_rew_mean']):
     api = wandb.Api()
     run = api.run(f"{ENTITY}/{PROJECT}/{run_id}")
 
-    # Get run history
-    history = run.history(keys=metrics + ['_step'])
+    # Get run history - fetch ALL data, then filter (keys parameter doesn't work reliably)
+    history = run.history()
 
     print(f"  Downloaded {len(history)} data points")
-    print(f"  Columns: {history.columns.tolist()}")
+    if len(history) > 0:
+        print(f"  Available metrics: {[c for c in history.columns if not c.startswith('_')][:5]}...")
+    else:
+        print(f"  ⚠️ No data downloaded")
 
     return history, run
 
@@ -89,10 +92,10 @@ def create_learning_curves_figure():
         print("\n❌ No data downloaded! Check your W&B credentials.")
         return
 
-    # Create figure with 2 subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
-    fig.suptitle('Training Dynamics: Convergence Analysis Across Methods',
-                 fontsize=16, fontweight='bold', y=0.995)
+    # Create figure with single plot
+    fig, ax1 = plt.subplots(1, 1, figsize=(12, 6))
+    fig.suptitle('Training Reward Curves: Convergence Analysis',
+                 fontsize=16, fontweight='bold', y=0.98)
 
     # Plot 1: Episode Reward
     for model_key, data in model_data.items():
@@ -100,67 +103,33 @@ def create_learning_curves_figure():
         config = data['config']
 
         if 'rollout/ep_rew_mean' in history.columns:
-            # Smooth with rolling average
-            smoothed = history['rollout/ep_rew_mean'].rolling(window=50, min_periods=1).mean()
+            # Smooth with larger rolling average for cleaner curves
+            smoothed = history['rollout/ep_rew_mean'].rolling(window=100, min_periods=1).mean()
 
-            ax1.plot(history['_step'] / 1e6, smoothed,
+            ax1.plot(history['global_step'] / 1e6, smoothed,
                     label=config['label'],
                     color=config['color'],
-                    linewidth=2.5,
-                    alpha=0.9)
+                    linewidth=3.0,
+                    alpha=0.95)
 
-            # Add light raw data in background
-            ax1.plot(history['_step'] / 1e6, history['rollout/ep_rew_mean'],
-                    color=config['color'],
-                    linewidth=0.5,
-                    alpha=0.15)
-
-    ax1.set_xlabel('Training Steps (millions)', fontsize=12, fontweight='bold')
-    ax1.set_ylabel('Episode Reward', fontsize=12, fontweight='bold')
-    ax1.set_title('(a) Reward Progression: All Models Show Convergence',
-                  fontsize=13, fontweight='bold', pad=10)
-    ax1.legend(fontsize=11, loc='lower right')
-    ax1.grid(True, alpha=0.3)
+    ax1.set_xlabel('Training Steps (millions)', fontsize=13, fontweight='bold')
+    ax1.set_ylabel('Mean Episode Reward', fontsize=13, fontweight='bold')
+    ax1.legend(fontsize=12, loc='best', framealpha=0.95)
+    ax1.grid(True, alpha=0.3, linestyle='--')
     ax1.set_xlim(left=0)
 
-    # Add convergence annotations
-    ax1.axvline(x=10, color='gray', linestyle='--', linewidth=1, alpha=0.5)
-    ax1.text(10, ax1.get_ylim()[1]*0.95, 'M1 trained\n(10M steps)',
-            ha='center', fontsize=9, bbox=dict(boxstyle='round,pad=0.3',
-            facecolor='white', alpha=0.7))
-
-    # Plot 2: Episode Length
-    for model_key, data in model_data.items():
-        history = data['history']
-        config = data['config']
-
-        if 'rollout/ep_len_mean' in history.columns:
-            # Smooth with rolling average
-            smoothed = history['rollout/ep_len_mean'].rolling(window=50, min_periods=1).mean()
-
-            ax2.plot(history['_step'] / 1e6, smoothed,
-                    label=config['label'],
-                    color=config['color'],
-                    linewidth=2.5,
-                    alpha=0.9)
-
-    ax2.set_xlabel('Training Steps (millions)', fontsize=12, fontweight='bold')
-    ax2.set_ylabel('Episode Length (steps)', fontsize=12, fontweight='bold')
-    ax2.set_title('(b) Episode Length: Stability Over Training',
-                  fontsize=13, fontweight='bold', pad=10)
-    ax2.legend(fontsize=11, loc='upper right')
-    ax2.grid(True, alpha=0.3)
-    ax2.set_xlim(left=0)
+    # Add y-axis formatting for readability
+    ax1.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
 
     plt.tight_layout()
 
-    # Save figure
+    # Save figure (updated filename to match paper: learning_curves_reconstructed.pdf)
     output_dir = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/paper/figures")
-    output_file = output_dir / "learning_curves.pdf"
+    output_file = output_dir / "learning_curves_reconstructed.pdf"
     plt.savefig(output_file, dpi=300, bbox_inches='tight', format='pdf', facecolor='white')
     print(f"\n✅ Learning curves saved to: {output_file}")
 
-    output_file_png = output_dir / "learning_curves.png"
+    output_file_png = output_dir / "learning_curves_reconstructed.png"
     plt.savefig(output_file_png, dpi=300, bbox_inches='tight', facecolor='white')
     print(f"✅ PNG preview saved to: {output_file_png}")
 

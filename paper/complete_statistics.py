@@ -50,9 +50,9 @@ model_labels = ['M1 (Baseline)', 'M2 (SR2L)', 'M3 (DR)', 'M4 (Combined)']
 
 # Data paths
 base_path = Path("../evaluations/evaluations")
-exp1_file = base_path / "experiment_1_baseline/data/baseline_results_20251020_092458.json"
-exp2_file = base_path / "experiment_2_sensor_noise/data/sensor_noise_results_20251020_001128.json"
-exp3_file = base_path / "experiment_3_joint_failures/data/joint_failure_results_20251013_111836.json"
+exp1_file = base_path / "experiment_1_baseline/data/baseline_results_20251027_195743.json"
+exp2_file = base_path / "experiment_2_sensor_noise/data/sensor_noise_results_20251027_201704.json"
+exp3_file = base_path / "experiment_3_joint_failures/data/joint_failure_results_20251027_205918.json"
 exp4_file = base_path / "experiment_4_combined_stress/data/combined_stress_results_20251013_112858.json"
 exp7_file = base_path / "experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251020_153154.json"
 
@@ -273,13 +273,13 @@ print("="*80)
 
 exp4_data = load_json(exp4_file)
 
-# Find highest stress scenario
-print("\n--- Highest Stress: 50% joint failure + σ=0.05 noise ---")
+# Find highest stress scenario (updated to match new data structure)
+print("\n--- Highest Stress: Ultimate Challenge (σ=0.1 + dual failure) ---")
 high_stress_distances = {}
 
 for model, label in zip(models, model_labels):
     for scenario in exp4_data[model]['scenario_results']:
-        if scenario['joint_failure_prob'] == 0.5 and scenario['sensor_noise'] == 0.05:
+        if scenario['scenario_name'] == 'Ultimate Challenge':
             distances = [ep['distance'] for ep in scenario['rollouts']]
             high_stress_distances[model] = distances
 

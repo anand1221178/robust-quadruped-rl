@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-# Load the latest baseline results
-data_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251020_092458.json")
+# Load the latest baseline results (UPDATED: October 27, 2025 - 32M retrained models)
+data_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251027_195743.json")
 
 with open(data_file, 'r') as f:
     data = json.load(f)
@@ -58,32 +58,7 @@ ax1.set_ylim(0, max(distances) + max(distance_stds) + 2)
 ax1.grid(axis='y', alpha=0.3, linestyle='--', linewidth=0.8)
 ax1.set_axisbelow(True)
 
-# Add horizontal reference line at M3 level
-m3_dist = distances[2]
-ax1.axhline(y=m3_dist, color='gray', linestyle=':', linewidth=2, alpha=0.6,
-            label=f'M3 Reference ({m3_dist:.2f}m)')
-
-# Add performance sacrifice annotations
-m1_dist = distances[0]
-m3_sacrifice = ((m1_dist - m3_dist) / m1_dist) * 100
-m4_sacrifice = ((m1_dist - distances[3]) / m1_dist) * 100
-
-ax1.annotate(f'29% sacrifice\nfor robustness',
-             xy=(2, distances[2] + distance_stds[2]), xytext=(1.5, 13),
-             arrowprops=dict(arrowstyle='->', color='red', lw=1.5),
-             fontsize=9, color='red', fontweight='bold',
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.3))
-
-ax1.annotate(f'52% sacrifice\n(interference)',
-             xy=(3, distances[3] + distance_stds[3]), xytext=(2.5, 11.5),
-             arrowprops=dict(arrowstyle='->', color='darkred', lw=1.5),
-             fontsize=9, color='darkred', fontweight='bold',
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='orange', alpha=0.3))
-
-# Legend
-ax1.legend(loc='upper right', fontsize=10, framealpha=0.9)
-
-# Tight layout
+# Tight layout (annotations removed - incorrect with new data where M3 is best)
 plt.tight_layout()
 
 # Save figure
@@ -99,7 +74,7 @@ plt.savefig(output_file_png, dpi=300, bbox_inches='tight')
 print(f"✅ PNG preview saved to: {output_file_png}")
 
 # Show the figure
-plt.show()
+# plt.show()  # Commented out to avoid hanging in automated runs
 
 # Print summary statistics
 print("\n" + "="*60)
@@ -109,9 +84,15 @@ for i, (label, dist, std, success) in enumerate(zip(model_labels, distances, dis
     print(f"{label.replace(chr(10), ' '):<20} | {dist:6.2f}m ± {std:4.2f} | Success: {success:5.1f}%")
 
 print("\n" + "="*60)
-print("PERFORMANCE SACRIFICE ANALYSIS")
+print("PERFORMANCE COMPARISON (M3 is BEST)")
 print("="*60)
-print(f"M3 sacrifice vs M1: {m3_sacrifice:.1f}%")
-print(f"M4 sacrifice vs M1: {m4_sacrifice:.1f}%")
-print(f"M4 worse than M3 by: {((m3_dist - distances[3])/m3_dist)*100:.1f}%")
+m3_dist = distances[2]  # M3 (DR) - best performer
+m1_dist = distances[0]  # M1 (Baseline) - overfit
+m2_dist = distances[1]  # M2 (SR2L)
+m4_dist = distances[3]  # M4 (Combined)
+
+print(f"M3 (DR) is BEST: {m3_dist:.2f}m")
+print(f"M1 underperforms M3 by: {((m3_dist - m1_dist)/m3_dist)*100:.1f}% (overfitting)")
+print(f"M2 underperforms M3 by: {((m3_dist - m2_dist)/m3_dist)*100:.1f}%")
+print(f"M4 underperforms M3 by: {((m3_dist - m4_dist)/m3_dist)*100:.1f}%")
 print("="*60)

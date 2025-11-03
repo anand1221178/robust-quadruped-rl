@@ -11,8 +11,8 @@ import numpy as np
 from pathlib import Path
 
 # Load experiment data
-baseline_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251020_092458.json")
-noise_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251020_001128.json")
+baseline_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_1_baseline/data/baseline_results_20251027_195743.json")
+noise_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_2_sensor_noise/data/sensor_noise_results_20251027_201704.json")
 
 with open(baseline_file, 'r') as f:
     baseline_data = json.load(f)
@@ -113,7 +113,7 @@ output_file_png = output_dir / "figure_2_noise_robustness.png"
 plt.savefig(output_file_png, dpi=300, bbox_inches='tight')
 print(f"✅ PNG preview saved to: {output_file_png}")
 
-plt.show()
+# plt.show()  # Commented out
 
 # Print analysis
 print("\n" + "="*80)

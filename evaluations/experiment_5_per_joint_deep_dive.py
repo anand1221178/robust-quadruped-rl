@@ -70,24 +70,24 @@ class PerJointDeepDiveEvaluator:
         # Model configurations
         self.models = {
             'M1_baseline': {
-                'name': 'PPO Baseline',
-                'path': '../done/ppo_baseline_ueqbjf2x/best_model/best_model',
-                'vec_path': '../done/ppo_baseline_ueqbjf2x/vec_normalize.pkl',
-                'description': 'PPO only (no robustness training)',
-                'baseline_distance': 11.20  # From Experiment 1
+                'name': 'PPO Baseline (32M)',
+                'path': '../experiments/M1_baseline_32M_RETRAINED_ym2jcllj/final_model',
+                'vec_path': '../experiments/M1_baseline_32M_RETRAINED_ym2jcllj/vec_normalize.pkl',
+                'description': 'PPO only (no robustness training) - RETRAINED 32M',
+                'baseline_distance': 11.20  # From Experiment 1 (to be updated after rerun)
             },
             'M2_sr2l': {
-                'name': 'PPO + SR2L',
-                'path': '../done/ppo_sr2l_forward_m7gtjtpa/final_model',
-                'vec_path': '../done/ppo_sr2l_forward_m7gtjtpa/vec_normalize.pkl',
-                'description': 'PPO + SR2L (sensor noise specialist)',
-                'baseline_distance': 8.91  # From Experiment 1
+                'name': 'PPO + SR2L (32M)',
+                'path': '../experiments/M2_sr2l_32M_RETRAINED_ze09p0vf/final_model',
+                'vec_path': '../experiments/M2_sr2l_32M_RETRAINED_ze09p0vf/vec_normalize.pkl',
+                'description': 'PPO + SR2L (sensor noise specialist) - RETRAINED 32M',
+                'baseline_distance': 8.91  # From Experiment 1 (to be updated after rerun)
             },
             'M3_dr': {
-                'name': 'PPO + DR (V7.7E)',
+                'name': 'PPO + DR (V7.7E Champion)',
                 'path': '../done/v7_7e_ultra_speed_jtfwl2qf/final_model',
                 'vec_path': '../done/v7_7e_ultra_speed_jtfwl2qf/vec_normalize.pkl',
-                'description': 'PPO + DR (JOINT FAILURE SPECIALIST)',
+                'description': 'PPO + DR (JOINT FAILURE SPECIALIST) - 45% avg retention',
                 'baseline_distance': 7.90  # From Experiment 1
             },
             'M4_combo': {

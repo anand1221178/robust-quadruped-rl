@@ -10,7 +10,7 @@ import numpy as np
 from pathlib import Path
 
 # Load Experiment 7 data
-exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251020_153154.json")
+exp7_file = Path("/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/evaluations/evaluations/experiment_7_joint_noise_ablation/data/joint_noise_ablation_20251027_223017.json")
 
 with open(exp7_file, 'r') as f:
     data = json.load(f)
@@ -202,7 +202,7 @@ output_file_png = output_dir / "figure_5_joint_noise_ablation.png"
 plt.savefig(output_file_png, dpi=300, bbox_inches='tight', facecolor='white')
 print(f"✅ PNG preview saved to: {output_file_png}")
 
-plt.show()
+# plt.show()  # Commented out
 
 # Print summary
 print("\n" + "="*80)

@@ -1,0 +1,3294 @@
+{
+  "M1_baseline": {
+    "model_key": "M1_baseline",
+    "model_name": "PPO Baseline (32M)",
+    "num_rollouts": 100,
+    "distance": {
+      "mean": 6.076103082465043,
+      "std": 3.2350935497940987,
+      "min": 0.026377023059078793,
+      "max": 8.907212482757208,
+      "median": 7.629762980012072
+    },
+    "reward": {
+      "mean": 10536.007076416015,
+      "std": 7213.924032992462,
+      "min": -3619.093505859375,
+      "max": 16906.208984375,
+      "median": 14136.54052734375
+    },
+    "success_rate": 0.78,
+    "failure_rate": 1.0,
+    "rollouts": [
+      {
+        "rollout_id": 0,
+        "distance": 8.866091178501987,
+        "reward": 16420.146484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 1,
+        "distance": 7.855875339763511,
+        "reward": 14516.8544921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 2,
+        "distance": 8.274572730946774,
+        "reward": 15438.294921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 3,
+        "distance": 0.8598021211252321,
+        "reward": -1134.421142578125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 4,
+        "distance": 7.904184090098469,
+        "reward": 14934.25,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 5,
+        "distance": 6.463347388521384,
+        "reward": 11574.97265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 6,
+        "distance": 0.18437130607609853,
+        "reward": -1524.970703125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 7,
+        "distance": 8.64206893571745,
+        "reward": 16358.896484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 8,
+        "distance": 8.363140743650344,
+        "reward": 15313.685546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 9,
+        "distance": 8.661192845029158,
+        "reward": 16130.732421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 10,
+        "distance": 0.2758051213845879,
+        "reward": -2257.551513671875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 11,
+        "distance": 0.7228930464686839,
+        "reward": -1089.93701171875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 12,
+        "distance": 8.75228059412945,
+        "reward": 16313.2275390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 13,
+        "distance": 7.132563147122967,
+        "reward": 13365.4853515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 14,
+        "distance": 8.281481155119819,
+        "reward": 15106.9912109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 15,
+        "distance": 2.404626870759815,
+        "reward": 3440.801513671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 16,
+        "distance": 7.155255126448083,
+        "reward": 13158.689453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 17,
+        "distance": 7.36169665662864,
+        "reward": 13635.8984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 18,
+        "distance": 8.574375326351623,
+        "reward": 15926.5859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 19,
+        "distance": 7.881411774577582,
+        "reward": 14396.5830078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 20,
+        "distance": 8.879798446911451,
+        "reward": 16848.396484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 21,
+        "distance": 7.40329897529112,
+        "reward": 13608.4326171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 22,
+        "distance": 8.336570961529482,
+        "reward": 15182.138671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 23,
+        "distance": 8.094234183071558,
+        "reward": 15096.1162109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 24,
+        "distance": 7.641100908438408,
+        "reward": 14153.5712890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 25,
+        "distance": 3.3406573885057913,
+        "reward": 5057.923828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 26,
+        "distance": 6.594122858896197,
+        "reward": 11701.1083984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 27,
+        "distance": 8.732361897937432,
+        "reward": 16447.146484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 28,
+        "distance": 0.5201195547054122,
+        "reward": -2698.98388671875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 29,
+        "distance": 8.702118975413661,
+        "reward": 16185.4755859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 30,
+        "distance": 7.568481303212497,
+        "reward": 14043.6630859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 31,
+        "distance": 7.852808651397381,
+        "reward": 14852.0419921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 32,
+        "distance": 0.44433334062154195,
+        "reward": -3201.244384765625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 33,
+        "distance": 8.735682586245238,
+        "reward": 16604.197265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 34,
+        "distance": 2.6457024626859784,
+        "reward": 3219.95947265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 35,
+        "distance": 8.57769171663709,
+        "reward": 16270.3017578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 36,
+        "distance": 7.187678369293717,
+        "reward": 13233.13671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 37,
+        "distance": 8.205013134243323,
+        "reward": 15302.9296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 38,
+        "distance": 6.934885633848828,
+        "reward": 12807.2294921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 39,
+        "distance": 0.791372434504729,
+        "reward": -1277.5770263671875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 40,
+        "distance": 8.05402297187533,
+        "reward": 14968.392578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 41,
+        "distance": 5.773917026120302,
+        "reward": 10482.109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 42,
+        "distance": 7.654370398808301,
+        "reward": 14155.849609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 43,
+        "distance": 0.14037649335026753,
+        "reward": -2619.346435546875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 44,
+        "distance": 0.15175772042004645,
+        "reward": -705.0904541015625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 45,
+        "distance": 6.612758022126377,
+        "reward": 11897.1552734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 46,
+        "distance": 0.4647731604705879,
+        "reward": -3189.643310546875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 47,
+        "distance": 6.662566766877248,
+        "reward": 11885.4375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 48,
+        "distance": 8.419277529441564,
+        "reward": 15809.44921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 49,
+        "distance": 8.802042204362278,
+        "reward": 16313.3017578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 50,
+        "distance": 0.2860344776028082,
+        "reward": -1776.1275634765625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 51,
+        "distance": 7.851638260293493,
+        "reward": 14614.7177734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 52,
+        "distance": 7.905714989816885,
+        "reward": 14648.107421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 53,
+        "distance": 0.26396212040541256,
+        "reward": -339.484619140625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 54,
+        "distance": 8.55295108353768,
+        "reward": 15933.60546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 55,
+        "distance": 8.043968008335078,
+        "reward": 14734.8701171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 56,
+        "distance": 0.3672912768443761,
+        "reward": -3089.33251953125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 57,
+        "distance": 8.312115396989084,
+        "reward": 15473.5693359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 58,
+        "distance": 7.4216130072632325,
+        "reward": 13187.6103515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 59,
+        "distance": 7.649893236207232,
+        "reward": 14291.1796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 60,
+        "distance": 7.274740975325647,
+        "reward": 13634.5009765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 61,
+        "distance": 6.979771291008163,
+        "reward": 12798.408203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 62,
+        "distance": 7.488373803046436,
+        "reward": 13294.89453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 63,
+        "distance": 7.103181793565613,
+        "reward": 12451.0712890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 64,
+        "distance": 8.489348527038109,
+        "reward": 15612.9716796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 65,
+        "distance": 7.799449573750224,
+        "reward": 14161.5380859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 66,
+        "distance": 0.3857244494428119,
+        "reward": -2640.123779296875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 67,
+        "distance": 7.922927208722869,
+        "reward": 14920.6650390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 68,
+        "distance": 8.009042194977223,
+        "reward": 14787.2822265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 69,
+        "distance": 8.701715372083978,
+        "reward": 16190.4873046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 70,
+        "distance": 6.686032745625251,
+        "reward": 11883.4306640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 71,
+        "distance": 8.106023130152199,
+        "reward": 15211.1533203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 72,
+        "distance": 8.386234856514756,
+        "reward": 15672.650390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 73,
+        "distance": 0.026377023059078793,
+        "reward": -2904.64892578125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 74,
+        "distance": 8.907212482757208,
+        "reward": 16906.208984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 75,
+        "distance": 7.613486420199342,
+        "reward": 13937.6201171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 76,
+        "distance": 5.601415695347504,
+        "reward": 9196.169921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 77,
+        "distance": 8.393814018979901,
+        "reward": 15545.0302734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 78,
+        "distance": 8.791294161149661,
+        "reward": 16475.3515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 79,
+        "distance": 0.22974873832197076,
+        "reward": -3221.017578125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 80,
+        "distance": 8.457637419905796,
+        "reward": 15841.3642578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 81,
+        "distance": 8.184516952566732,
+        "reward": 14864.9248046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 82,
+        "distance": 0.042556974094315046,
+        "reward": -2602.733642578125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 83,
+        "distance": 0.1092672664327686,
+        "reward": -2915.072998046875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 84,
+        "distance": 8.374599873933168,
+        "reward": 15679.775390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 85,
+        "distance": 8.61723551653253,
+        "reward": 16128.4453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 86,
+        "distance": 7.618425051585736,
+        "reward": 14119.509765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 87,
+        "distance": 7.5506187776764175,
+        "reward": 14100.1796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 88,
+        "distance": 8.605952784172665,
+        "reward": 16117.15234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 89,
+        "distance": 0.16504902061038035,
+        "reward": -2342.009765625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 90,
+        "distance": 0.07832928027706697,
+        "reward": -2759.924072265625,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 91,
+        "distance": 8.281679586207996,
+        "reward": 15340.537109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 92,
+        "distance": 6.762861531808771,
+        "reward": 11630.73828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 93,
+        "distance": 7.101751540279602,
+        "reward": 12584.3076171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 94,
+        "distance": 8.830320735673018,
+        "reward": 16594.59765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 95,
+        "distance": 0.47597135572406846,
+        "reward": -3619.093505859375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 96,
+        "distance": 0.4905544979042816,
+        "reward": -3157.190185546875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 97,
+        "distance": 8.226598140359021,
+        "reward": 15221.1318359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 98,
+        "distance": 8.27959772222617,
+        "reward": 15132.435546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 99,
+        "distance": 7.264756324505685,
+        "reward": 13590.478515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      }
+    ]
+  },
+  "M2_sr2l": {
+    "model_key": "M2_sr2l",
+    "model_name": "PPO + SR2L (32M)",
+    "num_rollouts": 100,
+    "distance": {
+      "mean": 8.818284810059078,
+      "std": 0.24466589383998452,
+      "min": 7.832920600850236,
+      "max": 9.389996855184894,
+      "median": 8.81413909742129
+    },
+    "reward": {
+      "mean": 13080.2261328125,
+      "std": 409.9517957719771,
+      "min": 11657.048828125,
+      "max": 14267.2294921875,
+      "median": 13090.044921875
+    },
+    "success_rate": 1.0,
+    "failure_rate": 1.0,
+    "rollouts": [
+      {
+        "rollout_id": 0,
+        "distance": 8.784527112884588,
+        "reward": 13091.455078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 1,
+        "distance": 9.183612873246679,
+        "reward": 13566.810546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 2,
+        "distance": 8.967647214982389,
+        "reward": 13066.056640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 3,
+        "distance": 8.314644386755937,
+        "reward": 12279.9169921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 4,
+        "distance": 8.752477061850858,
+        "reward": 13023.4130859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 5,
+        "distance": 8.91195084441438,
+        "reward": 13343.650390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 6,
+        "distance": 8.70273558619307,
+        "reward": 13018.9541015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 7,
+        "distance": 9.038379479177543,
+        "reward": 13492.92578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 8,
+        "distance": 8.818809128010374,
+        "reward": 12826.1494140625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 9,
+        "distance": 8.26168829833364,
+        "reward": 12224.578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 10,
+        "distance": 8.712238580017008,
+        "reward": 12850.4775390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 11,
+        "distance": 8.594892548905664,
+        "reward": 12697.2216796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 12,
+        "distance": 8.52380271882957,
+        "reward": 12935.6064453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 13,
+        "distance": 8.822321285563152,
+        "reward": 13047.322265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 14,
+        "distance": 8.687116843118472,
+        "reward": 12970.9365234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 15,
+        "distance": 8.821584299569224,
+        "reward": 12969.0205078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 16,
+        "distance": 8.807923890873834,
+        "reward": 13119.6826171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 17,
+        "distance": 8.719417396965374,
+        "reward": 12856.060546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 18,
+        "distance": 8.935973297792566,
+        "reward": 13325.4951171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 19,
+        "distance": 8.790032256516971,
+        "reward": 13096.048828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 20,
+        "distance": 8.972120682169109,
+        "reward": 13395.4111328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 21,
+        "distance": 8.849219289728197,
+        "reward": 13120.392578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 22,
+        "distance": 8.824017070597918,
+        "reward": 13245.07421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 23,
+        "distance": 8.858611386517014,
+        "reward": 13121.3583984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 24,
+        "distance": 8.57790136470829,
+        "reward": 12660.0302734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 25,
+        "distance": 8.484333177939506,
+        "reward": 12710.5947265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 26,
+        "distance": 8.650475167321652,
+        "reward": 12568.3466796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 27,
+        "distance": 8.41565784420679,
+        "reward": 12509.662109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 28,
+        "distance": 8.809993400919918,
+        "reward": 12940.04296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 29,
+        "distance": 8.751202936202379,
+        "reward": 12638.0458984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 30,
+        "distance": 8.641991869466516,
+        "reward": 12816.32421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 31,
+        "distance": 8.615538129350796,
+        "reward": 12606.5517578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 32,
+        "distance": 9.027523805793386,
+        "reward": 13549.4287109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 33,
+        "distance": 8.777106535114282,
+        "reward": 12902.6748046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 34,
+        "distance": 9.247329689718178,
+        "reward": 13793.10546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 35,
+        "distance": 8.922481106442428,
+        "reward": 13414.271484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 36,
+        "distance": 8.682535672946052,
+        "reward": 13114.087890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 37,
+        "distance": 9.060612047340834,
+        "reward": 13413.9287109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 38,
+        "distance": 9.198609231472751,
+        "reward": 13670.9541015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 39,
+        "distance": 8.993826132981772,
+        "reward": 13160.4755859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 40,
+        "distance": 8.859887999666629,
+        "reward": 13018.76171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 41,
+        "distance": 8.79373848460637,
+        "reward": 13058.576171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 42,
+        "distance": 9.16200467673797,
+        "reward": 13509.423828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 43,
+        "distance": 9.205557412898994,
+        "reward": 13647.51953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 44,
+        "distance": 9.083803395982875,
+        "reward": 13521.2265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 45,
+        "distance": 9.083828383353882,
+        "reward": 13172.16796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 46,
+        "distance": 9.112401044507397,
+        "reward": 13211.8154296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 47,
+        "distance": 8.886228329873457,
+        "reward": 13212.0244140625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 48,
+        "distance": 8.592770469107695,
+        "reward": 12764.283203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 49,
+        "distance": 8.829643040609048,
+        "reward": 12973.146484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 50,
+        "distance": 8.776028940304554,
+        "reward": 13084.3447265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 51,
+        "distance": 8.79424003602034,
+        "reward": 12735.9697265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 52,
+        "distance": 9.347908693142703,
+        "reward": 13818.595703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 53,
+        "distance": 9.117858690289703,
+        "reward": 13639.9794921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 54,
+        "distance": 8.793455320029123,
+        "reward": 13236.060546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 55,
+        "distance": 8.989278337605139,
+        "reward": 13221.0703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 56,
+        "distance": 9.004212625869345,
+        "reward": 13684.2822265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 57,
+        "distance": 8.545775123122958,
+        "reward": 12670.0791015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 58,
+        "distance": 8.70540691617392,
+        "reward": 12949.5556640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 59,
+        "distance": 8.811062617424087,
+        "reward": 13088.634765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 60,
+        "distance": 8.526306357000937,
+        "reward": 12577.79296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 61,
+        "distance": 7.832920600850236,
+        "reward": 11657.048828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 62,
+        "distance": 8.665409060602558,
+        "reward": 12562.296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 63,
+        "distance": 8.905027815862706,
+        "reward": 13262.306640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 64,
+        "distance": 9.321263520033899,
+        "reward": 14083.7373046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 65,
+        "distance": 9.072176165110639,
+        "reward": 13568.2470703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 66,
+        "distance": 8.82638926797308,
+        "reward": 13424.69140625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 67,
+        "distance": 8.81721557741849,
+        "reward": 13173.96875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 68,
+        "distance": 8.67633221042461,
+        "reward": 12680.4091796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 69,
+        "distance": 9.389996855184894,
+        "reward": 14267.2294921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 70,
+        "distance": 8.969706224365675,
+        "reward": 13162.2705078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 71,
+        "distance": 8.759569847438415,
+        "reward": 12976.791015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 72,
+        "distance": 8.558203554138569,
+        "reward": 12549.4306640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 73,
+        "distance": 8.422566087623991,
+        "reward": 12495.548828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 74,
+        "distance": 9.177863756637162,
+        "reward": 13600.974609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 75,
+        "distance": 8.794559935665115,
+        "reward": 12969.97265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 76,
+        "distance": 8.547415491392364,
+        "reward": 12431.6123046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 77,
+        "distance": 8.68763406341302,
+        "reward": 12833.353515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 78,
+        "distance": 8.745905432649641,
+        "reward": 12880.8896484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 79,
+        "distance": 8.716667095878865,
+        "reward": 12757.79296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 80,
+        "distance": 8.917284143089804,
+        "reward": 13065.916015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 81,
+        "distance": 8.87006555793195,
+        "reward": 13163.814453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 82,
+        "distance": 9.004442688963497,
+        "reward": 13557.9482421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 83,
+        "distance": 8.621064309372292,
+        "reward": 13013.8310546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 84,
+        "distance": 8.922018068995571,
+        "reward": 13343.6318359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 85,
+        "distance": 8.946705623776564,
+        "reward": 13503.873046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 86,
+        "distance": 8.65737947288318,
+        "reward": 12748.3447265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 87,
+        "distance": 8.960959706689636,
+        "reward": 13311.3916015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 88,
+        "distance": 8.506268197824912,
+        "reward": 12535.25,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 89,
+        "distance": 8.8546574152881,
+        "reward": 13307.2822265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 90,
+        "distance": 9.08157683490544,
+        "reward": 13409.1396484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 91,
+        "distance": 8.538469078993762,
+        "reward": 12390.6669921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 92,
+        "distance": 9.043573740471947,
+        "reward": 13401.5361328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 93,
+        "distance": 8.49398361163069,
+        "reward": 12845.572265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 94,
+        "distance": 8.969241781306225,
+        "reward": 13340.8173828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 95,
+        "distance": 8.770076473060826,
+        "reward": 13243.1220703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 96,
+        "distance": 8.649805985071504,
+        "reward": 12768.845703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 97,
+        "distance": 8.636555996629314,
+        "reward": 13110.623046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 98,
+        "distance": 9.10039950968507,
+        "reward": 13536.814453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 99,
+        "distance": 8.86287170740748,
+        "reward": 13137.765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      }
+    ]
+  },
+  "M3_dr": {
+    "model_key": "M3_dr",
+    "model_name": "PPO + DR (V7.7E Champion)",
+    "num_rollouts": 100,
+    "distance": {
+      "mean": 8.654339596940657,
+      "std": 0.8580283705857317,
+      "min": 0.31383759519019966,
+      "max": 9.153745533472819,
+      "median": 8.730132323686696
+    },
+    "reward": {
+      "mean": 11448.35447265625,
+      "std": 2084.856279256482,
+      "min": -8918.591796875,
+      "max": 12601.7333984375,
+      "median": 11697.15087890625
+    },
+    "success_rate": 0.99,
+    "failure_rate": 1.0,
+    "rollouts": [
+      {
+        "rollout_id": 0,
+        "distance": 8.62398074360424,
+        "reward": 11022.1162109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 1,
+        "distance": 8.371183103695696,
+        "reward": 10919.529296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 2,
+        "distance": 8.676533202273372,
+        "reward": 11358.80078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 3,
+        "distance": 8.69753222279685,
+        "reward": 11742.8935546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 4,
+        "distance": 8.674966654195911,
+        "reward": 11322.3564453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 5,
+        "distance": 8.544647612062906,
+        "reward": 11360.435546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 6,
+        "distance": 8.585895869978772,
+        "reward": 11568.173828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 7,
+        "distance": 8.93014554870623,
+        "reward": 11887.833984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 8,
+        "distance": 8.855710917302856,
+        "reward": 11727.82421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 9,
+        "distance": 8.723655301406692,
+        "reward": 11398.34765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 10,
+        "distance": 8.67989860998894,
+        "reward": 11616.603515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 11,
+        "distance": 8.321966801339945,
+        "reward": 11086.748046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 12,
+        "distance": 8.6602223479703,
+        "reward": 11464.328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 13,
+        "distance": 8.936446440086675,
+        "reward": 12133.9794921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 14,
+        "distance": 8.977704128313972,
+        "reward": 11944.6376953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 15,
+        "distance": 9.108243322712852,
+        "reward": 12169.4599609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 16,
+        "distance": 8.421047985373837,
+        "reward": 10950.9931640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 17,
+        "distance": 8.686923961562684,
+        "reward": 11543.5087890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 18,
+        "distance": 8.735867345093324,
+        "reward": 11698.98046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 19,
+        "distance": 8.891385607609049,
+        "reward": 11969.8818359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 20,
+        "distance": 8.335086889122083,
+        "reward": 11061.4248046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 21,
+        "distance": 8.879052126708391,
+        "reward": 12233.017578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 22,
+        "distance": 8.452692307812846,
+        "reward": 10946.52734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 23,
+        "distance": 8.637049913394915,
+        "reward": 11159.0859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 24,
+        "distance": 8.773448106501311,
+        "reward": 11909.55078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 25,
+        "distance": 8.922779632976834,
+        "reward": 11928.7333984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 26,
+        "distance": 8.321751720708187,
+        "reward": 10725.09765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 27,
+        "distance": 8.645708337171454,
+        "reward": 11695.3212890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 28,
+        "distance": 8.753155465096704,
+        "reward": 11520.3896484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 29,
+        "distance": 8.705975288608826,
+        "reward": 11874.4287109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 30,
+        "distance": 8.926723753794741,
+        "reward": 12043.7216796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 31,
+        "distance": 8.725725505057703,
+        "reward": 11926.962890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 32,
+        "distance": 8.800814108693762,
+        "reward": 12107.2021484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 33,
+        "distance": 8.401485699350985,
+        "reward": 11021.78125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 34,
+        "distance": 8.73453914231569,
+        "reward": 11638.0361328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 35,
+        "distance": 8.40328049319344,
+        "reward": 11292.1357421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 36,
+        "distance": 8.447105613461138,
+        "reward": 11196.6796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 37,
+        "distance": 8.741410838689307,
+        "reward": 11942.9814453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 38,
+        "distance": 8.798439301305075,
+        "reward": 12033.4736328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 39,
+        "distance": 8.673063573835776,
+        "reward": 11473.4228515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 40,
+        "distance": 8.967942973648977,
+        "reward": 11929.1396484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 41,
+        "distance": 8.765036041130848,
+        "reward": 11790.427734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 42,
+        "distance": 8.989429931734763,
+        "reward": 12167.26953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 43,
+        "distance": 8.60697116271927,
+        "reward": 11721.755859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 44,
+        "distance": 8.735138164304749,
+        "reward": 11848.3037109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 45,
+        "distance": 8.6318997213761,
+        "reward": 11009.74609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 46,
+        "distance": 8.789034419983759,
+        "reward": 11682.51953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 47,
+        "distance": 8.706254779045855,
+        "reward": 11898.8564453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 48,
+        "distance": 8.610305357933191,
+        "reward": 11179.04296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 49,
+        "distance": 8.891441302388962,
+        "reward": 12028.2802734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 50,
+        "distance": 8.931605074784887,
+        "reward": 11963.033203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 51,
+        "distance": 8.666353019704145,
+        "reward": 11860.9541015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 52,
+        "distance": 8.517710948991532,
+        "reward": 11033.498046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 53,
+        "distance": 8.710322991790632,
+        "reward": 11504.8056640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 54,
+        "distance": 8.898442339745534,
+        "reward": 12180.5693359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 55,
+        "distance": 8.738999740140088,
+        "reward": 11624.75,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 56,
+        "distance": 9.058475048350617,
+        "reward": 12601.7333984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 57,
+        "distance": 9.0281352920185,
+        "reward": 12060.1240234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 58,
+        "distance": 8.670632290079016,
+        "reward": 11809.54296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 59,
+        "distance": 8.716280110141557,
+        "reward": 11963.990234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 60,
+        "distance": 8.786231156306298,
+        "reward": 11737.4931640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 61,
+        "distance": 8.792376513116713,
+        "reward": 11922.578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 62,
+        "distance": 8.6203585812468,
+        "reward": 11576.5234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 63,
+        "distance": 8.873809524420441,
+        "reward": 12004.59765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 64,
+        "distance": 8.839400338197882,
+        "reward": 12029.21484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 65,
+        "distance": 8.616340676773202,
+        "reward": 11539.0947265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 66,
+        "distance": 8.665280127261894,
+        "reward": 11575.662109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 67,
+        "distance": 9.006736331683461,
+        "reward": 12311.794921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 68,
+        "distance": 8.791046822257062,
+        "reward": 11952.5,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 69,
+        "distance": 8.795764834738435,
+        "reward": 11987.7001953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 70,
+        "distance": 8.824516887347713,
+        "reward": 11721.251953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 71,
+        "distance": 8.878152443680019,
+        "reward": 11883.8095703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 72,
+        "distance": 8.47929039964369,
+        "reward": 10857.5673828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 73,
+        "distance": 8.850830667866289,
+        "reward": 11897.8466796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 74,
+        "distance": 9.015999271429477,
+        "reward": 12021.1708984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 75,
+        "distance": 8.971853408977777,
+        "reward": 11508.1552734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 76,
+        "distance": 9.039375322804114,
+        "reward": 12393.744140625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 77,
+        "distance": 8.433039892908319,
+        "reward": 10756.53125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 78,
+        "distance": 9.065186954737987,
+        "reward": 12238.1962890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 79,
+        "distance": 8.681221985876299,
+        "reward": 11509.1728515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 80,
+        "distance": 8.990956639438807,
+        "reward": 11708.818359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 81,
+        "distance": 9.153745533472819,
+        "reward": 12256.521484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 82,
+        "distance": 8.656924779915604,
+        "reward": 11423.24609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 83,
+        "distance": 8.765069576709807,
+        "reward": 11329.2763671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 84,
+        "distance": 8.717655796804491,
+        "reward": 11369.7138671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 85,
+        "distance": 8.792255124605406,
+        "reward": 11607.5400390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 86,
+        "distance": 8.719564078972489,
+        "reward": 11505.6630859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 87,
+        "distance": 8.881838370788692,
+        "reward": 11820.978515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 88,
+        "distance": 8.81636444604063,
+        "reward": 11781.474609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 89,
+        "distance": 8.83387410644161,
+        "reward": 11624.6025390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 90,
+        "distance": 8.629786476734566,
+        "reward": 11402.9091796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 91,
+        "distance": 8.684490308985449,
+        "reward": 11955.2744140625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 92,
+        "distance": 8.720078436143188,
+        "reward": 11580.40625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 93,
+        "distance": 8.402979510462119,
+        "reward": 11070.732421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 94,
+        "distance": 0.31383759519019966,
+        "reward": -8918.591796875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 95,
+        "distance": 8.781232467218533,
+        "reward": 11669.6796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 96,
+        "distance": 8.940318895531561,
+        "reward": 12082.982421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 97,
+        "distance": 8.642062521973816,
+        "reward": 11314.3251953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 98,
+        "distance": 8.576372854032547,
+        "reward": 11239.64453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 99,
+        "distance": 8.574083779442184,
+        "reward": 11109.89453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      }
+    ]
+  },
+  "M4_combo": {
+    "model_key": "M4_combo",
+    "model_name": "Ultimate Combo",
+    "num_rollouts": 100,
+    "distance": {
+      "mean": 6.896318316032296,
+      "std": 2.7513804741738075,
+      "min": 0.005136576637766002,
+      "max": 8.817921820387907,
+      "median": 8.01881549280623
+    },
+    "reward": {
+      "mean": 8319.489921875,
+      "std": 6915.22686715988,
+      "min": -9111.3740234375,
+      "max": 12460.6669921875,
+      "median": 11120.24267578125
+    },
+    "success_rate": 0.86,
+    "failure_rate": 1.0,
+    "rollouts": [
+      {
+        "rollout_id": 0,
+        "distance": 8.23775540329186,
+        "reward": 11329.2392578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 1,
+        "distance": 7.714840550543587,
+        "reward": 10484.7216796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 2,
+        "distance": 8.13088362329104,
+        "reward": 11345.013671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 3,
+        "distance": 8.307755989826973,
+        "reward": 11530.5185546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 4,
+        "distance": 8.045412392777285,
+        "reward": 11150.052734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 5,
+        "distance": 8.269816086893186,
+        "reward": 11573.3232421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 6,
+        "distance": 8.173885528141126,
+        "reward": 11341.6142578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 7,
+        "distance": 0.03232620636816073,
+        "reward": -8663.529296875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 8,
+        "distance": 0.0370190122445115,
+        "reward": -8683.7880859375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 9,
+        "distance": 0.13697569895725534,
+        "reward": -8808.28125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 10,
+        "distance": 0.0626855171893555,
+        "reward": -8736.93359375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 11,
+        "distance": 0.029010854458173793,
+        "reward": -8858.814453125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 12,
+        "distance": 0.024898145729160076,
+        "reward": -8445.23046875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 13,
+        "distance": 0.02455201075573034,
+        "reward": -8782.2919921875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 14,
+        "distance": 8.362612358299941,
+        "reward": 11538.6884765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 15,
+        "distance": 8.483914008236017,
+        "reward": 11957.037109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 16,
+        "distance": 8.036229958016612,
+        "reward": 11099.0302734375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 17,
+        "distance": 8.331748517162069,
+        "reward": 11869.6728515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 18,
+        "distance": 8.3758903016926,
+        "reward": 11486.521484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 19,
+        "distance": 8.085978698721341,
+        "reward": 11442.037109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 20,
+        "distance": 7.527043961068273,
+        "reward": 10234.2021484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 21,
+        "distance": 8.160439292771732,
+        "reward": 11317.2373046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 22,
+        "distance": 0.33992475791798066,
+        "reward": -9046.0966796875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 23,
+        "distance": 0.4253816135306701,
+        "reward": -9099.7568359375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 24,
+        "distance": 7.468028195961857,
+        "reward": 10198.828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 25,
+        "distance": 7.521119722553459,
+        "reward": 10393.8408203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 26,
+        "distance": 8.15043275622312,
+        "reward": 11563.271484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 27,
+        "distance": 8.097390512368818,
+        "reward": 11122.412109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 28,
+        "distance": 7.034685070593513,
+        "reward": 9567.033203125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 29,
+        "distance": 0.4330154431699078,
+        "reward": -9111.3740234375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 30,
+        "distance": 6.843377669459409,
+        "reward": 9678.1845703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 31,
+        "distance": 8.170366155933708,
+        "reward": 11499.3837890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 32,
+        "distance": 8.090114390297215,
+        "reward": 11240.943359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 33,
+        "distance": 7.637596755928052,
+        "reward": 10511.5703125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 34,
+        "distance": 7.983019912214161,
+        "reward": 11248.3603515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 35,
+        "distance": 8.001732197190275,
+        "reward": 10898.4169921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 36,
+        "distance": 8.165435572747652,
+        "reward": 11362.521484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 37,
+        "distance": 7.043369562029074,
+        "reward": 9792.1748046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 38,
+        "distance": 8.477336953857561,
+        "reward": 11906.9716796875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 39,
+        "distance": 8.020702503114665,
+        "reward": 10797.0546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 40,
+        "distance": 7.922957332489147,
+        "reward": 10898.0146484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 41,
+        "distance": 7.822112388756081,
+        "reward": 10950.6416015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 42,
+        "distance": 7.823910372553705,
+        "reward": 10846.578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 43,
+        "distance": 7.600800531612507,
+        "reward": 10254.134765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 44,
+        "distance": 8.472970145009086,
+        "reward": 11721.3017578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 45,
+        "distance": 8.07074251697815,
+        "reward": 11263.2509765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 46,
+        "distance": 8.349799189116226,
+        "reward": 11795.6923828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 47,
+        "distance": 8.084461491294672,
+        "reward": 11099.3505859375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 48,
+        "distance": 8.02482267524114,
+        "reward": 11055.43359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 49,
+        "distance": 8.096934435842776,
+        "reward": 11118.0732421875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 50,
+        "distance": 8.348232586649765,
+        "reward": 11375.8310546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 51,
+        "distance": 8.297042249992458,
+        "reward": 11991.390625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 52,
+        "distance": 8.118689968032495,
+        "reward": 11378.0517578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 53,
+        "distance": 7.816238294865404,
+        "reward": 10625.0009765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 54,
+        "distance": 7.976917770907775,
+        "reward": 10688.296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 55,
+        "distance": 8.37388516777021,
+        "reward": 11689.6181640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 56,
+        "distance": 7.295207938331168,
+        "reward": 9782.8056640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 57,
+        "distance": 8.548414608306645,
+        "reward": 11989.2314453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 58,
+        "distance": 8.29737626459289,
+        "reward": 11570.9111328125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 59,
+        "distance": 8.126447050784607,
+        "reward": 11333.6142578125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 60,
+        "distance": 8.817921820387907,
+        "reward": 12460.6669921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 61,
+        "distance": 6.862854742417454,
+        "reward": 9241.93359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 62,
+        "distance": 7.90166650943745,
+        "reward": 10496.921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 63,
+        "distance": 8.232461667943664,
+        "reward": 11635.6884765625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 64,
+        "distance": 8.297642964509084,
+        "reward": 11651.55078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 65,
+        "distance": 7.756635225063176,
+        "reward": 10818.23828125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 66,
+        "distance": 8.237670788888995,
+        "reward": 11677.9853515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 67,
+        "distance": 7.501559359742344,
+        "reward": 10371.931640625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 68,
+        "distance": 8.228266325616174,
+        "reward": 11303.8740234375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 69,
+        "distance": 7.855248442712088,
+        "reward": 10913.546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 70,
+        "distance": 8.20192733753512,
+        "reward": 11440.97265625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 71,
+        "distance": 8.746953397330559,
+        "reward": 12406.3271484375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 72,
+        "distance": 7.66325740395143,
+        "reward": 10929.7763671875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 73,
+        "distance": 7.622575035085635,
+        "reward": 10700.0,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 74,
+        "distance": 8.20077461502972,
+        "reward": 11459.7587890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 75,
+        "distance": 7.852295655774384,
+        "reward": 10883.943359375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 76,
+        "distance": 8.378930286377868,
+        "reward": 11564.6455078125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 77,
+        "distance": 7.703678510275682,
+        "reward": 10498.5087890625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 78,
+        "distance": 0.16618619498600556,
+        "reward": -8512.314453125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 79,
+        "distance": 0.09393040652708655,
+        "reward": -8789.52734375,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 80,
+        "distance": 7.64807101478443,
+        "reward": 10609.984375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 81,
+        "distance": 8.016928482497796,
+        "reward": 11525.98046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 82,
+        "distance": 0.005136576637766002,
+        "reward": -8497.4951171875,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 83,
+        "distance": 0.07727760798885211,
+        "reward": -8616.361328125,
+        "success": false,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 84,
+        "distance": 7.309186307125461,
+        "reward": 9995.51953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 85,
+        "distance": 7.680704031809134,
+        "reward": 10701.349609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 86,
+        "distance": 8.213681581643032,
+        "reward": 11244.626953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 87,
+        "distance": 8.349404889826772,
+        "reward": 11535.953125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 88,
+        "distance": 8.089071676444613,
+        "reward": 11169.6826171875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 89,
+        "distance": 8.244971537344764,
+        "reward": 11446.3935546875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 90,
+        "distance": 7.774949765110207,
+        "reward": 10727.37109375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 91,
+        "distance": 7.478965055063236,
+        "reward": 10448.0166015625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 92,
+        "distance": 8.216669037403861,
+        "reward": 11415.1064453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 93,
+        "distance": 8.1444384229251,
+        "reward": 11127.04296875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 94,
+        "distance": 8.086494679099507,
+        "reward": 11561.5849609375,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 95,
+        "distance": 7.999259038338082,
+        "reward": 11137.94921875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 96,
+        "distance": 8.292932146429218,
+        "reward": 11433.2353515625,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 97,
+        "distance": 7.9886779757499164,
+        "reward": 11275.23046875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 98,
+        "distance": 7.719213927784857,
+        "reward": 10641.46875,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      },
+      {
+        "rollout_id": 99,
+        "distance": 8.010694318977233,
+        "reward": 11240.9189453125,
+        "success": true,
+        "failure": true,
+        "steps": 1000
+      }
+    ]
+  }
+}
