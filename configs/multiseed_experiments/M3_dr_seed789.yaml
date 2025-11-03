@@ -1,0 +1,25 @@
+defaults:
+- /train/default
+- /env/realant
+experiment:
+  name: M3_dr_seed789
+  description: Domain Randomization joint failure robustness (seed=789)
+total_timesteps: 32000000
+seed: 789
+save_freq: 1000000
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-multiseed
+  wandb_tags:
+  - M3_dr
+  - seed789
+  - multiseed_experiment
+domain_randomization:
+  enabled: true
+  joint_failure_prob: 0.5
+  max_failed_joints: 2
+  curriculum:
+    enabled: true
+    phase_1_steps: 10000000
+    phase_2_steps: 10000000
+    phase_3_steps: 12000000

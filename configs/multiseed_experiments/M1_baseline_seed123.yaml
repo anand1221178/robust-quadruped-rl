@@ -1,0 +1,16 @@
+defaults:
+- /train/default
+- /env/realant
+experiment:
+  name: M1_baseline_seed123
+  description: Baseline PPO (no robustness training) (seed=123)
+total_timesteps: 32000000
+seed: 123
+save_freq: 1000000
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-multiseed
+  wandb_tags:
+  - M1_baseline
+  - seed123
+  - multiseed_experiment
