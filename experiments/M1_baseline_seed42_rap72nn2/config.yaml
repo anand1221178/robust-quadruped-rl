@@ -1,0 +1,34 @@
+eval_freq: 10000
+experiment:
+  description: Baseline PPO (no robustness training) (seed=42)
+  name: M1_baseline_seed42
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl-multiseed
+  wandb_tags:
+  - M1_baseline
+  - seed42
+  - multiseed_experiment
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 42
+total_timesteps: 32000000

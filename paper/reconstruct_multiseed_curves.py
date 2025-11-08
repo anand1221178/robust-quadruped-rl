@@ -29,7 +29,7 @@ import realant_sim
 MODELS = {
     'M1_baseline': {
         'seeds': [42, 123, 456, 789, 999],
-        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/multiseed',
+        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments',
         'pattern': 'M1_baseline_seed{seed}_*',  # W&B run ID will vary
         'label': 'M1 (Baseline)',
         'color': '#2E86AB',
@@ -38,7 +38,7 @@ MODELS = {
     },
     'M2_sr2l': {
         'seeds': [42, 123, 456, 789, 999],
-        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/multiseed',
+        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments',
         'pattern': 'M2_sr2l_seed{seed}_*',
         'label': 'M2 (SR2L)',
         'color': '#9C27B0',
@@ -47,7 +47,7 @@ MODELS = {
     },
     'M3_dr': {
         'seeds': [42, 123, 456, 789, 999],
-        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/multiseed',
+        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments',
         'pattern': 'M3_dr_seed{seed}_*',
         'label': 'M3 (DR)',
         'color': '#FF6F00',
@@ -56,7 +56,7 @@ MODELS = {
     },
     'M4_combo': {
         'seeds': [42, 123, 456, 789, 999],
-        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments/multiseed',
+        'base_path': '/Users/anandpatel/Documents/4th Year/robust-quadruped-rl/experiments',
         'pattern': 'M4_combo_seed{seed}_*',
         'label': 'M4 (Combined)',
         'color': '#D32F2F',

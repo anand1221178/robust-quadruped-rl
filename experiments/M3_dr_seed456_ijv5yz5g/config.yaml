@@ -1,0 +1,43 @@
+domain_randomization:
+  curriculum:
+    enabled: true
+    phase_1_steps: 10000000
+    phase_2_steps: 10000000
+    phase_3_steps: 12000000
+  enabled: true
+  joint_failure_prob: 0.5
+  max_failed_joints: 2
+eval_freq: 10000
+experiment:
+  description: Domain Randomization joint failure robustness (seed=456)
+  name: M3_dr_seed456
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl-multiseed
+  wandb_tags:
+  - M3_dr
+  - seed456
+  - multiseed_experiment
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 456
+total_timesteps: 32000000

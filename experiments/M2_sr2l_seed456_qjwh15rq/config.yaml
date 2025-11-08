@@ -1,0 +1,55 @@
+eval_freq: 10000
+experiment:
+  description: SR2L sensor noise robustness (seed=456)
+  name: M2_sr2l_seed456
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_project: robust-quadruped-rl-multiseed
+  wandb_tags:
+  - M2_sr2l
+  - seed456
+  - multiseed_experiment
+num_envs: 8
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+ppo:
+  batch_size: 2048
+  clip_range: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+save_freq: 1000000
+seed: 456
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_dims:
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+  perturbation_std: 0.01
+total_timesteps: 32000000
