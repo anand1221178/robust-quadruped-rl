@@ -1,0 +1,104 @@
+# M4 CORRECTED - SR2L + Domain Randomization with ACTUAL Curriculum
+# FIXES:
+#   1. Correct parameter names (joint_dropout_prob, max_dropped_joints)
+#   2. Phase configs at top level (not nested under curriculum)
+#   3. Proper 3-phase curriculum structure
+#   4. SR2L enabled with correct parameters
+defaults:
+- /train/sr2l
+- /env/realant
+
+experiment:
+  name: M4_combo_corrected_seed999
+  description: "CORRECTED M4 - SR2L + DR with 3-phase curriculum (seed=42)"
+
+total_timesteps: 30000000  # 30M like original M4
+seed: 999
+save_freq: 1000000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-final
+  wandb_entity: anandpatel1221178-university-of-the-witswatersrand
+  wandb_tags:
+  - M4_combo_corrected
+  - seed999
+  - final_submission
+  - curriculum_fixed
+
+# 🌊 SR2L CONFIGURATION (Sensor Noise Robustness)
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001        # Smoothness regularization coefficient
+  perturbation_std: 0.01      # Observation perturbation magnitude
+  perturbation_dims:          # Joint positions/velocities (dims 13-28)
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+
+# 🔥 CORRECTED DOMAIN RANDOMIZATION WITH CURRICULUM
+domain_randomization:
+  enabled: true
+  use_curriculum: true
+
+  # Phase timing (cumulative steps)
+  phase_1_steps: 10000000   # Phase 1: 0-10M steps (clean learning + SR2L only)
+  phase_2_steps: 10000000   # Phase 2: 10-20M steps (SR2L + single failures)
+  phase_3_steps: 10000000   # Phase 3: 20-30M steps (SR2L + multiple failures)
+
+  # Phase 1: Clean training with SR2L only (no joint failures yet)
+  phase_1_config:
+    joint_dropout_prob: 0.0      # ✅ CORRECT parameter name
+    max_dropped_joints: 0        # ✅ CORRECT parameter name
+    min_dropped_joints: 0
+    sensor_noise_std: 0.0        # SR2L handles noise via perturbations
+
+  # Phase 2: SR2L + single joint failures
+  phase_2_config:
+    joint_dropout_prob: 0.10     # 10% failure rate (mild)
+    max_dropped_joints: 1        # Single joint only
+    min_dropped_joints: 1        # Force at least 1 when triggered
+    sensor_noise_std: 0.0        # SR2L handles noise
+
+  # Phase 3: SR2L + multiple joint failures
+  phase_3_config:
+    joint_dropout_prob: 0.20     # 20% failure rate (harder)
+    max_dropped_joints: 2        # Up to 2 joints
+    min_dropped_joints: 1
+    sensor_noise_std: 0.0        # SR2L handles noise
+
+# PPO hyperparameters (match original)
+ppo:
+  learning_rate: 0.0003
+  batch_size: 2048
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+# Policy architecture
+policy:
+  activation: relu
+  hidden_sizes:
+  - 64
+  - 128
+
+# Environment
+num_envs: 8
+eval_freq: 10000
