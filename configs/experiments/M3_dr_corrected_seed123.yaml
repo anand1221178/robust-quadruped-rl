@@ -3,17 +3,22 @@
 #   1. Correct parameter names (joint_dropout_prob, max_dropped_joints)
 #   2. Phase configs at top level (not nested under curriculum)
 #   3. Proper 3-phase curriculum structure
+#   4. CRITICAL: Added env.use_domain_randomization flag
 defaults:
 - /train/default
 - /env/realant
 
 experiment:
   name: M3_dr_corrected_seed123
-  description: "CORRECTED M3 - DR with 3-phase curriculum (seed=42)"
+  description: "CORRECTED M3 - DR with 3-phase curriculum (seed=123)"
 
 total_timesteps: 32000000
 seed: 123
 save_freq: 1000000
+
+# 🔥 CRITICAL FIX: Enable domain randomization
+env:
+  use_domain_randomization: true
 
 logging:
   wandb: true

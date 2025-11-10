@@ -3,6 +3,7 @@
 #   1. Correct parameter names (joint_dropout_prob, max_dropped_joints)
 #   2. Phase configs at top level (not nested under curriculum)
 #   3. Proper 3-phase curriculum structure
+#   4. CRITICAL: Added env.use_domain_randomization flag
 #   4. SR2L enabled with correct parameters
 defaults:
 - /train/sr2l
@@ -10,11 +11,15 @@ defaults:
 
 experiment:
   name: M4_combo_corrected_seed999
-  description: "CORRECTED M4 - SR2L + DR with 3-phase curriculum (seed=42)"
+  description: "CORRECTED M4 - SR2L + DR with 3-phase curriculum (seed=999)"
 
 total_timesteps: 30000000  # 30M like original M4
 seed: 999
 save_freq: 1000000
+
+# 🔥 CRITICAL FIX: Enable domain randomization
+env:
+  use_domain_randomization: true
 
 logging:
   wandb: true
