@@ -1,6 +1,6 @@
 # A Systematic Ablation Study of Sensor and Actuator Robustness Methods for Quadruped Locomotion
 
-[![Paper](https://img.shields.io/badge/Paper-IEEE_Conference-blue)](anand_patel_2561034.pdf)
+[![Paper](https://img.shields.io/badge/Paper-Research_Paper-blue)](paper/anand_patel_2561034.pdf)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 🎯 Overview
@@ -44,7 +44,7 @@ Across **38,000 evaluation episodes**, we found:
 ```
 robust-quadruped-rl/
 ├── paper/
-│   ├── main.tex                    # IEEE conference paper (LaTeX)
+│   ├── main.tex                    # Research paper (LaTeX)
 │   ├── figures/                    # All paper figures and visualizations
 │   │   ├── realant_simulation_final.pdf
 │   │   ├── joint_numbering_diagram.pdf
@@ -54,7 +54,7 @@ robust-quadruped-rl/
 │   │   ├── figure_robustness_methods_comparison.pdf
 │   │   ├── figure_5_joint_noise_ablation.pdf
 │   │   └── learning_curves_reconstructed.pdf
-│   └── IEEEtran.cls               # IEEE conference template
+│   └── LaTeX template files
 │
 ├── Scripts/                        # Analysis and visualization scripts
 │   ├── create_figure_*.py        # Figure generation scripts
@@ -155,12 +155,12 @@ All models trained with identical hyperparameters:
 If you use this work in your research, please cite:
 
 ```bibtex
-@inproceedings{patel2025systematic,
+@article{patel2025systematic,
   title={A Systematic Ablation Study of Sensor and Actuator Robustness Methods for Quadruped Locomotion},
   author={Patel, Anand},
-  booktitle={IEEE Conference Proceedings},
+  journal={University of the Witwatersrand Research Papers},
   year={2025},
-  organization={University of the Witwatersrand}
+  institution={University of the Witwatersrand}
 }
 ```
 

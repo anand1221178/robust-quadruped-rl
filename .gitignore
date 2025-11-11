@@ -25,6 +25,7 @@ experiments/*/vec_normalize.pkl
 
 # Logs (these can be large)
 *.log
+logs/multiseed/
 wandb/offline-run-*
 wandb/run-*/files/
 wandb/run-*/logs/
@@ -66,8 +67,11 @@ archive/
 
 # Done folder (contains large model files and evaluation materials)
 done/
+# Specifically exclude the baseline model
+done/ppo_baseline_ueqbjf2x/
 
-# Video files (large - keep local only)
+# Video files and Videos folder (large - keep local only)
+Videos/
 *.mp4
 *.avi
 *.mov
