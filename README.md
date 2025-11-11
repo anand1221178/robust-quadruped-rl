@@ -1,6 +1,6 @@
 # A Systematic Ablation Study of Sensor and Actuator Robustness Methods for Quadruped Locomotion
 
-[![Paper](https://img.shields.io/badge/Paper-Research_Paper-blue)](paper/anand_patel_2561034.pdf)
+[![Paper](https://img.shields.io/badge/Paper-Research_Paper-blue)](anand_patel_2561034.pdf)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 🎯 Overview
