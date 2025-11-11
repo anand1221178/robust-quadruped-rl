@@ -141,12 +141,7 @@ class DomainRandomizationWrapper(gym.Wrapper):
 
 
 class CurriculumDRWrapper(gym.Wrapper):
-    """
-    🔥 ULTIMATE 3-PHASE CURRICULUM DR - RESEARCH PROPOSAL COMPLIANT 🔥
-    Phase 1: Clean training (learn perfect locomotion)
-    Phase 2: Single failures + mild noise  
-    Phase 3: Multiple failures + high noise
-    """
+
     
     def __init__(self, env, config: Dict):
         # Initialize the wrapper properly
@@ -191,11 +186,11 @@ class CurriculumDRWrapper(gym.Wrapper):
         # Initialize with Phase 1 (clean training)
         self._update_curriculum()
         
-        print(f"🔥 ULTIMATE 3-PHASE CURRICULUM DR INITIALIZED! 🔥")
-        print(f"📚 Phase 1 (0-{self.phase_1_steps:,} steps): CLEAN TRAINING - Perfect locomotion learning")
-        print(f"⚡ Phase 2 ({self.phase_1_steps:,}-{self.phase_1_steps + self.phase_2_steps:,} steps): Single failures + mild noise")  
-        print(f"🚀 Phase 3 ({self.phase_1_steps + self.phase_2_steps:,}+ steps): Multiple failures + high noise")
-        print(f"🎯 Current Phase: {self.current_phase} - {self._get_phase_description()}")
+        print(f"ULTIMATE 3-PHASE CURRICULUM DR INITIALIZED! 🔥")
+        print(f"Phase 1 (0-{self.phase_1_steps:,} steps): CLEAN TRAINING - Perfect locomotion learning")
+        print(f"Phase 2 ({self.phase_1_steps:,}-{self.phase_1_steps + self.phase_2_steps:,} steps): Single failures + mild noise")  
+        print(f"Phase 3 ({self.phase_1_steps + self.phase_2_steps:,}+ steps): Multiple failures + high noise")
+        print(f"Current Phase: {self.current_phase} - {self._get_phase_description()}")
     
     def step(self, action):
         """Override to track timesteps for 3-phase curriculum"""
@@ -276,11 +271,11 @@ class CurriculumDRWrapper(gym.Wrapper):
         
         # 🎉 PHASE TRANSITION CELEBRATION!
         if old_phase != self.current_phase:
-            print(f"\n🚀 PHASE TRANSITION! {old_phase} → {self.current_phase} at {self.current_timestep:,} steps!")
-            print(f"📊 NEW PHASE: {self._get_phase_description()}")
-            print(f"⚙️  Joint dropout: {self.joint_dropout_prob:.1%}")
-            print(f"🔧 Max joints: {self.max_dropped_joints}")  
-            print(f"📡 Sensor noise: {self.sensor_noise_std:.3f}")
+            print(f"\nPHASE TRANSITION! {old_phase} → {self.current_phase} at {self.current_timestep:,} steps!")
+            print(f"NEW PHASE: {self._get_phase_description()}")
+            print(f"Joint dropout: {self.joint_dropout_prob:.1%}")
+            print(f"Max joints: {self.max_dropped_joints}")  
+            print(f"Sensor noise: {self.sensor_noise_std:.3f}")
             print("=" * 60)
     
     def _get_phase_description(self):
@@ -344,11 +339,7 @@ class CurriculumDRWrapper(gym.Wrapper):
                     available_joints = list(range(self.num_joints))
                     self.dropped_joints = random.sample(available_joints, num_to_drop)
                 
-                # Optional: uncomment for debugging
-                # if self.dropped_joints:
-                #     phase_desc = self._get_phase_description()
-                #     print(f"🔥 Episode {self.episode_count}: Phase {self.current_phase} - Dropping joints {self.dropped_joints} ({phase_desc})")
-    
+
     def _apply_joint_dropout(self, action):
         """Apply joint dropout by setting dropped joint actions to 0 (locked)"""
         if len(self.dropped_joints) == 0:

@@ -328,4 +328,4 @@ if __name__ == "__main__":
     print(f"  Post-fault avg velocity: {results['post_fault_avg_velocity']:.3f} m/s")
     print(f"  Final distance: {results['final_distance']:.2f} m")
 
-    print("\n✅ RecoveryTimeTracker test passed!")
+    print("\n RecoveryTimeTracker test passed!")

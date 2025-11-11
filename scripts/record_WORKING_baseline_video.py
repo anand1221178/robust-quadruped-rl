@@ -24,9 +24,9 @@ def record_working_baseline_video():
     """Two-pass video of WORKING baseline + TargetWalkingWrapper combo"""
     
     print("🎬 TWO-PASS VIDEO: WORKING BASELINE + TARGET WALKING")
-    print("✅ Model: done/ppo_baseline_ueqbjf2x (speed-trained baseline)")  
-    print("✅ Wrapper: TargetWalkingWrapper (goal-directed)")
-    print("✅ Expected: 0.220 m/s with A-to-B locomotion")
+    print(" Model: done/ppo_baseline_ueqbjf2x (speed-trained baseline)")  
+    print(" Wrapper: TargetWalkingWrapper (goal-directed)")
+    print(" Expected: 0.220 m/s with A-to-B locomotion")
     print("=" * 70)
     
     # WORKING model paths
@@ -59,7 +59,7 @@ def record_working_baseline_video():
         env = VecNormalize.load(norm_path, env)
         env.training = False
         env.norm_reward = False
-        print("✅ VecNormalize loaded (spaces matched!)")
+        print(" VecNormalize loaded (spaces matched!)")
     except Exception as e:
         print(f"⚠️  VecNormalize failed: {e}")
         print("   Will test without normalization")
@@ -69,7 +69,7 @@ def record_working_baseline_video():
     
     # Load model
     model = PPO.load(model_path)
-    print("✅ Model loaded")
+    print(" Model loaded")
     
     # Collect trajectory
     print("\n🤖 Recording robot performance...")
@@ -136,12 +136,12 @@ def record_working_baseline_video():
     print(f"  Average velocity: {avg_velocity:.3f} m/s")
     
     if avg_velocity > 0.15:
-        print("✅ Good velocity performance!")
+        print(" Good velocity performance!")
     else:
         print("⚠️  Velocity lower than expected")
     
     if targets_reached > 0:
-        print("✅ Goal-directed behavior confirmed!")
+        print(" Goal-directed behavior confirmed!")
     else:
         print("⚠️  No targets reached - check wrapper")
     
@@ -263,7 +263,7 @@ def record_working_baseline_video():
     video_writer.release()
     render_env.close()
     
-    print(f"\n✅ VIDEO COMPLETED!")
+    print(f"\n VIDEO COMPLETED!")
     print(f"📁 Saved as: {video_path}")
     print(f"📊 Performance: {avg_velocity:.3f} m/s, {targets_reached} targets")
     print(f"🎯 Shows: Working baseline + TargetWalkingWrapper combo")

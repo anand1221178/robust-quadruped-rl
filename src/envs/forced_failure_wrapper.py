@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Forced Joint Failure Wrapper - GUARANTEED joint failures for testing
-This wrapper FORCES specific joints to fail (0 torque) - no probabilistic BS!
+
 """
 
 import gymnasium as gym
@@ -19,7 +19,7 @@ class ForcedFailureWrapper(gym.Wrapper):
         self.forced_joints = forced_joints  # List of joint indices to FORCE to fail
         self.num_joints = 8  # RealAnt has 8 joints
 
-        print(f"🔥 FORCED FAILURE WRAPPER: Joints {self.forced_joints} will ALWAYS fail!")
+        print(f"FORCED FAILURE WRAPPER: Joints {self.forced_joints} will ALWAYS fail!")
 
     def reset(self, **kwargs):
         """Reset - forced joints are always the same"""

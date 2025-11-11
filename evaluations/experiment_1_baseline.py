@@ -242,7 +242,7 @@ class BaselineEvaluator:
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_comparison(self):
         """Print comparison table of all models"""
@@ -267,9 +267,9 @@ class BaselineEvaluator:
         best_success = max(self.results.values(), key=lambda x: x['success_rate'])
         lowest_failure = min(self.results.values(), key=lambda x: x['failure_rate'])
 
-        print(f"✅ Best Distance:    {best_distance['model_name']} ({best_distance['distance']['mean']:.3f}m)")
-        print(f"✅ Best Success:     {best_success['model_name']} ({best_success['success_rate']*100:.1f}%)")
-        print(f"✅ Most Stable:      {lowest_failure['model_name']} ({lowest_failure['failure_rate']*100:.1f}% failure)")
+        print(f" Best Distance:    {best_distance['model_name']} ({best_distance['distance']['mean']:.3f}m)")
+        print(f" Best Success:     {best_success['model_name']} ({best_success['success_rate']*100:.1f}%)")
+        print(f" Most Stable:      {lowest_failure['model_name']} ({lowest_failure['failure_rate']*100:.1f}% failure)")
 
         print("\n" + "="*80)
 

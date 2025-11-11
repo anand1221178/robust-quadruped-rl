@@ -350,7 +350,7 @@ class CombinedStressEvaluator:
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_comparison(self):
         """Print comparison table across all models and scenarios"""
@@ -402,7 +402,7 @@ class CombinedStressEvaluator:
             key=lambda k: np.mean([r['distance']['mean'] for r in self.results[k]['scenario_results']])
         )
 
-        print(f"\n✅ Best Combined Stress Performance: {self.models[best_model]['name']}")
+        print(f"\n Best Combined Stress Performance: {self.models[best_model]['name']}")
 
         # Test synergy hypothesis: M4 should outperform max(M2, M3)
         m4_avg = np.mean([r['distance']['mean'] for r in self.results['M4_combo']['scenario_results']])

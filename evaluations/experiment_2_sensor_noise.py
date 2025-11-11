@@ -271,7 +271,7 @@ class SensorNoiseEvaluator:
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_comparison(self):
         """Print comparison table across all models and noise levels"""
@@ -311,7 +311,7 @@ class SensorNoiseEvaluator:
             key=lambda k: self.results[k]['noise_results'][high_noise_idx]['distance']['mean']
         )
 
-        print(f"\n✅ Best at HIGH noise (σ={high_noise_level}):")
+        print(f"\n Best at HIGH noise (σ={high_noise_level}):")
         print(f"   {self.models[best_at_high_noise]['name']}: "
               f"{self.results[best_at_high_noise]['noise_results'][high_noise_idx]['distance']['mean']:.3f}m "
               f"({self.results[best_at_high_noise]['noise_results'][high_noise_idx]['success_rate']*100:.1f}% success)")

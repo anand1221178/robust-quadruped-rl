@@ -1,8 +1,4 @@
-# ============================================================================
-# VECNORMALIZE ABLATION: SR2L + DR COMBO WITHOUT VECNORMALIZE
-# ============================================================================
-# This config is IDENTICAL to ultimate_robustness_combo_ju7lfsk2 except VecNormalize is disabled
-# Purpose: Isolate combined SR2L+DR contribution vs VecNormalize's implicit robustness
+
 
 domain_randomization:
   enabled: true
@@ -38,7 +34,7 @@ env:
   use_ultra_speed_mode: true
   velocity_retention_bonus: true
 
-# 🔥 KEY CHANGE: Disable VecNormalize
+
 vec_normalize:
   enabled: false  # This is the ONLY difference from original Combo config
 

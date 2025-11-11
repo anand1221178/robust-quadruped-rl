@@ -316,7 +316,7 @@ class SR2LChampionRecorderFixed:
                 # Set baseline from first (no-noise) run
                 if self.baseline_performance is None:
                     self.baseline_performance = final_velocity
-                    print(f"  ✅ Baseline performance set: {self.baseline_performance:.3f} m/s")
+                    print(f"   Baseline performance set: {self.baseline_performance:.3f} m/s")
                 
                 retention = (final_velocity / self.baseline_performance) * 100
                 

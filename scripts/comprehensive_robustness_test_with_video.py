@@ -54,13 +54,13 @@ def test_robustness_with_video(model_path, vec_normalize_path, model_name,
         env = VecNormalize.load(vec_normalize_path, env)
         env.training = False
         env.norm_reward = False
-        print("  ✅ VecNormalize loaded")
+        print("   VecNormalize loaded")
     except:
         print("  ⚠️  No VecNormalize")
     
     # Load model
     model = PPO.load(model_path)
-    print(f"  ✅ Model loaded")
+    print(f"   Model loaded")
     
     # Run episodes
     results = []
@@ -133,7 +133,7 @@ def test_robustness_with_video(model_path, vec_normalize_path, model_name,
                     if current_failed_joints:
                         overlay_texts.append("🔴 JOINT FAILURE ACTIVE!")
                     else:
-                        overlay_texts.append("✅ All joints working")
+                        overlay_texts.append(" All joints working")
                 
                 # Draw text overlay
                 for i, text in enumerate(overlay_texts):
@@ -211,7 +211,7 @@ def test_robustness_with_video(model_path, vec_normalize_path, model_name,
     
     if video_writer:
         video_writer.release()
-        print(f"  ✅ Video saved with {frame_count} frames")
+        print(f"   Video saved with {frame_count} frames")
     
     env.close()
     
@@ -248,7 +248,7 @@ def test_robustness_with_video(model_path, vec_normalize_path, model_name,
         if stats['avg_distance'] > 15:
             rating = "🏆 EXCELLENT"
         elif stats['avg_distance'] > 8:
-            rating = "✅ GOOD"
+            rating = " GOOD"
         elif stats['avg_distance'] > 3:
             rating = "⚠️  MODERATE"  
         else:
@@ -398,7 +398,7 @@ def main():
             if avg_retention > 80:
                 print("🏆 VERDICT: EXCELLENT robustness!")
             elif avg_retention > 60:
-                print("✅ VERDICT: GOOD robustness")
+                print(" VERDICT: GOOD robustness")
             elif avg_retention > 40:
                 print("⚠️  VERDICT: MODERATE robustness")
             else:

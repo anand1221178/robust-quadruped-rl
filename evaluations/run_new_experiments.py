@@ -138,7 +138,7 @@ class ExperimentRunner:
             self.results_log.append(result)
 
             print("\n" + "=" * 80)
-            print(f"✅ EXPERIMENT {exp_id} COMPLETED SUCCESSFULLY")
+            print(f" EXPERIMENT {exp_id} COMPLETED SUCCESSFULLY")
             print("=" * 80)
             print(f"Elapsed time: {elapsed_hours:.2f} hours")
             print(f"Estimated time: {exp_info['estimated_hours']} hours")
@@ -260,7 +260,7 @@ class ExperimentRunner:
 
         for result in self.results_log:
             status_icon = {
-                'SUCCESS': '✅',
+                'SUCCESS': '',
                 'FAILED': '❌',
                 'INTERRUPTED': '⚠️'
             }.get(result['status'], '?')

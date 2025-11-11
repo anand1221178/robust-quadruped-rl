@@ -73,7 +73,7 @@ def run_experiment(eid):
         
         if result.returncode == 0:
             print(f"\n{'='*80}")
-            print(f"✅ EXPERIMENT {eid} COMPLETE")
+            print(f" EXPERIMENT {eid} COMPLETE")
             print(f"Time: {elapsed:.2f} hrs (estimated: {e['hours']:.1f} hrs)")
             print("="*80)
             return True
@@ -152,7 +152,7 @@ def main():
     print(f"Total runtime: {total_time:.2f} hours")
     print(f"\nResults:")
     for eid, name, success in results:
-        icon = "✅" if success else "❌"
+        icon = "" if success else "❌"
         print(f"  {icon} {eid}. {name}")
     
     successes = sum(1 for _, _, s in results if s)

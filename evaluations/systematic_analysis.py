@@ -33,7 +33,7 @@ class SystematicAnalyzer:
             if files:
                 with open(files[-1]) as f:
                     self.experiments[exp_id] = json.load(f)
-                    print(f"✅ Loaded Experiment {exp_id}")
+                    print(f" Loaded Experiment {exp_id}")
             else:
                 print(f"⚠️  Missing Experiment {exp_id}")
 
@@ -95,7 +95,7 @@ class SystematicAnalyzer:
             if result_010:
                 noisy_dist = result_010['distance']['mean']
                 retention = (noisy_dist / baseline_dist) * 100
-                marker = "✅" if retention > 100 else "✓" if retention > 95 else "⚠️"
+                marker = "" if retention > 100 else "✓" if retention > 95 else "⚠️"
                 print(f"{model:<15} | {baseline_dist:>6.2f}m   | {noisy_dist:>6.2f}m   | {retention:>5.1f}% {marker}")
 
         print("\n📊 KEY FINDINGS:")
@@ -187,7 +187,7 @@ class SystematicAnalyzer:
         if m4_combined < m3_combined:
             print(f"   • ❌ NEGATIVE SYNERGY: Combo worse than DR alone by {((m3_combined-m4_combined)/m3_combined)*100:.1f}%")
         else:
-            print(f"   • ✅ POSITIVE SYNERGY: Combo better than DR alone")
+            print(f"   •  POSITIVE SYNERGY: Combo better than DR alone")
 
     def analyze_experiment_8(self):
         """Mechanism Analysis"""
@@ -213,7 +213,7 @@ class SystematicAnalyzer:
             avg_with_noise = np.mean([r['distance']['mean'] for r in results[1:]])
             change = ((avg_with_noise / baseline) - 1) * 100
 
-            marker = "✅" if change > 5 else "✓" if change > 0 else "❌"
+            marker = "" if change > 5 else "✓" if change > 0 else "❌"
             print(f"{test_id:<8} | {name:<15} | {baseline:>6.2f}m   | {avg_with_noise:>6.2f}m      | {change:+6.1f}% {marker}")
 
         print("\n📊 KEY FINDINGS:")
@@ -276,9 +276,9 @@ class SystematicAnalyzer:
         print("\n" + "="*80)
         print("DEPLOYMENT RECOMMENDATION: M3 (DR alone)")
         print("="*80)
-        print("   ✅ Best joint failure robustness (47%)")
-        print("   ✅ Good noise tolerance (108%)")
-        print("   ✅ Simpler than multi-method training")
+        print("    Best joint failure robustness (47%)")
+        print("    Good noise tolerance (108%)")
+        print("    Simpler than multi-method training")
         print("   ⚠️  29% baseline sacrifice acceptable for robustness")
         print("="*80)
 

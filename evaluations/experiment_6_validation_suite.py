@@ -283,10 +283,10 @@ class ValidationSuite:
         without_vec_sigma01 = [r['distance'] for r in results['without_vecnormalize']['noise_0.1']['rollouts']]
         t_stat, p_value = stats.ttest_ind(with_vec_sigma01, without_vec_sigma01)
 
-        print(f"\n✅ Statistical Test (σ=0.1):")
+        print(f"\n Statistical Test (σ=0.1):")
         print(f"   t-statistic: {t_stat:.3f}, p-value: {p_value:.6f}")
         if p_value < 0.001:
-            print(f"   Verdict: ✅ HIGHLY SIGNIFICANT (p < 0.001) - VecNormalize proven essential!")
+            print(f"   Verdict:  HIGHLY SIGNIFICANT (p < 0.001) - VecNormalize proven essential!")
 
     # ========================================================================
     # TEST 2: Stochastic Resonance in SR2L
@@ -353,7 +353,7 @@ class ValidationSuite:
         print(f"   Improvement: {optimal_noise[1]['mean'] - results['noise_0.000']['mean']:+.3f}m")
 
         if optimal_noise[1]['retention_pct'] > 100:
-            print(f"\n✅ Stochastic Resonance CONFIRMED!")
+            print(f"\n Stochastic Resonance CONFIRMED!")
             print(f"   SR2L performs BETTER with mild noise than without")
             print(f"   This is a neuroscience phenomenon - noise helps signal processing!")
 
@@ -526,7 +526,7 @@ class ValidationSuite:
             print(f"  p-value: {p_value:.6f}")
 
             if p_value < 0.001:
-                print(f"  ✅ HIGHLY SIGNIFICANT (p < 0.001)")
+                print(f"   HIGHLY SIGNIFICANT (p < 0.001)")
                 print(f"     Joint difficulty varies significantly!")
 
             # Post-hoc: Is ankle_4 significantly worse than others?
@@ -545,7 +545,7 @@ class ValidationSuite:
             print(f"  p-value: {p_value_ankle4:.6f}")
 
             if p_value_ankle4 < 0.001:
-                print(f"  ✅ HIGHLY SIGNIFICANT (p < 0.001)")
+                print(f"   HIGHLY SIGNIFICANT (p < 0.001)")
                 print(f"     Ankle_4 is PROVABLY harder than other joints!")
 
             # Check if it's universally hardest (hardest for EVERY model)
@@ -566,7 +566,7 @@ class ValidationSuite:
             print(f"\nUniversality Check:")
             print(f"  Hardest joint per model: {hardest_per_model}")
             if universal:
-                print(f"  ✅ UNIVERSAL: ankle_4 is hardest for ALL 4 models!")
+                print(f"   UNIVERSAL: ankle_4 is hardest for ALL 4 models!")
             else:
                 print(f"  ~ Ankle_4 hardest for {hardest_per_model.count('ankle_4')}/4 models")
 
@@ -626,7 +626,7 @@ class ValidationSuite:
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_summary(self):
         """Print final summary of all validation tests"""
@@ -650,7 +650,7 @@ class ValidationSuite:
             print(f"   Advantage: {retention_with - retention_without:+.1f}%")
 
             if retention_with - retention_without > 20:
-                print(f"   ✅ CLAIM VALIDATED: VecNormalize essential for noise robustness")
+                print(f"    CLAIM VALIDATED: VecNormalize essential for noise robustness")
             else:
                 print(f"   ~ Partial support for claim")
 
@@ -664,7 +664,7 @@ class ValidationSuite:
             print(f"   Optimal (σ={optimal[1]['noise_level']:.3f}): {optimal[1]['retention_pct']:.1f}% retention")
 
             if optimal[1]['retention_pct'] > 100:
-                print(f"   ✅ CLAIM VALIDATED: Stochastic resonance confirmed!")
+                print(f"    CLAIM VALIDATED: Stochastic resonance confirmed!")
             else:
                 print(f"   ~ Peak at σ={optimal[1]['noise_level']:.3f} but <100% retention")
 
@@ -674,7 +674,7 @@ class ValidationSuite:
             super_models = [k for k, v in data.items() if v['super_recovery']]
 
             if super_models:
-                print(f"   ✅ SUPER-RECOVERY FOUND in {len(super_models)} model(s):")
+                print(f"    SUPER-RECOVERY FOUND in {len(super_models)} model(s):")
                 for model_key in super_models:
                     print(f"      {data[model_key]['model_name']}: {data[model_key]['retention_pct']:.1f}%")
             else:
@@ -692,14 +692,14 @@ class ValidationSuite:
                 print(f"   Ankle_4 vs others p-value: {data['ankle4_vs_others_p']:.6f}")
 
                 if data['universal_hardest']:
-                    print(f"   ✅ CLAIM VALIDATED: Ankle_4 universally hardest (all 4 models)")
+                    print(f"    CLAIM VALIDATED: Ankle_4 universally hardest (all 4 models)")
                 elif hardest[0] == 'ankle_4':
-                    print(f"   ✅ CLAIM SUPPORTED: Ankle_4 hardest on average")
+                    print(f"    CLAIM SUPPORTED: Ankle_4 hardest on average")
                 else:
                     print(f"   ✗ CLAIM NOT SUPPORTED: {hardest[0]} hardest, not ankle_4")
 
         print("\n" + "="*80)
-        print("✅ VALIDATION SUITE COMPLETE")
+        print(" VALIDATION SUITE COMPLETE")
         print("="*80)
 
 if __name__ == "__main__":

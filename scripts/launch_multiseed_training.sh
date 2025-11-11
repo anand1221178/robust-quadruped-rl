@@ -54,7 +54,7 @@ for model in "${MODELS[@]}"; do
             | awk '{print $4}')
 
         if [ $? -eq 0 ]; then
-            echo "  ✅ Submitted: ${CONFIG_NAME} (Job ID: ${JOB_ID})"
+            echo "   Submitted: ${CONFIG_NAME} (Job ID: ${JOB_ID})"
             SUBMITTED_JOBS=$((SUBMITTED_JOBS + 1))
         else
             echo "  ❌ Failed: ${CONFIG_NAME}"

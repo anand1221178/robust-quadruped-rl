@@ -24,9 +24,9 @@ def record_forward_locomotion_video():
     """Two-pass video of baseline doing PURE forward locomotion"""
     
     print("🎬 FORWARD LOCOMOTION VIDEO - RESEARCH PROPOSAL DEMO")
-    print("✅ Model: done/ppo_baseline_ueqbjf2x (verified 0.224 m/s)")  
-    print("✅ Wrapper: SuccessRewardWrapper (pure forward walking)")
-    print("✅ Task: Forward locomotion (NO targets - just walk forward)")
+    print(" Model: done/ppo_baseline_ueqbjf2x (verified 0.224 m/s)")  
+    print(" Wrapper: SuccessRewardWrapper (pure forward walking)")
+    print(" Task: Forward locomotion (NO targets - just walk forward)")
     print("=" * 70)
     
     # Model paths
@@ -58,11 +58,11 @@ def record_forward_locomotion_video():
     env = VecNormalize.load(norm_path, env)
     env.training = False
     env.norm_reward = False
-    print("✅ VecNormalize loaded")
+    print(" VecNormalize loaded")
     
     # Load model
     model = PPO.load(model_path)
-    print("✅ Model loaded")
+    print(" Model loaded")
     
     # Record trajectory
     print(f"\n🤖 Recording forward locomotion performance...")
@@ -114,9 +114,9 @@ def record_forward_locomotion_video():
     print(f"  Time: {total_time:.1f} seconds")
     
     if avg_velocity > 0.20:
-        print("✅ Excellent forward locomotion performance!")
+        print(" Excellent forward locomotion performance!")
     elif avg_velocity > 0.15:
-        print("✅ Good forward locomotion performance!")
+        print(" Good forward locomotion performance!")
     else:
         print("⚠️  Velocity lower than expected")
     
@@ -207,7 +207,7 @@ def record_forward_locomotion_video():
     render_distance = render_final_x - render_initial_x
     render_velocity = render_distance / (len(render_positions) * 0.05) if render_positions else 0
     
-    print(f"\n✅ VIDEO COMPLETED!")
+    print(f"\n VIDEO COMPLETED!")
     print(f"📁 Saved as: {video_path}")
     print(f"📊 Video Performance: {render_velocity:.3f} m/s, {render_distance:.1f}m")
     print(f"🎯 Shows: Pure forward locomotion (research proposal demo)")

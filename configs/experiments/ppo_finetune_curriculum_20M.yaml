@@ -1,5 +1,3 @@
-# 🎯 NUCLEAR OPTION 2A: Fine-tune from Baseline with Curriculum (20M steps)
-# Hydra config - starts from working baseline + gentle curriculum DR
 
 defaults:
   - /train/default
@@ -10,7 +8,7 @@ experiment:
   name: ppo_finetune_curriculum_20M
   description: "NUCLEAR ROBUSTNESS: Fine-tune from baseline with gentle curriculum DR (20M steps)"
 
-# 🔥 PRETRAINED MODEL LOADING
+
 pretrained_model: "done/ppo_baseline_ueqbjf2x/best_model/best_model.zip"
 pretrained_vec_normalize: "done/ppo_baseline_ueqbjf2x/vec_normalize.pkl"
 

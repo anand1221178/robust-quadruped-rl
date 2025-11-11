@@ -16,7 +16,7 @@ class BackwardPenaltyWrapper(gym.Wrapper):
         self.stationary_penalty = stationary_penalty
         self.stationary_threshold = stationary_threshold
 
-        print(f"🔥 BackwardPenaltyWrapper ACTIVE:")
+        print(f"BackwardPenaltyWrapper ACTIVE:")
         print(f"   - Backward penalty: x{self.penalty_multiplier}")
         if self.stationary_penalty != 0.0:
             print(f"   - Stationary penalty: {self.stationary_penalty} per step (|v| < {self.stationary_threshold})")

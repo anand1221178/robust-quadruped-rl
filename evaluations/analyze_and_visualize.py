@@ -84,7 +84,7 @@ class ResultsAnalyzer:
             with open(latest_file, 'r') as f:
                 self.results[exp_name] = json.load(f)
 
-            print(f"✅ {exp_name}: Loaded {latest_file.name}")
+            print(f" {exp_name}: Loaded {latest_file.name}")
 
         print(f"\nTotal experiments loaded: {len(self.results)}/8")
         print("="*80)
@@ -144,7 +144,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_1_baseline_comparison.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_2_sensor_noise_curves(self):
@@ -231,7 +231,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_2_sensor_noise_robustness.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_3_joint_failure_heatmap(self):
@@ -320,7 +320,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_3_joint_failure_robustness.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_4_combined_stress(self):
@@ -420,7 +420,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_4_combined_stress.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_5_comprehensive_summary(self):
@@ -509,7 +509,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_5_comprehensive_summary.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_6_retention_matrix(self):
@@ -570,7 +570,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_6_retention_matrix.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_7_anatomical_patterns(self):
@@ -714,7 +714,7 @@ class ResultsAnalyzer:
 
         output_path = f'{self.output_dir}/figure_7_anatomical_patterns.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_8_extended_noise_types(self):
@@ -794,7 +794,7 @@ class ResultsAnalyzer:
         plt.tight_layout()
         output_path = f'{self.output_dir}/figure_8_extended_noise_types.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_9_validation_suite(self):
@@ -906,7 +906,7 @@ class ResultsAnalyzer:
         plt.tight_layout()
         output_path = f'{self.output_dir}/figure_9_validation_suite.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_10_recovery_time_analysis(self):
@@ -1034,7 +1034,7 @@ class ResultsAnalyzer:
         plt.tight_layout()
         output_path = f'{self.output_dir}/figure_10_recovery_time_analysis.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        print(f"✅ Saved: {output_path}")
+        print(f" Saved: {output_path}")
         plt.close()
 
     def plot_11_joint_noise_interaction(self):
@@ -1043,7 +1043,7 @@ class ResultsAnalyzer:
             print("⚠️  Skipping Figure 11: No joint-noise ablation results")
             return
 
-        print("✅ Saved: evaluations/figures/figure_11_joint_noise_interaction.png (placeholder)")
+        print(" Saved: evaluations/figures/figure_11_joint_noise_interaction.png (placeholder)")
         # TODO: Implement full interaction analysis once Exp 7 data structure is confirmed
 
     def run_all_visualizations(self):
@@ -1076,7 +1076,7 @@ class ResultsAnalyzer:
         self.plot_11_joint_noise_interaction()
 
         print("\n" + "="*80)
-        print("✅ ALL FIGURES GENERATED SUCCESSFULLY")
+        print(" ALL FIGURES GENERATED SUCCESSFULLY")
         print("="*80)
         print("\nFigures saved to: evaluations/figures/")
         print("\nGenerated figures:")

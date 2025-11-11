@@ -82,7 +82,7 @@ class PhaseTransitionCallback(BaseCallback):
     def _switch_to_curriculum_phase(self):
         """Handle the environment switch from baseline to curriculum"""
         print(f"\n{'='*60}")
-        print(f"🔄 PHASE TRANSITION AT {self.num_timesteps:,} STEPS")
+        print(f" PHASE TRANSITION AT {self.num_timesteps:,} STEPS")
         print(f"   Switching from Phase 0 (baseline) to Phase 1 (curriculum)")
         print(f"{'='*60}\n")
 
@@ -112,9 +112,9 @@ class PhaseTransitionCallback(BaseCallback):
             # Freeze if requested
             if self.freeze_vecnorm_after_phase0:
                 new_vec_env.training = False
-                print("   ✅ VecNormalize statistics frozen")
+                print("    VecNormalize statistics frozen")
             else:
-                print("   ✅ VecNormalize continues updating")
+                print("    VecNormalize continues updating")
 
             # Update the model's environment
             self.model.set_env(new_vec_env)
@@ -127,8 +127,8 @@ class PhaseTransitionCallback(BaseCallback):
         self.phase_switched = True
         self.current_phase = "systematic_curriculum"
 
-        print("   ✅ Environment switch complete!")
-        print("   ✅ Systematic curriculum now active")
+        print("    Environment switch complete!")
+        print("    Systematic curriculum now active")
         print(f"{'='*60}\n")
 
 def make_phase0_env(env_name: str = 'RealAntMujoco-v0'):
@@ -183,31 +183,31 @@ def train(cfg: DictConfig):
         )
 
     # Create Phase 0 environment (pure baseline)
-    print("\n📊 Creating Phase 0 environment (pure baseline)...")
+    print("\nCreating Phase 0 environment (pure baseline)...")
     env = DummyVecEnv([make_phase0_env(cfg.env.name) for _ in range(cfg.num_envs)])
 
     # Apply VecNormalize wrapper
     if cfg.get('use_vec_normalize', True):
         # Check if we're loading pretrained VecNormalize
         if cfg.get('pretrained_vec_normalize'):
-            print(f"📊 Loading pretrained VecNormalize from {cfg.pretrained_vec_normalize}")
+            print(f"Loading pretrained VecNormalize from {cfg.pretrained_vec_normalize}")
             env = VecNormalize.load(cfg.pretrained_vec_normalize, env)
             env.training = True  # Enable training for Phase 0
             env.norm_reward = True
         else:
-            print("📊 Creating new VecNormalize wrapper")
+            print("Creating new VecNormalize wrapper")
             env = VecNormalize(env, training=True, norm_obs=True, norm_reward=True)
 
     # Create or load model
     if cfg.get('pretrained_model'):
-        print(f"\n🔄 FINE-TUNING MODE: Loading pretrained model from {cfg.pretrained_model}")
+        print(f"\nFINE-TUNING MODE: Loading pretrained model from {cfg.pretrained_model}")
         model = PPO.load(cfg.pretrained_model, env=env)
 
         # Update learning rate for fine-tuning
         model.learning_rate = cfg.ppo.learning_rate
-        print(f"📉 Updated learning rate to {cfg.ppo.learning_rate} for fine-tuning")
+        print(f"Updated learning rate to {cfg.ppo.learning_rate} for fine-tuning")
     else:
-        print("\n🆕 Creating new PPO model from scratch")
+        print("\nCreating new PPO model from scratch")
         model = PPO(
             policy=cfg.policy.type if hasattr(cfg.policy, 'type') else 'MlpPolicy',
             env=env,
@@ -277,7 +277,7 @@ def train(cfg: DictConfig):
 
         # Training completed successfully
         elapsed_time = time.time() - start_time
-        print(f"\n✅ Training completed successfully!")
+        print(f"\n Training completed successfully!")
         print(f"   Total time: {elapsed_time/3600:.2f} hours")
         print(f"   Final timesteps: {cfg.total_timesteps:,}")
 
@@ -293,7 +293,7 @@ def train(cfg: DictConfig):
             print(f"   VecNormalize saved to: {vec_norm_path}")
 
     except Exception as e:
-        print(f"\n❌ Training failed with error: {e}")
+        print(f"\nTraining failed with error: {e}")
         raise e
     finally:
         # Cleanup

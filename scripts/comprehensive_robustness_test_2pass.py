@@ -43,13 +43,13 @@ def collect_performance_data(model_path, vec_normalize_path, model_name,
         env = VecNormalize.load(vec_normalize_path, env)
         env.training = False
         env.norm_reward = False
-        print("  ✅ VecNormalize loaded")
+        print("   VecNormalize loaded")
     except:
         print("  ⚠️  No VecNormalize")
     
     # Load model
     model = PPO.load(model_path)
-    print(f"  ✅ Model loaded")
+    print(f"   Model loaded")
     
     # Collect data
     all_episode_data = []
@@ -269,7 +269,7 @@ def create_video_replay(model_path, vec_normalize_path, model_name, test_name,
                     failed_names = [joint_names[j] if j < len(joint_names) else f'Joint{j}' for j in recorded_failed_joints]
                     overlay_texts.append(f"Failed: {', '.join(failed_names)}")
                 else:
-                    overlay_texts.append("✅ All joints working")
+                    overlay_texts.append(" All joints working")
             
             # Add distance tracking
             if step > 0 and episode_data['positions']:
@@ -349,7 +349,7 @@ def create_video_replay(model_path, vec_normalize_path, model_name, test_name,
     video_writer.release()
     env.close()
     
-    print(f"\n  ✅ Video saved: {video_path}")
+    print(f"\n   Video saved: {video_path}")
     print(f"  Total frames: {frame_count}")
     
     return video_path

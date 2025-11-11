@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🎯 Systematic Joint Failure Curriculum Wrapper
-Implements guaranteed, systematic joint failures for robustness training
+Systematic Joint Failure Curriculum Wrapper
+
 """
 
 import gymnasium as gym
@@ -19,19 +19,13 @@ class SystematicCurriculumWrapper(gym.Wrapper):
     Phases:
     1. Single Joint Mastery: Each joint fails individually for N steps
     2. Dual Joint Combinations: Specific joint pairs fail for N steps
-    3. Triple Joint Challenge: Critical 3-joint combinations
-
-    V5 SMART VECNORMALIZE SUPPORT:
-    - Optionally resets VecNormalize reward statistics at phase transitions
-    - Prevents reward normalization corruption between phases
-    - Maintains stable PPO learning throughout curriculum
     """
 
     def __init__(self, env, curriculum_config: Dict):
         super().__init__(env)
         self.curriculum_config = curriculum_config
 
-        # V5: Smart VecNormalize reward stats reset
+
         self.reset_reward_stats_on_phase_transition = curriculum_config.get(
             'reset_reward_stats_on_phase_transition', False
         )
@@ -44,7 +38,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         phase_0_duration = curriculum_config.get('normal_walking_duration', 10000000)
         if phase_0_duration == 0:
             self.current_phase = 1  # Skip Phase 0, start joint failure training
-            print("🎯 V2 MODE: Starting at Phase 1 (Phase 0 handled by PhaseSwitchCallback)")
+            print(" V2 MODE: Starting at Phase 1 (Phase 0 handled by PhaseSwitchCallback)")
         else:
             self.current_phase = 0  # V1 MODE: Start with Phase 0
         self.current_subphase = -1  # Initialize to -1 to force first subphase transition
@@ -85,15 +79,14 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         if self.reset_reward_stats_on_phase_transition:
             self._detect_vecnormalize()
             if self.vec_normalize_env:
-                print(f"🔥 V5 SMART VECNORMALIZE: Reward stats reset enabled at phase transitions!")
+                print(f"V5 SMART VECNORMALIZE: Reward stats reset enabled at phase transitions!")
             else:
-                print(f"⚠️  V5 WARNING: VecNormalize not detected - reward stats reset disabled")
+                print(f"V5 WARNING: VecNormalize not detected - reward stats reset disabled")
 
-        print(f"🎯 Systematic Curriculum Initialized")
+        print(f"Systematic Curriculum Initialized")
         print(f"   Phase 0: Normal walking foundation")
         print(f"   Phase 1: {len(self.phase_1_schedule)} single joints")
         print(f"   Phase 2: {len(self.phase_2_schedule)} dual combinations")
-        print(f"   Phase 3: {len(self.phase_3_schedule)} triple combinations")
         print(f"   Total training steps: {self._calculate_total_steps():,}")
     
     def _setup_curriculum(self):
@@ -239,10 +232,10 @@ class SystematicCurriculumWrapper(gym.Wrapper):
                 print(f"   New reward std: {var_val**0.5:.3f}")
 
             else:
-                print(f"⚠️  V5 WARNING: VecNormalize ret_rms not found - cannot reset reward stats")
+                print(f"V5 WARNING: VecNormalize ret_rms not found - cannot reset reward stats")
 
         except Exception as e:
-            print(f"❌ V5 ERROR: Failed to reset VecNormalize reward stats: {e}")
+            print(f"V5 ERROR: Failed to reset VecNormalize reward stats: {e}")
             # Disable further reset attempts
             self.reset_reward_stats_on_phase_transition = False
 
@@ -250,7 +243,7 @@ class SystematicCurriculumWrapper(gym.Wrapper):
         """V5: Manually set VecNormalize environment reference for reward stats reset"""
         self.vec_normalize_env = vec_env
         if vec_env and self.reset_reward_stats_on_phase_transition:
-            print(f"✅ V5: VecNormalize environment manually set - reward stats reset ready!")
+            print(f" V5: VecNormalize environment manually set - reward stats reset ready!")
     
     def _update_curriculum_phase(self):
         """Update current curriculum phase based on training progress"""

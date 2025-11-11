@@ -16,10 +16,10 @@ echo "Total runs: 10"
 echo "Estimated time: ~36 hours per run"
 echo ""
 echo "FIXES APPLIED:"
-echo "  ✅ Correct parameter names (joint_dropout_prob, max_dropped_joints)"
-echo "  ✅ Phase configs at top level (not nested)"
-echo "  ✅ Proper CurriculumDRWrapper selection"
-echo "  ✅ 3-phase curriculum: Clean → Single failures → Multiple failures"
+echo "   Correct parameter names (joint_dropout_prob, max_dropped_joints)"
+echo "   Phase configs at top level (not nested)"
+echo "   Proper CurriculumDRWrapper selection"
+echo "   3-phase curriculum: Clean → Single failures → Multiple failures"
 echo ""
 
 # Check if train_ppo_cluster.sh exists
@@ -55,7 +55,7 @@ for seed in 42 123 456 789 999; do
 done
 
 echo ""
-echo "✅ ALL 10 JOBS SUBMITTED SUCCESSFULLY!"
+echo " ALL 10 JOBS SUBMITTED SUCCESSFULLY!"
 echo "========================================"
 echo ""
 echo "Job IDs: ${job_ids[@]}"

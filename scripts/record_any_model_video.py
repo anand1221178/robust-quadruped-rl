@@ -22,8 +22,8 @@ def record_model_video(model_folder, steps=1000):
     
     model_name = os.path.basename(model_folder)
     print(f"🎬 TWO-PASS VIDEO: {model_name.upper()}")
-    print(f"✅ Model: {model_folder}")  
-    print(f"✅ Wrapper: SuccessRewardWrapper (forward speed rewards)")
+    print(f" Model: {model_folder}")  
+    print(f" Wrapper: SuccessRewardWrapper (forward speed rewards)")
     print(f"🎯 Steps: {steps}")
     print("=" * 70)
     
@@ -54,11 +54,11 @@ def record_model_video(model_folder, steps=1000):
     env = VecNormalize.load(vec_normalize_path, env)
     env.training = False
     env.norm_reward = False
-    print("✅ VecNormalize loaded (spaces matched!)")
+    print(" VecNormalize loaded (spaces matched!)")
     
     # Load model
     model = PPO.load(model_path)
-    print("✅ Model loaded")
+    print(" Model loaded")
     
     print(f"\n🤖 Recording robot performance...")
     
@@ -136,7 +136,7 @@ def record_model_video(model_folder, steps=1000):
     elif avg_velocity < 0.05:
         print("⚠️  Very low velocity - robot barely moving")
     elif avg_velocity > 0.15:
-        print("✅ Good forward locomotion")
+        print(" Good forward locomotion")
     
     # PASS 2: Render video
     print(f"\n🎥 PASS 2: Rendering video from trajectory")
@@ -198,7 +198,7 @@ def record_model_video(model_folder, steps=1000):
             out.write(frame)
         out.release()
         
-        print(f"\n✅ VIDEO COMPLETED!")
+        print(f"\n VIDEO COMPLETED!")
         print(f"📁 Saved as: {filename}")
         print(f"📊 Performance: {avg_velocity:.3f} m/s")
         
@@ -208,7 +208,7 @@ def record_model_video(model_folder, steps=1000):
         elif avg_velocity < 0.05:
             print("⚠️  WARNING: Robot barely moves")  
         elif avg_velocity > 0.15:
-            print("✅ SUCCESS: Good locomotion")
+            print(" SUCCESS: Good locomotion")
         else:
             print("📊 INFO: Moderate locomotion")
             

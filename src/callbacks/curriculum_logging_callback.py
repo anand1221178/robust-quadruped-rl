@@ -6,11 +6,7 @@ Curriculum Logging Callback
 Logs DR curriculum phase transitions and statistics to W&B.
 Reads from info dict populated by CurriculumDRWrapper.
 
-This callback bridges the gap between CurriculumDRWrapper (which tracks phases)
-and W&B (which needs explicit logging). Without this, phase transitions happen
-internally but don't show up in W&B logs.
 
-Author: Auto-generated for final paper retraining runs
 Date: October 26, 2025
 """
 
@@ -38,7 +34,7 @@ class CurriculumLoggingCallback(BaseCallback):
     def _on_training_start(self) -> None:
         """Log initial curriculum state"""
         if self.verbose > 0:
-            print("✅ Curriculum logging callback initialized")
+            print(" Curriculum logging callback initialized")
             print("   Will track phase transitions and log to W&B")
 
     def _on_step(self) -> bool:

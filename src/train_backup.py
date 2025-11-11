@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Main training script that uses YAML configuration files
-This is the proper way to handle configs!
-"""
+
 
 import os
 import sys

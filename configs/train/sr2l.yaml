@@ -1,25 +1,21 @@
-# configs/train/sr2l.yaml
-# SR2L (Smooth Regularized Reinforcement Learning) configuration
-# Based on proposal Section 3.2, Equation 3.2 and 3.3
+
 
 sr2l:
   enabled: true
-  lambda: 0.0001                  # EXTREMELY gentle regularization
-  perturbation_std: 0.01          # Tiny perturbations 
-  apply_frequency: 1              # Apply every N updates (1 = every update)  
-  velocity_adaptive: true         # Scale SR2L loss based on walking performance
-  
-  # Optional advanced settings
-  target_dimensions: "all"        # Which observation dims to perturb ("all" or list)
-  warmup_steps: 500000            # Skip SR2L for first 500K steps - let it learn to walk FIRST!
-  max_perturbation: 0.2           # Clamp perturbations to prevent extreme values
+  lambda: 0.0001                 
+  perturbation_std: 0.01          
+  apply_frequency: 1              
+  velocity_adaptive: true        
+
+  target_dimensions: "all"        
+  warmup_steps: 500000            
+  max_perturbation: 0.2           
   
   # Logging
   log_smoothness_metrics: true    # Track policy smoothness score
   save_action_trajectories: false # Save action sequences for analysis
 
-# PPO hyperparameters remain the same as baseline
-# This allows direct comparison between PPO and PPO+SR2L
+
 learning_rate: 0.0003
 n_steps: 2048
 batch_size: 2048
@@ -31,8 +27,8 @@ ent_coef: 0.0
 vf_coef: 0.5
 max_grad_norm: 0.5
 
-# Training settings
-total_timesteps: 1000000          #  1M for testing, then 10M for full runs
+
+total_timesteps: 1000000          
 
 save_freq: 50000
 eval_freq: 10000

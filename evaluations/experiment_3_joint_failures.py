@@ -347,7 +347,7 @@ class JointFailureEvaluator:
         with open(output_path, 'w') as f:
             json.dump(results_clean, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_comparison(self):
         """Print comparison table across all models and joints"""
@@ -398,7 +398,7 @@ class JointFailureEvaluator:
             key=lambda k: np.mean([r['distance']['mean'] for r in self.results[k]['joint_results']])
         )
 
-        print(f"\n✅ Best Overall Joint Failure Robustness: {self.models[best_model]['name']}")
+        print(f"\n Best Overall Joint Failure Robustness: {self.models[best_model]['name']}")
 
         # Check if DR (M3) dominates
         m3_avg = np.mean([r['distance']['mean'] for r in self.results['M3_dr']['joint_results']])

@@ -35,7 +35,7 @@ class RotationMasteryWrapper(gym.Wrapper):
         self.max_reward_seen = 0.0
         self.reward_history = []
 
-        print("🎯 Rotation Mastery Wrapper: Teaching ankle_4 rotation strategy")
+        print("Rotation Mastery Wrapper: Teaching ankle_4 rotation strategy")
         print(f"   Target joints: {self.config['target_joints']}")
         print(f"   Max rotation multiplier: {self.config['yaw_change_multiplier']}")
         print(f"   Max forward multiplier: {self.config['forward_after_rotation']}")
@@ -82,8 +82,7 @@ class RotationMasteryWrapper(gym.Wrapper):
             # Debug info (optional)
             if abs(rotation_multiplier - 1.0) > 0.01:
                 yaw_change = abs(current_yaw - self.prev_yaw)
-                # Uncomment for debugging:
-                # print(f"🔄 Rotation reward: {rotation_multiplier:.2f}x (yaw: {yaw_change:.3f}, vel: {forward_velocity:.3f})")
+
 
         # Update state tracking
         self.prev_yaw = current_yaw
@@ -140,12 +139,12 @@ class RotationMasteryWrapper(gym.Wrapper):
 
         # Safety check 3: Check for NaN/inf
         if not np.isfinite(new_reward):
-            print(f"⚠️ Non-finite reward detected! Original: {reward}, Multiplier: {multiplier}")
+            print(f"Non-finite reward detected! Original: {reward}, Multiplier: {multiplier}")
             return reward  # Return original reward if problems
 
         # Safety check 4: Extreme value check
         if abs(new_reward) > 10000:
-            print(f"⚠️ Extreme reward detected! Clamping: {new_reward}")
+            print(f"Extreme reward detected! Clamping: {new_reward}")
             new_reward = np.sign(new_reward) * 10000
 
         # Track for monitoring

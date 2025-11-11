@@ -145,7 +145,7 @@ class SystematicCurriculumChampionRecorder:
         for codec in codecs_to_try:
             video_writer = cv2.VideoWriter(output_path, codec, self.fps, self.frame_size)
             if video_writer.isOpened():
-                print(f"  ✅ Video codec working")
+                print(f"  \ Video codec working")
                 break
             video_writer.release()
         
@@ -261,7 +261,7 @@ class SystematicCurriculumChampionRecorder:
         with open(perf_output, 'w') as f:
             json.dump(performance_data, f, indent=2)
         
-        print(f"\n✅ Video created: {output_path}")
+        print(f"\n Video created: {output_path}")
         print(f"📊 Performance data: {perf_output}")
         print(f"🎬 Total frames: {total_frames}")
         

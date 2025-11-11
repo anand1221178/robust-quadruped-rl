@@ -313,7 +313,7 @@ class ExtendedNoiseEvaluator:
         with open(output_file, 'w') as f:
             json.dump(results_clean, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_file}")
+        print(f"\n Results saved to: {output_file}")
 
     def print_summary(self):
         """Print comprehensive summary"""

@@ -88,10 +88,10 @@ def generate_configs():
                 'timesteps': model_info['total_timesteps']
             })
 
-            print(f"  ✅ Generated: {output_file.name} (seed={seed})")
+            print(f"   Generated: {output_file.name} (seed={seed})")
 
     print(f"\n{'='*60}")
-    print(f"✅ Generated {len(generated_configs)} configs!")
+    print(f" Generated {len(generated_configs)} configs!")
     print('='*60)
 
     # Save manifest for tracking

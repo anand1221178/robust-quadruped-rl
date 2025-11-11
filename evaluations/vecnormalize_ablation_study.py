@@ -100,7 +100,7 @@ class VecNormalizeAblationEvaluator:
             print(f"\n{pair['name']}:")
             print(f"  WITH VecNormalize:    {pair['with_vecnorm']}")
             if pair['without_vecnorm']:
-                print(f"  WITHOUT VecNormalize: {pair['without_vecnorm']} ✅")
+                print(f"  WITHOUT VecNormalize: {pair['without_vecnorm']} ")
             else:
                 print(f"  WITHOUT VecNormalize: NOT FOUND ❌")
         print()
@@ -263,7 +263,7 @@ class VecNormalizeAblationEvaluator:
 
         print(f"\n{'='*80}")
         print(f"Evaluating: {pair['name']}")
-        print(f"VecNormalize: {'✅ ENABLED' if use_vecnormalize else '❌ DISABLED'}")
+        print(f"VecNormalize: {' ENABLED' if use_vecnormalize else '❌ DISABLED'}")
         print(f"Model: {model_path}")
         print('='*80)
 
@@ -332,7 +332,7 @@ class VecNormalizeAblationEvaluator:
         with open(results_file, 'w') as f:
             json.dump(all_results, f, indent=2)
 
-        print(f"\n✅ Results saved to {results_file}")
+        print(f"\n Results saved to {results_file}")
 
         return all_results
 

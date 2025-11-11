@@ -1,8 +1,4 @@
-# ============================================================================
-# VECNORMALIZE ABLATION: DOMAIN RANDOMIZATION WITHOUT VECNORMALIZE
-# ============================================================================
-# This config is IDENTICAL to v7_7e_ultra_speed_jtfwl2qf except VecNormalize is disabled
-# Purpose: Isolate DR's contribution vs VecNormalize's implicit robustness
+
 
 domain_randomization:
   enabled: true
@@ -37,7 +33,7 @@ env:
   use_ultra_speed_mode: true
   velocity_retention_bonus: true
 
-# 🔥 KEY CHANGE: Disable VecNormalize
+
 vec_normalize:
   enabled: false  # This is the ONLY difference from original DR config
 

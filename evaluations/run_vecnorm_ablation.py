@@ -104,7 +104,7 @@ class VecNormAblationEvaluator:
 
         print(f"\n{'='*60}")
         print(f"Loading: {config['name']}")
-        print(f"VecNormalize: {'✅ YES' if config['has_vecnorm'] else '❌ NO (ABLATION)'}")
+        print(f"VecNormalize: {' YES' if config['has_vecnorm'] else '❌ NO (ABLATION)'}")
         print(f"{'='*60}")
 
         # Create environment
@@ -115,7 +115,7 @@ class VecNormAblationEvaluator:
             env = VecNormalize.load(config['vec_path'], env)
             env.training = False
             env.norm_reward = False
-            print("  VecNormalize loaded ✅")
+            print("  VecNormalize loaded ")
         else:
             print("  VecNormalize SKIPPED ❌ (ablation mode)")
 
@@ -154,7 +154,7 @@ class VecNormAblationEvaluator:
             'has_vecnorm': self.models[model_key]['has_vecnorm']
         }
 
-        print(f"\n✅ Distance: {result['mean']:.2f}m ± {result['std']:.2f}m")
+        print(f"\n Distance: {result['mean']:.2f}m ± {result['std']:.2f}m")
         return result
 
     def evaluate_sensor_noise(self, model_key, noise_std, baseline_dist):
@@ -276,7 +276,7 @@ class VecNormAblationEvaluator:
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2)
 
-        print(f"\n✅ Results saved to {results_file}")
+        print(f"\n Results saved to {results_file}")
 
         return results
 

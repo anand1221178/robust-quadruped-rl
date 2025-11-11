@@ -178,7 +178,7 @@ class MatchedCheckpointEvaluator:
             'timestep': config['timestep']
         }
 
-        print(f"\n✅ Distance: {result['mean']:.2f}m ± {result['std']:.2f}m")
+        print(f"\n Distance: {result['mean']:.2f}m ± {result['std']:.2f}m")
         return result
 
     def evaluate_sensor_noise(self, model_key, noise_std, baseline_dist, use_final=False):
@@ -311,7 +311,7 @@ class MatchedCheckpointEvaluator:
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2)
 
-        print(f"\n✅ Results saved to {results_file}")
+        print(f"\n Results saved to {results_file}")
 
         # Print summary comparison
         self.print_summary(results)

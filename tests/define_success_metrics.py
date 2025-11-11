@@ -183,7 +183,7 @@ def test_random_baseline():
     metrics = evaluator.evaluate_episode()
     
     print(f"\nResults:")
-    print(f"  Success: {'✅' if metrics.success_rate > 0 else '❌'}")
+    print(f"  Success: {'' if metrics.success_rate > 0 else '❌'}")
     print(f"  Distance traveled: {metrics.distance_traveled:.2f} m")
     print(f"  Average velocity: {metrics.avg_velocity:.2f} m/s")
     print(f"  Time standing: {metrics.time_standing:.2f} s")
@@ -252,7 +252,7 @@ def evaluate_policy(policy_function, n_episodes=100, verbose=True):
     with open('evaluation.py', 'w') as f:
         f.write(script_content)
     
-    print("\n✅ Created evaluation.py for future use")
+    print("\n Created evaluation.py for future use")
 
 
 def main():
@@ -266,7 +266,7 @@ def main():
     
     # Summary
     print("\n" + "=" * 60)
-    print("✅ Phase 1.3 Complete: Success Metrics Defined")
+    print(" Phase 1.3 Complete: Success Metrics Defined")
     print("=" * 60)
     
     print("\nSuccess Criteria Summary:")

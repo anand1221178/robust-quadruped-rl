@@ -61,8 +61,8 @@ domain_randomization:
 
   # Phase 1: Clean training with SR2L only (no joint failures yet)
   phase_1_config:
-    joint_dropout_prob: 0.0      # ✅ CORRECT parameter name
-    max_dropped_joints: 0        # ✅ CORRECT parameter name
+    joint_dropout_prob: 0.0      #  CORRECT parameter name
+    max_dropped_joints: 0        #  CORRECT parameter name
     min_dropped_joints: 0
     sensor_noise_std: 0.0        # SR2L handles noise via perturbations
 

@@ -39,7 +39,7 @@ def quick_velocity_test(model_path, steps=200):
     try:
         env = gym.make('RealAntMujoco-v0')
         env = SuccessRewardWrapper(env)
-        print("✅ Environment created")
+        print(" Environment created")
         
         # Load VecNormalize if it exists
         norm_path = model_path.replace('.zip', '_vecnormalize.pkl').replace('final_model', 'vec_normalize').replace('best_model', 'vec_normalize')
@@ -54,7 +54,7 @@ def quick_velocity_test(model_path, steps=200):
             env = VecNormalize.load(norm_path, env)
             env.training = False
             env.norm_reward = False
-            print("✅ VecNormalize loaded")
+            print(" VecNormalize loaded")
         else:
             print("⚠️  No VecNormalize found - using raw environment")
             from stable_baselines3.common.vec_env import DummyVecEnv
@@ -62,7 +62,7 @@ def quick_velocity_test(model_path, steps=200):
         
         # Load model
         model = PPO.load(model_path)
-        print("✅ Model loaded")
+        print(" Model loaded")
         
         # Quick test
         print("\n🏃 Running velocity test...")
@@ -111,7 +111,7 @@ def quick_velocity_test(model_path, steps=200):
             if velocity > 0.20:
                 status = "🔥 EXCELLENT"
             elif velocity > 0.15:
-                status = "✅ GOOD"
+                status = " GOOD"
             elif velocity > 0.10:
                 status = "⚠️ MODERATE"
             else:

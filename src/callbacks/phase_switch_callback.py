@@ -138,7 +138,7 @@ class PhaseSwitchCallback(BaseCallback):
 
             # Keep training active but with existing statistics as starting point
 
-            print("   ✅ VecNormalize statistics copied with slow adaptation enabled")
+            print("    VecNormalize statistics copied with slow adaptation enabled")
 
             # Update model's environment
             self.model.set_env(new_vec_env)
@@ -147,7 +147,7 @@ class PhaseSwitchCallback(BaseCallback):
             # Reset PPO's internal step counters to force new rollout collection
             self.model._last_obs = None  # Force fresh observation
             self.model.num_timesteps = self.num_timesteps  # Sync timestep counters
-            print("   ✅ PPO state reset for fresh rollout collection")
+            print("    PPO state reset for fresh rollout collection")
         else:
             # No VecNormalize, just switch environment
             self.model.set_env(new_env)
@@ -155,9 +155,9 @@ class PhaseSwitchCallback(BaseCallback):
             # CRITICAL FIX: Force fresh rollout collection (no VecNormalize case)
             self.model._last_obs = None  # Force fresh observation
             self.model.num_timesteps = self.num_timesteps  # Sync timestep counters
-            print("   ✅ PPO state reset for fresh rollout collection (no VecNormalize)")
+            print("    PPO state reset for fresh rollout collection (no VecNormalize)")
 
         self.current_phase = 1
-        print("   ✅ Environment switch complete!")
-        print("   ✅ Systematic curriculum now active")
+        print("    Environment switch complete!")
+        print("    Systematic curriculum now active")
         print("="*60 + "\n")

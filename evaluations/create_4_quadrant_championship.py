@@ -478,7 +478,7 @@ class QuadrantChampionshipRecorder:
                 'models_data': models_data  # Keep the data with actions/observations
             })
 
-            print(f"  ✅ Section {section_idx+1} complete - Metrics collected", flush=True)
+            print(f"   Section {section_idx+1} complete - Metrics collected", flush=True)
 
         # ========== PASS 2: REPLAY AND RENDER ==========
         print("\n\n🎬 PASS 2: Replaying trajectories WITH rendering for video generation", flush=True)
@@ -592,7 +592,7 @@ class QuadrantChampionshipRecorder:
                 render_envs[model_key]['env'].close()
                 saved_models_data[model_key]['env'].close()  # Close Pass 1 env too
 
-            print(f"    ✅ Rendered {min(num_steps, section['duration_frames'])} frames", flush=True)
+            print(f"     Rendered {min(num_steps, section['duration_frames'])} frames", flush=True)
 
         video_writer.release()
 

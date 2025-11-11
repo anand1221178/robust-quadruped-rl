@@ -247,7 +247,7 @@ class MechanismAnalyzer:
             'noise_sweep_results': results
         }
 
-        print(f"\n✅ 8A Complete")
+        print(f"\n 8A Complete")
         print(f"  Baseline: {baseline_distance:.3f}m")
         print(f"  Peak: {peak_result['retention_percent']:.1f}% at σ={peak_result['noise_level']:.2f}")
         print(f"  Resonance: {'YES' if summary['shows_resonance'] else 'NO'}")
@@ -296,7 +296,7 @@ class MechanismAnalyzer:
             'noise_sweep_results': results
         }
 
-        print(f"\n✅ 8B Complete")
+        print(f"\n 8B Complete")
         print(f"  Baseline: {baseline_distance:.3f}m")
         print(f"  Peak: {peak_result['retention_percent']:.1f}% at σ={peak_result['noise_level']:.2f}")
         print(f"  Super-performance range: {summary['peak_width']} noise levels")
@@ -341,7 +341,7 @@ class MechanismAnalyzer:
             'noise_sweep_results': results
         }
 
-        print(f"\n✅ 8C Complete")
+        print(f"\n 8C Complete")
         print(f"  Baseline: {baseline_distance:.3f}m")
         print(f"  Peak: {peak_result['retention_percent']:.1f}% at σ={peak_result['noise_level']:.2f}")
         print(f"  Stronger than SR2L: {'YES' if summary['stronger_than_sr2l'] else 'NO'}")
@@ -412,7 +412,7 @@ class MechanismAnalyzer:
             'adaptive_necessary': adaptive_peak['retention_percent'] > frozen_peak['retention_percent']
         }
 
-        print(f"\n✅ 8D Complete")
+        print(f"\n 8D Complete")
         print(f"  Adaptive Peak: {adaptive_peak['retention_percent']:.1f}% at σ={adaptive_peak['noise_level']:.2f}")
         print(f"  Frozen Peak: {frozen_peak['retention_percent']:.1f}% at σ={frozen_peak['noise_level']:.2f}")
         print(f"  Adaptive necessary: {'YES' if summary['adaptive_necessary'] else 'NO'}")
@@ -452,7 +452,7 @@ class MechanismAnalyzer:
         with open(output_file, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_file}")
+        print(f"\n Results saved to: {output_file}")
 
     def print_summary(self):
         """Print comprehensive mechanism analysis summary"""
@@ -466,7 +466,7 @@ class MechanismAnalyzer:
         # H1: VecNormalize adaptive statistics cause resonance
         exp_8d = self.results['8D_vecnormalize_frozen_test']
         if exp_8d['adaptive_necessary']:
-            print("✅ H1 SUPPORTED: Adaptive VecNormalize necessary for resonance")
+            print(" H1 SUPPORTED: Adaptive VecNormalize necessary for resonance")
             print(f"   Adaptive: {exp_8d['adaptive']['peak_retention']:.1f}%")
             print(f"   Frozen: {exp_8d['frozen']['peak_retention']:.1f}%")
         else:
@@ -482,13 +482,13 @@ class MechanismAnalyzer:
             print(f"   M1 (no SR2L): {exp_8a['peak_retention']:.1f}% at σ={exp_8a['peak_noise']:.2f}")
             print(f"   M2 (SR2L): {exp_8b['peak_retention']:.1f}% at σ={exp_8b['peak_noise']:.2f}")
         else:
-            print("\n✅ H2 SUPPORTED: Only SR2L-trained models show resonance")
+            print("\n H2 SUPPORTED: Only SR2L-trained models show resonance")
             print(f"   M1 (no SR2L): {exp_8a['peak_retention']:.1f}% (no resonance)")
             print(f"   M2 (SR2L): {exp_8b['peak_retention']:.1f}% (strong resonance)")
 
         # H3: Resonance occurs in specific noise range (inverted-U)
         if exp_8b['peak_width'] > 1:
-            print("\n✅ H3 SUPPORTED: Resonance occurs over noise range")
+            print("\n H3 SUPPORTED: Resonance occurs over noise range")
             print(f"   Peak width: {exp_8b['peak_width']} noise levels")
             print(f"   Range: σ={min(exp_8b['super_performance_noise_range']):.2f}-{max(exp_8b['super_performance_noise_range']):.2f}")
         else:
@@ -502,7 +502,7 @@ class MechanismAnalyzer:
                              exp_8c['peak_retention'] > 100)
 
         if all_show_resonance:
-            print("\n✅ H4 SUPPORTED: All models show resonance (training-independent)")
+            print("\n H4 SUPPORTED: All models show resonance (training-independent)")
             print(f"   M1 (Baseline): {exp_8a['peak_retention']:.1f}%")
             print(f"   M2 (SR2L): {exp_8b['peak_retention']:.1f}%")
             print(f"   M3 (DR): {exp_8c['peak_retention']:.1f}%")

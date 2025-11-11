@@ -38,12 +38,12 @@ def evaluate_model(model_path, vec_normalize_path, model_name, use_dr=False, dr_
         env = VecNormalize.load(vec_normalize_path, env)
         env.training = False
         env.norm_reward = False
-        print("  ✅ VecNormalize loaded")
+        print("   VecNormalize loaded")
     except Exception as e:
         print(f"  ⚠️  VecNormalize failed: {e}")
     
     model = PPO.load(model_path)
-    print(f"  ✅ Model loaded")
+    print(f"   Model loaded")
     
     velocities = []
     distances = []

@@ -22,7 +22,7 @@ def record_dr_model_with_joints(model_folder, steps=500):
     
     model_name = os.path.basename(model_folder)
     print(f"🎬 DR MODEL + JOINT ANALYSIS: {model_name.upper()}")
-    print(f"✅ Model: {model_folder}")  
+    print(f" Model: {model_folder}")  
     print(f"🎯 Steps: {steps}")
     print("=" * 70)
     
@@ -45,7 +45,7 @@ def record_dr_model_with_joints(model_folder, steps=500):
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
             dr_config = config.get('domain_randomization', {})
-        print("✅ Config loaded - DR settings found")
+        print(" Config loaded - DR settings found")
     
     print("📁 PASS 1: Collecting trajectory with joint failure analysis")
     print("-" * 50)
@@ -66,11 +66,11 @@ def record_dr_model_with_joints(model_folder, steps=500):
     env = VecNormalize.load(vec_normalize_path, env)
     env.training = False
     env.norm_reward = False
-    print("✅ VecNormalize loaded")
+    print(" VecNormalize loaded")
     
     # Load model
     model = PPO.load(model_path)
-    print("✅ Model loaded")
+    print(" Model loaded")
     
     print(f"\n🤖 Recording with joint failure tracking...")
     
@@ -179,7 +179,7 @@ def record_dr_model_with_joints(model_folder, steps=500):
     elif avg_velocity < 0.05:
         print("⚠️  ROBOT BARELY MOVES!")  
     elif avg_velocity > 0.15:
-        print("✅ Good locomotion despite failures")
+        print(" Good locomotion despite failures")
     
     # Create video with joint failure overlay
     print(f"\n🎥 PASS 2: Rendering video with joint failure info")
@@ -249,7 +249,7 @@ def record_dr_model_with_joints(model_folder, steps=500):
             out.write(frame)
         out.release()
         
-        print(f"\n✅ VIDEO WITH JOINT ANALYSIS COMPLETED!")
+        print(f"\n VIDEO WITH JOINT ANALYSIS COMPLETED!")
         print(f"📁 Saved as: {filename}")
         print(f"📊 Performance: {avg_velocity:.3f} m/s")
         print(f"🦾 Joint failures: {failure_percentage:.1f}% of episodes")

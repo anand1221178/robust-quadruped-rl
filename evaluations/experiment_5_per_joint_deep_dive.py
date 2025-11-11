@@ -388,7 +388,7 @@ class PerJointDeepDiveEvaluator:
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)
 
-        print(f"\n✅ Results saved to: {output_path}")
+        print(f"\n Results saved to: {output_path}")
 
     def print_comprehensive_analysis(self):
         """Print comprehensive analysis across all combinations"""
