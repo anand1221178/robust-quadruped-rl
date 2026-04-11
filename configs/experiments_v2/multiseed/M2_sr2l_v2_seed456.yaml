@@ -1,0 +1,46 @@
+defaults:
+- /train/tuned
+- /env/realant
+experiment:
+  name: M2_sr2l_v2_seed456
+  description: PPO + SR2L sensor noise robustness with tuned hyperparameters (seed=456)
+  tags:
+  - M2
+  - sr2l
+  - v2_tuned
+  - seed456
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_std: 0.01
+  warmup_steps: 0
+  perturbation_dims:
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+total_timesteps: 32000000
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-v2
+  wandb_tags:
+  - M2_sr2l_v2
+  - tuned_hyperparams
+  - seed456
+seed: 456

@@ -1,0 +1,26 @@
+defaults:
+- /train/tuned
+- /env/realant
+experiment:
+  name: M1_baseline_v2_seed999
+  description: Baseline PPO with tuned hyperparameters - no robustness methods (seed=999)
+  tags:
+  - M1
+  - baseline
+  - v2_tuned
+  - seed999
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false
+sr2l:
+  enabled: false
+total_timesteps: 32000000
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-v2
+  wandb_tags:
+  - M1_baseline_v2
+  - tuned_hyperparams
+  - seed999
+seed: 999

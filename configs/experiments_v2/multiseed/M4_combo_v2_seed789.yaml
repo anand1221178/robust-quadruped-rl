@@ -1,0 +1,68 @@
+defaults:
+- /train/tuned
+- /env/realant
+experiment:
+  name: M4_combo_v2_seed789
+  description: PPO + SR2L + 3-phase curriculum DR with tuned hyperparameters (seed=789)
+  tags:
+  - M4
+  - combo
+  - v2_tuned
+  - seed789
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: true
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_std: 0.01
+  warmup_steps: 0
+  perturbation_dims:
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+domain_randomization:
+  enabled: true
+  use_curriculum: true
+  wrapper_type: CurriculumDRWrapper
+  phase_1_steps: 10000000
+  phase_2_steps: 10000000
+  phase_3_steps: 12000000
+  phase_1_config:
+    joint_dropout_prob: 0.0
+    max_dropped_joints: 0
+    min_dropped_joints: 0
+    sensor_noise_std: 0.0
+  phase_2_config:
+    joint_dropout_prob: 0.1
+    max_dropped_joints: 1
+    min_dropped_joints: 1
+    sensor_noise_std: 0.01
+  phase_3_config:
+    joint_dropout_prob: 0.2
+    max_dropped_joints: 2
+    min_dropped_joints: 1
+    sensor_noise_std: 0.02
+total_timesteps: 32000000
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-v2
+  wandb_tags:
+  - M4_combo_v2
+  - tuned_hyperparams
+  - seed789
+seed: 789
