@@ -1,0 +1,51 @@
+# M2 v2 - SR2L only (sensor noise robustness)
+# Tuned hyperparameters from Andrychowicz et al. (2020)
+# SR2L params: lambda=0.001, sigma=0.01 (from Shen et al. 2020)
+defaults:
+- /train/tuned
+- /env/realant
+
+experiment:
+  name: M2_sr2l_v2
+  description: "PPO + SR2L sensor noise robustness with tuned hyperparameters"
+  tags:
+  - M2
+  - sr2l
+  - v2_tuned
+
+env:
+  name: RealAntMujoco-v0
+  use_success_reward: true
+  use_domain_randomization: false
+
+sr2l:
+  enabled: true
+  lambda_smooth: 0.001
+  perturbation_std: 0.01
+  warmup_steps: 0
+  perturbation_dims:
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+
+total_timesteps: 32000000
+
+logging:
+  wandb: true
+  wandb_project: robust-quadruped-rl-v2
+  wandb_tags:
+  - M2_sr2l_v2
+  - tuned_hyperparams

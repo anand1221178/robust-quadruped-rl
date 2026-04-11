@@ -1,0 +1,47 @@
+# Tuned PPO hyperparameters
+# Based on Andrychowicz et al. (2020) "What Matters In On-Policy RL?"
+# Applied to quadruped locomotion (RealAnt-v0)
+#
+# Key changes from default.yaml:
+#   - tanh activation (better in 4/5 MuJoCo envs, bounds policy entropy)
+#   - [128, 128] hidden sizes (consistent architecture)
+#   - GAE lambda 0.9 (paper recommendation, GAE outperforms N-step)
+#   - clip_range 0.25 (paper sweet spot 0.2-0.3)
+#   - Initial action std 0.5 (log_std_init = -0.693, high impact parameter)
+#   - No value loss clipping (hurts performance per paper)
+#   - Linear LR decay to 0 (15% improvement on Ant)
+
+eval_freq: 100000
+logging:
+  log_interval: 10
+  tensorboard: true
+  verbose: 1
+  wandb: true
+  wandb_project: "robust-quadruped-rl-v2"
+  wandb_entity: "anandpatel1221178-university-of-the-witswatersrand"
+
+num_envs: 8
+
+policy:
+  activation: tanh
+  hidden_sizes:
+  - 128
+  - 128
+  log_std_init: -0.693   # exp(-0.693) = 0.5 initial action std
+
+ppo:
+  batch_size: 2048
+  clip_range: 0.25
+  ent_coef: 0.0
+  gae_lambda: 0.9
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  vf_coef: 0.5
+  # Note: SB3 clip_range_vf=None disables value loss clipping
+  # Set via policy_kwargs or model init if needed
+
+save_freq: 1000000
+seed: 42
+total_timesteps: 32000000

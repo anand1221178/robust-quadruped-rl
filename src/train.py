@@ -344,35 +344,45 @@ def train(config: dict):
         # Check if using SR2L
         use_sr2l = config.get('sr2l', {}).get('enabled', False)
         
+        # Build policy_kwargs from config (shared by both PPO and PPO_SR2L)
+        activation_name = config.get('policy', {}).get('activation', 'tanh')
+        activation_fn = nn.Tanh if activation_name == 'tanh' else nn.ReLU
+
+        net_arch = config.get('policy', {}).get('hidden_sizes', [128, 128])
+
+        # Andrychowicz et al. (2020) recommendations:
+        # - log_std_init: initial action std (0.5 recommended, use log(0.5) = -0.693)
+        # - ortho_init: orthogonal initialization (SB3 default)
+        log_std_init = config.get('policy', {}).get('log_std_init', -0.693)
+
+        policy_kwargs = dict(
+            activation_fn=activation_fn,
+            net_arch=[dict(pi=net_arch, vf=net_arch)],
+            log_std_init=log_std_init,
+        )
+
+        print(f"  Policy: {activation_name}, arch={net_arch}, init_std={np.exp(log_std_init):.3f}")
+
         if use_sr2l:
-            print("🔬 Using SR2L algorithm")
+            print("  Using SR2L algorithm")
             sr2l_config = config.get('sr2l', {})
             model = PPO_SR2L(
-                "MlpPolicy", 
+                "MlpPolicy",
                 env,
                 sr2l_config=sr2l_config,
                 verbose=1,
                 tensorboard_log=f"{save_path}/tensorboard/",
+                policy_kwargs=policy_kwargs,
                 **config.get('ppo', {})
             )
         else:
-            print("🏃 Using standard PPO")
-            # Get activation function
-            activation_name = config.get('policy', {}).get('activation', 'relu')
-            activation_fn = nn.ReLU if activation_name == 'relu' else nn.Tanh
-            
-            # Get network architecture
-            net_arch = config.get('policy', {}).get('hidden_sizes', [64, 128])
-            
+            print("  Using standard PPO")
             model = PPO(
-                "MlpPolicy", 
+                "MlpPolicy",
                 env,
                 verbose=1,
                 tensorboard_log=f"{save_path}/tensorboard/",
-                policy_kwargs=dict(
-                    activation_fn=activation_fn,
-                    net_arch=[dict(pi=net_arch, vf=net_arch)]
-                ),
+                policy_kwargs=policy_kwargs,
                 **config.get('ppo', {})
             )
     

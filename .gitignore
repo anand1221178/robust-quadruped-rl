@@ -83,6 +83,9 @@ Videos/
 #Remove claude.md
 CLAUDE.md
 
+# Embedded git repos
+deployment/realant_hardware/realant/
+
 # LaTeX build artifacts
 paper/*.aux
 paper/*.log
